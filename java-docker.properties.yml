@@ -1,0 +1,11 @@
+{
+    "name": "Java Docker Workflow",
+    "description": "Build and push docker image from maven project",
+    "iconName": "",
+    "categories": [
+        "Java"
+    ],
+    "filePatterns": [
+        ".*\\pom.xml"
+    ]
+}
