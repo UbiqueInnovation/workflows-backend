@@ -1,0 +1,8 @@
+{
+    "name": "Hello World Workflow",
+    "description": "Hello World CI workflow template.",
+    "iconName": "java",
+    "categories": [
+        "Java"
+    ]
+}
