@@ -4,5 +4,8 @@
     "iconName": "java",
     "categories": [
         "Java"
+    ],
+    "filePatterns": [
+        "README.md$"
     ]
 }
