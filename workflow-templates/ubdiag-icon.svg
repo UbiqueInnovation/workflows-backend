@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300px" height="270px" viewBox="0 0 300 270" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>UB-Symbol</title>
+    <g id="UB-Brand-Styleguide" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="UB-Symbol" transform="translate(-145.000000, -228.000000)">
+            <g transform="translate(145.000000, 228.000000)" id="Group">
+                <g transform="translate(9.750000, 30.000000)">
+                    <g id="Bildmarke" transform="translate(0.238516, 0.000000)">
+                        <polygon id="Sechseck" fill="#1B3A59" points="142.155477 39.7992547 205.981011 82.253853 145.224774 173.40233 193.190883 197.014134 269.522968 146.708372 262.996542 55.59738 180.117178 14.7879859"></polygon>
+                        <polygon id="Raute" fill="#2E8AE6" points="0 123.704904 123.758754 206.077739 145.4947 173.434892 110.640584 156.264521 104.116886 65.2232713 142.434765 39.9546116 82.4017566 0"></polygon>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

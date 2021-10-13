@@ -1,0 +1,11 @@
+{
+    "name": "Android UBDiag Build",
+    "description": "Builds and uploads an Android app to UBDiag.",
+    "iconName": "ubdiag-icon",
+    "categories": [
+        "Java", "Kotlin"
+    ],
+    "filePatterns": [
+        "gradlew"
+    ]
+}
