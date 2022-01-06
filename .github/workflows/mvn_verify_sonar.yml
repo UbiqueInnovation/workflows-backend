@@ -6,6 +6,10 @@ on:
       parent_pom:
         required: true
         type: string
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name
       java_version:
         default: '17'
         type: string
@@ -23,6 +27,7 @@ env:
     ARTIFACTORY_USER: ${{ secrets.artifactory_user}}
     ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
     SONAR_TOKEN: ${{ secrets.sonar_token }}
+    BRANCH_NAME: ${{ inputs.ref_name }}
 
 jobs:
   code_quality:
