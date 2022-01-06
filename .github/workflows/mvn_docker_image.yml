@@ -13,6 +13,10 @@ on:
       app_directory:
         required: true
         type: string
+      java_version:
+        default: '17'
+        type: string
+        required: false
 
     secrets:
       artifactory_user:
@@ -38,10 +42,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     -   uses: actions/checkout@v2
-    -   name: Set up JDK 17
+    -   name: Set up JDK
         uses: actions/setup-java@v2
         with:
-            java-version: '17'
+            java-version: ${{ inputs.java_version }}
             distribution: 'adopt'
             server-id: ubique-artifactory
             server-username: ARTIFACTORY_USER
@@ -57,7 +61,7 @@ jobs:
             mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.1.4:build \
             -f ${{ inputs.app_directory }}/pom.xml \
             -Dimage=${{ env.ACR_REGISTRY }}/${{ inputs.app_name }}:${{ inputs.ref_name }} \
-            -Djib.from.image=eclipse-temurin:17 \
+            -Djib.from.image=eclipse-temurin:${{ inputs.java_version }} \
             -Djib.to.auth.username=${{ env.ACR_USERNAME }} \
             -Djib.to.auth.password=${{ env.ACR_PASSWORD }} \
             -Djib.container.volumes=/config/ \

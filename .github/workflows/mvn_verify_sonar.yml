@@ -6,6 +6,10 @@ on:
       parent_pom:
         required: true
         type: string
+      java_version:
+        default: '17'
+        type: string
+        required: false
 
     secrets:
       artifactory_user:
@@ -25,10 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-            java-version: '17'
+            java-version: ${{ inputs.java_version }}
             distribution: 'adopt'
             server-id: ubique-artifactory
             server-username: ARTIFACTORY_USER
