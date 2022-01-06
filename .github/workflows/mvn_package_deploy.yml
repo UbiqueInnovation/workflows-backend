@@ -6,7 +6,7 @@ on:
       parent_pom:
         required: true
         type: string
-      package_version:
+      ref_name:
         type: string
         required: true
       java_version:
@@ -43,8 +43,15 @@ jobs:
               path: ~/.m2
               key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
               restore-keys: ${{ runner.os }}-m2
+      -   name: Get version
+          env: 
+            REF_NAME: ${{ inputs.ref_name }}
+          run: |
+            VERSION="${REF_NAME/v/}"
+            echo $VERSION
+            echo "::set-env name=VERSION::$VERSION"
       -   name: Set versions
-          run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=${{ inputs.package_version }} 
+          run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=$VERSION
       -   name: Commit versions
           run: mvn -f ${{ inputs.parent_pom }} versions:commit 
       -   name: Deploy package
