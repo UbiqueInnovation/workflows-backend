@@ -36,30 +36,30 @@ env:
 jobs:
   create-docker-image:
   runs-on: ubuntu-latest
-    steps:
-    -   uses: actions/checkout@v2
-    -   name: Set up JDK 17
-        uses: actions/setup-java@v2
-        with:
-            java-version: '17'
-            distribution: 'adopt'
-            server-id: ubique-artifactory
-            server-username: ARTIFACTORY_USER
-            server-password: ARTIFACTORY_PASSWORD
-    -   name: Cache Maven packages
-        uses: actions/cache@v2
-        with:
-            path: ~/.m2
-            key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-            restore-keys: ${{ runner.os }}-m2
-    -   name: Build and push docker
-        run: |
-            mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.1.4:build \
-            -f ${{ inputs.app_directory }}/pom.xml \
-            -Dimage=${{ env.ACR_REGISTRY }}/${{ inputs.app_name }}:${{ inputs.ref_name }} \
-            -Djib.from.image=eclipse-temurin:17 \
-            -Djib.to.auth.username=${{ env.ACR_USERNAME }} \
-            -Djib.to.auth.password=${{ env.ACR_PASSWORD }} \
-            -Djib.container.volumes=/config/ \
-            -Djib.container.jvmFlags=-XX:MinRAMPercentage=60.0,-XX:MaxRAMPercentage=80.0
+  steps:
+  -   uses: actions/checkout@v2
+  -   name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+          java-version: '17'
+          distribution: 'adopt'
+          server-id: ubique-artifactory
+          server-username: ARTIFACTORY_USER
+          server-password: ARTIFACTORY_PASSWORD
+  -   name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+  -   name: Build and push docker
+      run: |
+          mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.1.4:build \
+          -f ${{ inputs.app_directory }}/pom.xml \
+          -Dimage=${{ env.ACR_REGISTRY }}/${{ inputs.app_name }}:${{ inputs.ref_name }} \
+          -Djib.from.image=eclipse-temurin:17 \
+          -Djib.to.auth.username=${{ env.ACR_USERNAME }} \
+          -Djib.to.auth.password=${{ env.ACR_PASSWORD }} \
+          -Djib.container.volumes=/config/ \
+          -Djib.container.jvmFlags=-XX:MinRAMPercentage=60.0,-XX:MaxRAMPercentage=80.0
 
