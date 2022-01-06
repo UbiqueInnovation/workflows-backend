@@ -6,7 +6,7 @@ on:
       ref:
         required: true
         type: string
-        description: tag or branch
+        description: tag or branch name
       project:
         required: true
         type: string
