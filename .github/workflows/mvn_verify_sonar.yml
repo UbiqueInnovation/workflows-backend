@@ -1,0 +1,43 @@
+name: Run Sonar Cloud Analysis with Maven Verify
+on:
+  workflow_call:
+
+    inputs:
+      parent_pom:
+        required: true
+        type: string
+
+    secrets:
+      artifactory_user:
+        required: true
+      artifactory_password:
+        required: true
+      sonar_token:
+        required: true
+
+env:
+    ARTIFACTORY_USER: ${{ secrets.artifactory_user}}
+    ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
+    SONAR_TOKEN: ${{ secrets.sonar_token }}
+
+jobs:
+  code_quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+            java-version: '17'
+            distribution: 'adopt'
+            server-id: ubique-artifactory
+            server-username: ARTIFACTORY_USER
+            server-password: ARTIFACTORY_PASSWORD
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+            path: ~/.m2
+            key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+            restore-keys: ${{ runner.os }}-m2
+      - name: Run analysis using Maven
+        run: mvn --batch-mode --update-snapshots -f ${{ env.PARENT_POM }} clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
