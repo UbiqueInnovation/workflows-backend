@@ -30,13 +30,6 @@ on:
       acr_password:
         required: true
 
-env:
-  ARTIFACTORY_USER: ${{ secrets.artifactory_user}}
-  ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
-  ACR_REGISTRY: ${{ secrets.acr_registry }}
-  ACR_USERNAME: ${{ secrets.acr_username }}
-  ACR_PASSWORD: ${{ secrets.acr_password }}
-
 jobs:
   create-docker-image:
     runs-on: ubuntu-latest
@@ -60,10 +53,10 @@ jobs:
         run: |
             mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.1.4:build \
             -f ${{ inputs.app_directory }}/pom.xml \
-            -Dimage=${{ env.ACR_REGISTRY }}/${{ inputs.app_name }}:${{ inputs.ref_name }} \
+            -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ inputs.ref_name }} \
             -Djib.from.image=eclipse-temurin:${{ inputs.java_version }} \
-            -Djib.to.auth.username=${{ env.ACR_USERNAME }} \
-            -Djib.to.auth.password=${{ env.ACR_PASSWORD }} \
+            -Djib.to.auth.username=${{ secrets.acr_username }} \
+            -Djib.to.auth.password=${{ secrets.acr_password }} \
             -Djib.container.volumes=/config/ \
             -Djib.container.jvmFlags=-XX:MinRAMPercentage=60.0,-XX:MaxRAMPercentage=80.0
 

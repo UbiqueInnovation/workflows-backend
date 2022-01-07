@@ -17,10 +17,6 @@ on:
       artifactory_password:
         required: true
 
-env:
-    ARTIFACTORY_USER: ${{ secrets.artifactory_user}}
-    ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
-
 jobs:
   build:
       runs-on: ubuntu-latest
@@ -32,8 +28,8 @@ jobs:
               java-version: ${{ inputs.java_version }}
               distribution: 'adopt'
               server-id: ubique-artifactory
-              server-username: ARTIFACTORY_USER
-              server-password: ARTIFACTORY_PASSWORD
+              server-username: ${{ secrets.artifactory_user}}
+              server-password: ${{ secrets.artifactory_password }}
       -   name: Cache Maven packages
           uses: actions/cache@v2
           with:
