@@ -10,11 +10,20 @@ on:
       project:
         required: true
         type: string
-        description: e.g. swisstopo, schweizmobil, ...
+        description: e.g. ub, swisstopo, schweizmobil, ...
+      namespace:
+        required: false
+        type: string
+        description: e.g. ubique, swisstopo, schweizmobil. Set to project if not provided
       module:
         required: true
         type: string
-        description: e.g. importer
+        description: e.g. ws, importer, ...
+      parent_module:
+        default: 'backend'
+        required: false
+        type: string
+        description: e.g. backend
       target:
         required: true
         type: string
@@ -27,41 +36,36 @@ on:
         required: true
       acr_password:
         required: true
-      artifactory_user:
-        required: true
-      artifactory_password:
-        required: true
       az_service_principal:
         required: true
 
 env:
-  PARENT_POM: ${{ inputs.project }}-backend/pom.xml
-  APP_DIRECTORY: ${{ inputs.project }}-backend/${{ inputs.project }}-${{ inputs.module }}
+  APP_DIRECTORY: ${{ inputs.project }}-${{ inputs.parent_module }}/${{ inputs.project }}-${{ inputs.module }}
   APP_NAME: ${{ inputs.project }}-${{ inputs.module }}
-  ACR_REGISTRY: ${{ secrets.acr_registry }}
-  ACR_USERNAME: ${{ secrets.acr_username }}
-  ACR_PASSWORD: ${{ secrets.acr_password }}
-  SECRET: ub-acr-secret
-  UB_ARTIFACTORY_USER: ${{ secrets.artifactory_user}}
-  UB_ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
+  SECRET_NAME: ub-acr-secret
   CLUSTER_NAME: ub-kub-dev
   CLUSTER_RESOURCE_GROUP: ub-schweiz-cluster
-  NAMESPACE: ${{ inputs.project }}
+  NAMESPACE: ${{ inputs.namespace }}
   CONFIG_MAP: ${{ inputs.project }}-${{ inputs.module }}-${{ inputs.target }}-config
-  AZ_SERVICE_PRINCIPAL: ${{ secrets.az_service_principal }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Set Namespace to inputs.project if not set
+        if: inputs.namespace == ''
+        run: |
+          echo "NAMESPACE=${{ inputs.project }}" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: ${{ inputs.ref }}
+
       - name: Set AKS context
         uses: azure/aks-set-context@v1
         with:
-          creds: '${{ env.AZ_SERVICE_PRINCIPAL }}'
+          creds: '${{ secrets.az_service_principal }}'
           cluster-name: ${{ env.CLUSTER_NAME }}
           resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
 
@@ -76,10 +80,10 @@ jobs:
       - name: Create image pull secret for ACR
         uses: azure/k8s-create-secret@v1
         with:
-          container-registry-url: ${{ env.ACR_REGISTRY }}
-          container-registry-username: ${{ env.ACR_USERNAME }}
-          container-registry-password: ${{ env.ACR_PASSWORD }}
-          secret-name: ${{ env.SECRET }}
+          container-registry-url: ${{ secrets.acr_registry }}
+          container-registry-username: ${{ secrets.acr_username }}
+          container-registry-password: ${{ secrets.acr_password }}
+          secret-name: ${{ env.SECRET_NAME }}
           namespace: ${{ env.NAMESPACE }}
 
       - name: Apply Deployment and Service config
@@ -89,9 +93,9 @@ jobs:
             ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/deployment.yaml
             ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/service.yaml
           images: |
-            ${{ env.ACR_REGISTRY }}/${{ env.APP_NAME }}:${{ inputs.ref }}
+            ${{ secrets.acr_registry }}/${{ env.APP_NAME }}:${{ inputs.ref }}
           imagepullsecrets: |
-            ${{ env.SECRET }}
+            ${{ env.SECRET_NAME }}
           namespace: ${{ env.NAMESPACE }}
 
       - name: Apply Ingress config
@@ -100,5 +104,5 @@ jobs:
           manifests: |
             ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/ingress.yaml
           imagepullsecrets: |
-            ${{ env.SECRET }}
+            ${{ env.SECRET_NAME }}
           namespace: ingress-basic

@@ -20,10 +20,6 @@ on:
       artifactory_password:
         required: true
 
-env:
-    ARTIFACTORY_USER: ${{ secrets.artifactory_user}}
-    ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
-
 jobs:
   deploy:
       runs-on: ubuntu-latest
@@ -35,8 +31,8 @@ jobs:
               java-version: ${{ inputs.java_version }}
               distribution: 'adopt'
               server-id: ubique-artifactory
-              server-username: ARTIFACTORY_USER
-              server-password: ARTIFACTORY_PASSWORD
+              server-username: ${{ secrets.artifactory_user}}
+              server-password: ${{ secrets.artifactory_password }}
       -   name: Cache Maven packages
           uses: actions/cache@v2
           with:
@@ -44,13 +40,13 @@ jobs:
               key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
               restore-keys: ${{ runner.os }}-m2
       -   name: Get version
-          env: 
+          env:
             REF_NAME: ${{ inputs.ref_name }}
           run: echo "VERSION=${REF_NAME/v/}" >> $GITHUB_ENV
       -   name: Set versions
           run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=$VERSION
       -   name: Commit versions
-          run: mvn -f ${{ inputs.parent_pom }} versions:commit 
+          run: mvn -f ${{ inputs.parent_pom }} versions:commit
       -   name: Deploy package
           env:
             MAVEN_USERNAME: ${{ secrets.artifactory_user }}
