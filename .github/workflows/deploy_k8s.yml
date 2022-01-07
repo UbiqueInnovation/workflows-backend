@@ -21,7 +21,7 @@ on:
         description: e.g. ws, importer, ...
       parent_module:
         default: 'backend'
-        required: true
+        required: false
         type: string
         description: e.g. backend
       target:
