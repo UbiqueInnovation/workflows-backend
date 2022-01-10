@@ -54,6 +54,16 @@ jobs:
             path: ~/.m2
             key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
             restore-keys: ${{ runner.os }}-m2
+    -   name: Get version
+        env:
+            REF_NAME: ${{ inputs.ref_name }}
+        run: echo "VERSION=${REF_NAME/v/}" >> $GITHUB_ENV
+    -   name: Set versions
+        run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=$VERSION
+    -   name: Commit versions
+        run: mvn -f ${{ inputs.parent_pom }} versions:commit
+    -   name: Build with Maven
+        run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ inputs.parent_pom }}
     -   name: Build and push docker
         run: |
             mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.1.4:build \
