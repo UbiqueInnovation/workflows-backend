@@ -3,6 +3,10 @@ on:
   workflow_call:
 
     inputs:
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name
       parent_pom:
         required: true
         type: string
