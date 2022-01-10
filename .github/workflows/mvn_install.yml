@@ -4,9 +4,10 @@ on:
 
     inputs:
       ref_name:
-        required: true
+        required: false
+        default: ''
         type: string
-        description: tag or branch name
+        description: tag or branch name, used for mvn versions:set
       parent_pom:
         required: true
         type: string
