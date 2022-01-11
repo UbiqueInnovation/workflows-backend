@@ -34,7 +34,7 @@ jobs:
               distribution: 'adopt'
               server-id: ubique-artifactory
               server-username: ${{ secrets.artifactory_user}}
-              server-password: <![CDATA[${{ secrets.artifactory_password }}]]>
+              server-password: ${{ secrets.artifactory_password }}
       -   name: Cache Maven packages
           uses: actions/cache@v2
           with:
