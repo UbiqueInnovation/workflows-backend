@@ -3,27 +3,22 @@ on:
     workflow_call:
 
         inputs:
-            ref:
+            ref_name:
                 required: true
                 type: string
                 description: tag or branch name
-            project:
-                required: true
-                type: string
-                description: e.g. ub, swisstopo, schweizmobil, ...
             namespace:
-                required: false
-                type: string
-                description: e.g. ubique, swisstopo, schweizmobil. Set to project if not provided
-            module:
                 required: true
                 type: string
-                description: e.g. ws, importer, ...
-            parent_module:
-                default: 'backend'
-                required: false
+                description: e.g. ubique, swisstopo, schweizmobil
+            app_name:
+                required: true
                 type: string
-                description: e.g. backend
+                description: e.g. ub-pushserver, swisstopo-ws, schweizmobil-ws
+            app_directory:
+                required: true
+                type: string
+                description: e.g. ub-pushservive/ub-pushserver, swisstopo-backend/swisstopo-ws, schweizmobil-backend/schweizmobil-ws
             target:
                 required: true
                 type: string
@@ -40,23 +35,15 @@ on:
                 required: true
 
 env:
-    APP_DIRECTORY: ${{ inputs.project }}-${{ inputs.parent_module }}/${{ inputs.project }}-${{ inputs.module }}
-    APP_NAME: ${{ inputs.project }}-${{ inputs.module }}
     SECRET_NAME: ub-acr-secret
     CLUSTER_NAME: ub-kub-dev
     CLUSTER_RESOURCE_GROUP: ub-schweiz-cluster
-    NAMESPACE: ${{ inputs.namespace }}
-    CONFIG_MAP: ${{ inputs.project }}-${{ inputs.module }}-${{ inputs.target }}-config
+    CONFIG_MAP: ${{ inputs.app_name }}-${{ inputs.target }}-config
 
 jobs:
     deploy:
         runs-on: ubuntu-latest
         steps:
-            -   name: Set Namespace to inputs.project if not set
-                if: inputs.namespace == ''
-                run: |
-                    echo "NAMESPACE=${{ inputs.project }}" >> $GITHUB_ENV
-
             -   name: Checkout
                 uses: actions/checkout@v2
                 with:
@@ -71,11 +58,11 @@ jobs:
 
             -   name: Create namespace (if it doesn't exist)
                 run: |
-                    kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
+                    kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create configmap
                 run: |
-                    kubectl create configmap --namespace ${{ env.NAMESPACE }} ${{ env.CONFIG_MAP }} --from-file ${{ env.APP_DIRECTORY }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ env.CONFIG_MAP }} --from-file ${{ env.inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create image pull secret for ACR
                 uses: azure/k8s-create-secret@v1
@@ -84,25 +71,25 @@ jobs:
                     container-registry-username: ${{ secrets.acr_username }}
                     container-registry-password: ${{ secrets.acr_password }}
                     secret-name: ${{ env.SECRET_NAME }}
-                    namespace: ${{ env.NAMESPACE }}
+                    namespace: ${{ inputs.namespace }}
 
             -   name: Apply Deployment and Service config
                 uses: azure/k8s-deploy@v1
                 with:
                     manifests: |
-                        ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/deployment.yaml
-                        ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/service.yaml
+                        ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
+                        ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/service.yaml
                     images: |
-                        ${{ secrets.acr_registry }}/${{ env.APP_NAME }}:${{ inputs.ref }}
+                        ${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ inputs.ref }}
                     imagepullsecrets: |
                         ${{ env.SECRET_NAME }}
-                    namespace: ${{ env.NAMESPACE }}
+                    namespace: ${{ inputs.namespace }}
 
             -   name: Apply Ingress config
                 uses: azure/k8s-deploy@v1
                 with:
                     manifests: |
-                        ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/ingress.yaml
+                        ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/ingress.yaml
                     imagepullsecrets: |
                         ${{ env.SECRET_NAME }}
                     namespace: ingress-basic
