@@ -62,7 +62,7 @@ jobs:
 
             -   name: Create configmap
                 run: |
-                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ env.CONFIG_MAP }} --from-file ${{ env.inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ env.CONFIG_MAP }} --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create image pull secret for ACR
                 uses: azure/k8s-create-secret@v1
