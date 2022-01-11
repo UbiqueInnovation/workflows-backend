@@ -47,7 +47,7 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v2
                 with:
-                    ref: ${{ inputs.ref }}
+                    ref: ${{ inputs.ref_name }}
 
             -   name: Set AKS context
                 uses: azure/aks-set-context@v1
@@ -80,7 +80,7 @@ jobs:
                         ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
                         ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/service.yaml
                     images: |
-                        ${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ inputs.ref }}
+                        ${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ inputs.ref_name }}
                     imagepullsecrets: |
                         ${{ env.SECRET_NAME }}
                     namespace: ${{ inputs.namespace }}
