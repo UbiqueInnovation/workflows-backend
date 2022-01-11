@@ -1,58 +1,64 @@
 name: Run Sonar Cloud Analysis with Maven Verify
 on:
-  workflow_call:
+    workflow_call:
 
-    inputs:
-      parent_pom:
-        required: true
-        type: string
-      ref_name:
-        required: true
-        type: string
-        description: tag or branch name
-      java_version:
-        default: '17'
-        type: string
-        required: false
+        inputs:
+            parent_pom:
+                required: true
+                type: string
+            ref_name:
+                required: true
+                type: string
+                description: tag or branch name
+            java_version:
+                default: '17'
+                type: string
+                required: false
 
-    secrets:
-      artifactory_user:
-        required: true
-      artifactory_password:
-        required: true
-      sonar_token:
-        required: true
+        secrets:
+            artifactory_user:
+                required: true
+            artifactory_password:
+                required: true
+            artifactory_url:
+                required: true
+            artifactory_repo:
+                required: true
+            sonar_token:
+                required: true
 
 env:
     SONAR_TOKEN: ${{ secrets.sonar_token }}
     BRANCH_NAME: ${{ inputs.ref_name }}
 
 jobs:
-  code_quality:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-            java-version: ${{ inputs.java_version }}
-            distribution: 'adopt'
-            server-id: ubique-artifactory
-            server-username: ${{ secrets.artifactory_user}}
-            server-password: ${{ secrets.artifactory_password }}
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Maven packages
-        uses: actions/cache@v2
-        with:
-            path: ~/.m2
-            key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-            restore-keys: ${{ runner.os }}-m2
-      - name: Run analysis using Maven
-        run: mvn --batch-mode --update-snapshots -f ${{ inputs.parent_pom }} clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+    code_quality:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+            -   name: Set up JDK
+                uses: actions/setup-java@v2
+                with:
+                    java-version: ${{ inputs.java_version }}
+                    distribution: 'adopt'
+            -   name: 'Create settings.xml'
+                uses: whelk-io/maven-settings-xml-action@v4
+                with:
+                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
+                    repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
+            -   name: Cache SonarCloud packages
+                uses: actions/cache@v2
+                with:
+                    path: ~/.sonar/cache
+                    key: ${{ runner.os }}-sonar
+                    restore-keys: ${{ runner.os }}-sonar
+            -   name: Cache Maven packages
+                uses: actions/cache@v2
+                with:
+                    path: ~/.m2
+                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: ${{ runner.os }}-m2
+            -   name: Run analysis using Maven
+                run: mvn --batch-mode --update-snapshots -f ${{ inputs.parent_pom }} clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar

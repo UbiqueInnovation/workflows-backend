@@ -1,108 +1,108 @@
 name: Deploy on Kubernetes Cluster
 on:
-  workflow_call:
+    workflow_call:
 
-    inputs:
-      ref:
-        required: true
-        type: string
-        description: tag or branch name
-      project:
-        required: true
-        type: string
-        description: e.g. ub, swisstopo, schweizmobil, ...
-      namespace:
-        required: false
-        type: string
-        description: e.g. ubique, swisstopo, schweizmobil. Set to project if not provided
-      module:
-        required: true
-        type: string
-        description: e.g. ws, importer, ...
-      parent_module:
-        default: 'backend'
-        required: false
-        type: string
-        description: e.g. backend
-      target:
-        required: true
-        type: string
-        description: dev|prod
+        inputs:
+            ref:
+                required: true
+                type: string
+                description: tag or branch name
+            project:
+                required: true
+                type: string
+                description: e.g. ub, swisstopo, schweizmobil, ...
+            namespace:
+                required: false
+                type: string
+                description: e.g. ubique, swisstopo, schweizmobil. Set to project if not provided
+            module:
+                required: true
+                type: string
+                description: e.g. ws, importer, ...
+            parent_module:
+                default: 'backend'
+                required: false
+                type: string
+                description: e.g. backend
+            target:
+                required: true
+                type: string
+                description: dev|prod
 
-    secrets:
-      acr_registry:
-        required: true
-      acr_username:
-        required: true
-      acr_password:
-        required: true
-      az_service_principal:
-        required: true
+        secrets:
+            acr_registry:
+                required: true
+            acr_username:
+                required: true
+            acr_password:
+                required: true
+            az_service_principal:
+                required: true
 
 env:
-  APP_DIRECTORY: ${{ inputs.project }}-${{ inputs.parent_module }}/${{ inputs.project }}-${{ inputs.module }}
-  APP_NAME: ${{ inputs.project }}-${{ inputs.module }}
-  SECRET_NAME: ub-acr-secret
-  CLUSTER_NAME: ub-kub-dev
-  CLUSTER_RESOURCE_GROUP: ub-schweiz-cluster
-  NAMESPACE: ${{ inputs.namespace }}
-  CONFIG_MAP: ${{ inputs.project }}-${{ inputs.module }}-${{ inputs.target }}-config
+    APP_DIRECTORY: ${{ inputs.project }}-${{ inputs.parent_module }}/${{ inputs.project }}-${{ inputs.module }}
+    APP_NAME: ${{ inputs.project }}-${{ inputs.module }}
+    SECRET_NAME: ub-acr-secret
+    CLUSTER_NAME: ub-kub-dev
+    CLUSTER_RESOURCE_GROUP: ub-schweiz-cluster
+    NAMESPACE: ${{ inputs.namespace }}
+    CONFIG_MAP: ${{ inputs.project }}-${{ inputs.module }}-${{ inputs.target }}-config
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set Namespace to inputs.project if not set
-        if: inputs.namespace == ''
-        run: |
-          echo "NAMESPACE=${{ inputs.project }}" >> $GITHUB_ENV
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Set Namespace to inputs.project if not set
+                if: inputs.namespace == ''
+                run: |
+                    echo "NAMESPACE=${{ inputs.project }}" >> $GITHUB_ENV
 
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ inputs.ref }}
+            -   name: Checkout
+                uses: actions/checkout@v2
+                with:
+                    ref: ${{ inputs.ref }}
 
-      - name: Set AKS context
-        uses: azure/aks-set-context@v1
-        with:
-          creds: '${{ secrets.az_service_principal }}'
-          cluster-name: ${{ env.CLUSTER_NAME }}
-          resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+            -   name: Set AKS context
+                uses: azure/aks-set-context@v1
+                with:
+                    creds: '${{ secrets.az_service_principal }}'
+                    cluster-name: ${{ env.CLUSTER_NAME }}
+                    resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
 
-      - name: Create namespace (if it doesn't exist)
-        run: |
-          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
+            -   name: Create namespace (if it doesn't exist)
+                run: |
+                    kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
 
-      - name: Create configmap
-        run: |
-          kubectl create configmap --namespace ${{ env.NAMESPACE }} ${{ env.CONFIG_MAP }} --from-file ${{ env.APP_DIRECTORY }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+            -   name: Create configmap
+                run: |
+                    kubectl create configmap --namespace ${{ env.NAMESPACE }} ${{ env.CONFIG_MAP }} --from-file ${{ env.APP_DIRECTORY }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
-      - name: Create image pull secret for ACR
-        uses: azure/k8s-create-secret@v1
-        with:
-          container-registry-url: ${{ secrets.acr_registry }}
-          container-registry-username: ${{ secrets.acr_username }}
-          container-registry-password: ${{ secrets.acr_password }}
-          secret-name: ${{ env.SECRET_NAME }}
-          namespace: ${{ env.NAMESPACE }}
+            -   name: Create image pull secret for ACR
+                uses: azure/k8s-create-secret@v1
+                with:
+                    container-registry-url: ${{ secrets.acr_registry }}
+                    container-registry-username: ${{ secrets.acr_username }}
+                    container-registry-password: ${{ secrets.acr_password }}
+                    secret-name: ${{ env.SECRET_NAME }}
+                    namespace: ${{ env.NAMESPACE }}
 
-      - name: Apply Deployment and Service config
-        uses: azure/k8s-deploy@v1
-        with:
-          manifests: |
-            ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/deployment.yaml
-            ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/service.yaml
-          images: |
-            ${{ secrets.acr_registry }}/${{ env.APP_NAME }}:${{ inputs.ref }}
-          imagepullsecrets: |
-            ${{ env.SECRET_NAME }}
-          namespace: ${{ env.NAMESPACE }}
+            -   name: Apply Deployment and Service config
+                uses: azure/k8s-deploy@v1
+                with:
+                    manifests: |
+                        ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/deployment.yaml
+                        ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/service.yaml
+                    images: |
+                        ${{ secrets.acr_registry }}/${{ env.APP_NAME }}:${{ inputs.ref }}
+                    imagepullsecrets: |
+                        ${{ env.SECRET_NAME }}
+                    namespace: ${{ env.NAMESPACE }}
 
-      - name: Apply Ingress config
-        uses: azure/k8s-deploy@v1
-        with:
-          manifests: |
-            ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/ingress.yaml
-          imagepullsecrets: |
-            ${{ env.SECRET_NAME }}
-          namespace: ingress-basic
+            -   name: Apply Ingress config
+                uses: azure/k8s-deploy@v1
+                with:
+                    manifests: |
+                        ${{ env.APP_DIRECTORY }}/manifests/${{ inputs.target }}/ingress.yaml
+                    imagepullsecrets: |
+                        ${{ env.SECRET_NAME }}
+                    namespace: ingress-basic

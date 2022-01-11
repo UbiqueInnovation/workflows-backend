@@ -1,54 +1,60 @@
 name: Deploy Maven Package
 on:
-  workflow_call:
+    workflow_call:
 
-    inputs:
-      parent_pom:
-        required: true
-        type: string
-      ref_name:
-        type: string
-        required: true
-      java_version:
-        default: '17'
-        type: string
-        required: false
+        inputs:
+            parent_pom:
+                required: true
+                type: string
+            ref_name:
+                type: string
+                required: true
+            java_version:
+                default: '17'
+                type: string
+                required: false
 
-    secrets:
-      artifactory_user:
-        required: true
-      artifactory_password:
-        required: true
+        secrets:
+            artifactory_user:
+                required: true
+            artifactory_password:
+                required: true
+            artifactory_url:
+                required: true
+            artifactory_repo:
+                required: true
 
 jobs:
-  deploy:
-      runs-on: ubuntu-latest
-      steps:
-      -   uses: actions/checkout@v2
-      -   name: Set up JDK
-          uses: actions/setup-java@v2
-          with:
-              java-version: ${{ inputs.java_version }}
-              distribution: 'adopt'
-              server-id: ubique-artifactory
-              server-username: ${{ secrets.artifactory_user}}
-              server-password: ${{ secrets.artifactory_password }}
-      -   name: Cache Maven packages
-          uses: actions/cache@v2
-          with:
-              path: ~/.m2
-              key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-              restore-keys: ${{ runner.os }}-m2
-      -   name: Get version
-          env:
-            REF_NAME: ${{ inputs.ref_name }}
-          run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
-      -   name: Set versions
-          run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=$VERSION
-      -   name: Commit versions
-          run: mvn -f ${{ inputs.parent_pom }} versions:commit
-      -   name: Deploy package
-          env:
-            MAVEN_USERNAME: ${{ secrets.artifactory_user }}
-            MAVEN_PASSWORD: ${{ secrets.artifactory_password }}
-          run: mvn -f ${{ inputs.parent_pom }} package deploy
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Set up JDK
+                uses: actions/setup-java@v2
+                with:
+                    java-version: ${{ inputs.java_version }}
+                    distribution: 'adopt'
+            -   name: 'Create settings.xml'
+                uses: whelk-io/maven-settings-xml-action@v4
+                with:
+                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
+                    repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
+            -   name: Cache Maven packages
+                uses: actions/cache@v2
+                with:
+                    path: ~/.m2
+                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: ${{ runner.os }}-m2
+            -   name: Get version
+                env:
+                    REF_NAME: ${{ inputs.ref_name }}
+                run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
+            -   name: Set versions
+                run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=$VERSION
+            -   name: Commit versions
+                run: mvn -f ${{ inputs.parent_pom }} versions:commit
+            -   name: Deploy package
+                env:
+                    MAVEN_USERNAME: ${{ secrets.artifactory_user }}
+                    MAVEN_PASSWORD: ${{ secrets.artifactory_password }}
+                run: mvn -f ${{ inputs.parent_pom }} package deploy
