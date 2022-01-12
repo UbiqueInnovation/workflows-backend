@@ -30,6 +30,8 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ inputs.ref_name }}
             -   name: Set up JDK
                 uses: actions/setup-java@v2
                 with:
@@ -58,6 +60,4 @@ jobs:
                 env:
                     ARTIFACTORY_USER: ${{ secrets.artifactory_user }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
-                    UB_ARTIFACTORY_USER: ${{ secrets.artifactory_user }}
-                    UB_ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}                     
                 run: mvn -f ${{ inputs.parent_pom }} package deploy
