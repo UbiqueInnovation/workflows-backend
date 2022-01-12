@@ -1,0 +1,33 @@
+name: Runs Maven Install
+on:
+    workflow_call:
+
+        inputs:
+            ref_name:
+                required: false
+                default: ''
+                type: string
+                description: tag or branch name, used for mvn versions:set
+            node_version:
+                default: '16'
+                type: string
+                required: false
+            cache_dependency_path:
+                default: 'yarn.lock'
+                type: string
+                required: false
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ inputs.ref_name }}
+            -   uses: actions/setup-node@v2
+                with:
+                    node-version: '${{ inputs.node_version }}'
+                    check-lastest: true
+                    cache: 'yarn'
+                    cache-dependency-path: '${{ inputs.cache_dependency_path }}'
+            -   run: yarn
