@@ -27,7 +27,7 @@ jobs:
             -   uses: actions/setup-node@v2
                 with:
                     node-version: '${{ inputs.node_version }}'
-                    check-lastest: true
+                    check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.cache_dependency_path }}'
             -   run: yarn
