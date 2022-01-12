@@ -6,6 +6,7 @@ on:
             parent_pom:
                 required: true
                 type: string
+                description: tag or branch name, used for mvn versions:set
             ref_name:
                 type: string
                 required: true
