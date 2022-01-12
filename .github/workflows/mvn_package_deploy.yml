@@ -54,7 +54,4 @@ jobs:
             -   name: Commit versions
                 run: mvn -f ${{ inputs.parent_pom }} versions:commit
             -   name: Deploy package
-                env:
-                    MAVEN_USERNAME: ${{ secrets.artifactory_user }}
-                    MAVEN_PASSWORD: ${{ secrets.artifactory_password }}
                 run: mvn -f ${{ inputs.parent_pom }} package deploy
