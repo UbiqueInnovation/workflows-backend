@@ -56,6 +56,8 @@ jobs:
                 run: mvn -f ${{ inputs.parent_pom }} versions:commit
             -   name: Deploy package
                 env:
-                    ARTIFACTORY_USER: WTF
-                    ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}            
+                    ARTIFACTORY_USER: ${{ secrets.artifactory_user }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
+                    UB_ARTIFACTORY_USER: ${{ secrets.artifactory_user }}
+                    UB_ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}                     
                 run: mvn -f ${{ inputs.parent_pom }} package deploy
