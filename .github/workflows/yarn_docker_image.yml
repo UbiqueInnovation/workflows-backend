@@ -45,9 +45,10 @@ jobs:
 
             -   uses: actions/setup-node@v2
                 with:
-                    node-version: '16'
+                    node-version: '${{ inputs.node_version }}'
+                    check-latest: true
                     cache: 'yarn'
-                    cache-dependency-path: yarn.lock
+                    cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
             -   name: Build using yarn
                 run: |
                     yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
