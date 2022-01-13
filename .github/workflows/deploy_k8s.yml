@@ -23,6 +23,16 @@ on:
                 required: true
                 type: string
                 description: dev|prod
+            cluster:
+              default: 'ub-kub-dev'  
+              type: string
+              required: true
+              description: 'name of the cluster (default: ub-kub-dev)'
+            cluster-resource-group:
+              default: 'ub-schweiz-cluster'  
+              type: string
+              required: true
+              description: 'resource group of the cluster (default: ub-schweiz-cluster)'
 
         secrets:
             acr_registry:
@@ -36,8 +46,8 @@ on:
 
 env:
     SECRET_NAME: ub-acr-secret
-    CLUSTER_NAME: ub-kub-dev
-    CLUSTER_RESOURCE_GROUP: ub-schweiz-cluster
+    CLUSTER_NAME: ${{ inputs.cluster }}
+    CLUSTER_RESOURCE_GROUP: ${{ inputs.cluster-resource-group }}
     CONFIG_MAP: ${{ inputs.app_name }}-${{ inputs.target }}-config
 
 jobs:
