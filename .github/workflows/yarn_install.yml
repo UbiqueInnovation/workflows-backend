@@ -16,7 +16,7 @@ on:
                 default: 'yarn.lock'
                 type: string
                 required: false
-                description: path to e.g. yarn.lock from ${app_directory}
+                description: path to e.g. yarn.lock from ${app_directory}/
             app_directory:
                 required: true
                 type: string

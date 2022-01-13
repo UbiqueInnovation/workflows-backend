@@ -51,6 +51,7 @@ jobs:
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
             -   name: Build using yarn
                 run: |
+                    yarn --cwd ${{ inputs.app_directory }}
                     yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
                     tar -czvf docker/${{ secrets.app_name }}/bin/${{ secrets.app_name }}.tar.gz -C ${{ secrets.app_directory }}/build .
 
