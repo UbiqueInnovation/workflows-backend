@@ -29,15 +29,20 @@ on:
                 type: string
                 description: optioanl suffix to the docker image name to be used
             cluster:
-              default: 'ub-kub-dev'
-              type: string
-              required: true
-              description: 'name of the cluster (default: ub-kub-dev)'
+                default: 'ub-kub-dev'
+                type: string
+                required: true
+                description: 'name of the cluster (default: ub-kub-dev)'
             cluster-resource-group:
-              default: 'ub-schweiz-cluster'
-              type: string
-              required: true
-              description: 'resource group of the cluster (default: ub-schweiz-cluster)'
+                default: 'ub-schweiz-cluster'
+                type: string
+                required: true
+                description: 'resource group of the cluster (default: ub-schweiz-cluster)'
+            pull_secret_name:
+                default: 'ub-acr-secret'
+                type: string
+                required: true
+                description: 'image pull secret to use (default: ub-acr-secret)'
 
         secrets:
             acr_registry:
@@ -48,12 +53,6 @@ on:
                 required: true
             az_service_principal:
                 required: true
-
-env:
-    SECRET_NAME: ub-acr-secret
-    CLUSTER_NAME: ${{ inputs.cluster }}
-    CLUSTER_RESOURCE_GROUP: ${{ inputs.cluster-resource-group }}
-    CONFIG_MAP: ${{ inputs.app_name }}-${{ inputs.target }}-config
 
 jobs:
     deploy:
@@ -67,8 +66,8 @@ jobs:
                 uses: azure/aks-set-context@v1
                 with:
                     creds: '${{ secrets.az_service_principal }}'
-                    cluster-name: ${{ env.CLUSTER_NAME }}
-                    resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+                    cluster-name: ${{ inputs.cluster }}
+                    resource-group: ${{ inputs.cluster-resource-group }}
 
             -   name: Create namespace (if it doesn't exist)
                 run: |
@@ -76,7 +75,7 @@ jobs:
 
             -   name: Create configmap
                 run: |
-                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ env.CONFIG_MAP }} --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create image pull secret for ACR
                 uses: azure/k8s-create-secret@v1
@@ -84,7 +83,7 @@ jobs:
                     container-registry-url: ${{ secrets.acr_registry }}
                     container-registry-username: ${{ secrets.acr_username }}
                     container-registry-password: ${{ secrets.acr_password }}
-                    secret-name: ${{ env.SECRET_NAME }}
+                    secret-name: ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
 
             -   name: Apply Deployment and Service config
@@ -96,7 +95,7 @@ jobs:
                     images: |
                         ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ inputs.ref_name }}
                     imagepullsecrets: |
-                        ${{ env.SECRET_NAME }}
+                        ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
 
             -   name: Apply Ingress config
@@ -105,5 +104,5 @@ jobs:
                     manifests: |
                         ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/ingress.yaml
                     imagepullsecrets: |
-                        ${{ env.SECRET_NAME }}
+                        ${{ inputs.pull_secret_name }}
                     namespace: ingress-basic
