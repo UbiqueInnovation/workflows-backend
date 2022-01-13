@@ -31,8 +31,6 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
-                with:
-                    ref: ${{ inputs.ref_name }}
             -   name: Set up JDK
                 uses: actions/setup-java@v2
                 with:

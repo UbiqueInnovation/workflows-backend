@@ -38,7 +38,8 @@ jobs:
     create-docker-image:
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v2
+            -   name: Checkout code
+                uses: actions/checkout@v2
                 with:
                     ref: ${{ inputs.ref_name }}
             -   name: Git Status
