@@ -31,17 +31,17 @@ on:
             cluster:
                 default: 'ub-kub-dev'
                 type: string
-                required: true
+                required: false
                 description: 'name of the cluster (default: ub-kub-dev)'
             cluster-resource-group:
                 default: 'ub-schweiz-cluster'
                 type: string
-                required: true
+                required: false
                 description: 'resource group of the cluster (default: ub-schweiz-cluster)'
             pull_secret_name:
                 default: 'ub-acr-secret'
                 type: string
-                required: true
+                required: false
                 description: 'image pull secret to use (default: ub-acr-secret)'
 
         secrets:
