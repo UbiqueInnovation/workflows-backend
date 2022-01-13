@@ -79,7 +79,7 @@ jobs:
                     kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create configmap
-                if: ${{ inputs.with_configmap == 'true' }}
+                if: ${{ inputs.with_configmap == true }}
                 run: |
                     kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
