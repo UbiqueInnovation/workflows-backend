@@ -55,11 +55,6 @@ jobs:
                     yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/build .
 
-            -   name: Get version
-                env:
-                    REF_NAME: ${{ inputs.ref_name }}
-                run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
-
             -   uses: azure/docker-login@v1
                 with:
                     login-server: ${{ secrets.acr_registry }}
@@ -67,5 +62,5 @@ jobs:
                     password: ${{ secrets.acr_password }}
 
             -   run: |
-                    docker build -t ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ env.VERSION }} docker/${{ inputs.app_name }}
-                    docker image push ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ env.VERSION }}
+                    docker build -t ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ inputs.ref_name }} docker/${{ inputs.app_name }}
+                    docker image push ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ inputs.ref_name }}
