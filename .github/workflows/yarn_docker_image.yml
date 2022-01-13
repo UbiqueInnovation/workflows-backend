@@ -67,5 +67,5 @@ jobs:
                     password: ${{ secrets.acr_password }}
 
             -   run: |
-                    docker build -t build ${{ inputs.app_name }}
+                    docker build -t build docker/${{ inputs.app_name }}
                     docker push ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ env.VERSION }}
