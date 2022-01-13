@@ -23,7 +23,7 @@ on:
                 required: true
                 type: string
                 description: dev|prod
-            image_name_suffix:
+            image_name_postfix:
                 required: false
                 default: ''
                 type: string
