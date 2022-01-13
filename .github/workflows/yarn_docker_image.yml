@@ -48,6 +48,7 @@ jobs:
                     node-version: '16'
                     cache: 'yarn'
                     cache-dependency-path: yarn.lock
+            -   name: Build using yarn
                 run: |
                     yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
                     tar -czvf docker/${{ secrets.app_name }}/bin/${{ secrets.app_name }}.tar.gz -C ${{ secrets.app_directory }}/build .
