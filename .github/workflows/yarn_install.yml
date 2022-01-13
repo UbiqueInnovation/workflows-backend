@@ -16,6 +16,10 @@ on:
                 default: 'yarn.lock'
                 type: string
                 required: false
+            app_directory:
+                required: true
+                type: string
+                description: directory that contains the package.json
 
 jobs:
     build:
@@ -30,4 +34,4 @@ jobs:
                     check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.cache_dependency_path }}'
-            -   run: yarn
+            -   run: yarn --cwd ${{ inputs.app_directory }}

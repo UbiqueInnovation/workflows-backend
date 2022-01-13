@@ -1,0 +1,68 @@
+name: Build and Push Docker Images on release/
+on:
+    workflow_call:
+
+        inputs:
+            ref_name:
+                required: true
+                type: string
+                description: tag or branch name
+            node_version:
+                default: '16'
+                type: string
+                required: false
+            cache_dependency_path:
+                default: 'yarn.lock'
+                type: string
+                required: false
+            release_env:
+                required: true
+                type: string
+                description: 'ENV to build. dev|prod. runs "yarn run build-${release_env}"'
+            app_name:
+                required: true
+                type: string
+                description: name to tag the image with
+            app_directory:
+                required: true
+                type: string
+                description: directory that contains the package.json
+
+        secrets:
+            acr_registry:
+                required: true
+            acr_username:
+                required: true
+            acr_password:
+                required: true
+
+jobs:
+    build:
+        name: Build Project
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+
+            -   uses: actions/setup-node@v2
+                with:
+                    node-version: '16'
+                    cache: 'yarn'
+                    cache-dependency-path: yarn.lock
+                run: |
+                    yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
+                    tar -czvf docker/${{ secrets.app_name }}/bin/${{ secrets.app_name }}.tar.gz -C ${{ secrets.app_directory }}/build .
+
+            -   name: Get version
+                env:
+                    REF_NAME: ${{ inputs.ref_name }}
+                run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
+
+            -   uses: azure/docker-login@v1
+                with:
+                    login-server: ${{ secrets.acr_registry }}
+                    username: ${{ secrets.acr_username }}
+                    password: ${{ secrets.acr_password }}
+
+            -   run: |
+                    docker build -t build ${{ inputs.app_name }}-${{ inputs.release_env }} ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ env.VERSION }}
+                    docker push ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ env.VERSION }}
