@@ -27,6 +27,11 @@ on:
                 required: true
                 type: string
                 description: directory that contains the package.json
+            poeditor_translations_loc:
+                required: false
+                default: ''
+                type: string
+                description: e.g. ${app_directory}/getTranslations.py
 
         secrets:
             acr_registry:
@@ -35,6 +40,12 @@ on:
                 required: true
             acr_password:
                 required: true
+            poeditor_api_key:
+                required: false
+                description: necessary if input.poeditor_translations_loc is used
+            poeditor_project_id:
+                required: false
+                description: necessary if input.poeditor_translations_loc is used
 
 jobs:
     build:
@@ -49,6 +60,17 @@ jobs:
                     check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
+
+            -   uses: actions/setup-python@v2
+                if: ${{ inputs.poeditor_translations_loc != '' }}
+                with:
+                    python-version: '3.x'
+
+            -   name: Run getTranslations.py
+                if: ${{ inputs.poeditor_translations_loc != '' }}
+                run: |
+                    python ${{ inputs.poeditor_translations_loc }} ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
+
             -   name: Build using yarn
                 run: |
                     yarn --cwd ${{ inputs.app_directory }}
