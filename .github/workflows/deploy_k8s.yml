@@ -92,20 +92,50 @@ jobs:
                     secret-name: ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
 
-            -   name: Apply Deployment and Service config
+            -   name: Check deployment.yaml existence
+                id: check_deployment_file
+                uses: andstor/file-existence-action@v1
+                with:
+                    files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml"
+                    
+            -   name: Apply Deployment config
                 uses: azure/k8s-deploy@v1
+                if: steps.check_deployment_file.outputs.files_exists == 'true'
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
-                        ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/service.yaml
                     images: |
                         ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ inputs.ref_name }}
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
+                    
+            
+            -   name: Check service.yaml existence
+                id: check_service_file
+                uses: andstor/file-existence-action@v1
+                with:
+                    files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/service.yaml"        
+            
+            -   name: Apply Service config
+                uses: azure/k8s-deploy@v1
+                if: steps.check_service_file.outputs.files_exists == 'true'
+                with:
+                    manifests: |
+                        ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/service.yaml
+                    imagepullsecrets: |
+                        ${{ inputs.pull_secret_name }}
+                    namespace: ${{ inputs.namespace }}  
+                                           
+            -   name: Check ingress.yaml existence
+                id: check_ingress_file
+                uses: andstor/file-existence-action@v1
+                with:
+                    files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/ingress.yaml"    
 
             -   name: Apply Ingress config
                 uses: azure/k8s-deploy@v1
+                if: steps.check_ingress_file.outputs.files_exists == 'true'
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/ingress.yaml
