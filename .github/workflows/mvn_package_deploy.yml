@@ -35,17 +35,17 @@ jobs:
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'adopt'
-            -   name: 'Create settings.xml'
-                uses: whelk-io/maven-settings-xml-action@v4
-                with:
-                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
-                    repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
             -   name: Cache Maven packages
                 uses: actions/cache@v2
                 with:
                     path: ~/.m2
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2
+            -   name: Create settings.xml
+                uses: whelk-io/maven-settings-xml-action@v4
+                with:
+                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
+                    repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
             -   name: Get version
                 env:
                     REF_NAME: ${{ inputs.ref_name }}
@@ -55,9 +55,4 @@ jobs:
             -   name: Commit versions
                 run: mvn -f ${{ inputs.parent_pom }} versions:commit
             -   name: Deploy package
-                env:
-                    ARTIFACTORY_USER: ${{ secrets.artifactory_user }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
-                    UB_ARTIFACTORY_USER: ${{ secrets.artifactory_user }}
-                    UB_ARTIFACTORY_PASSWORD: ${{ secrets.artifactory_password }}
                 run: mvn -f ${{ inputs.parent_pom }} package deploy

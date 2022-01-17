@@ -36,17 +36,16 @@ jobs:
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'adopt'
-            -   name: 'Create settings.xml'
-                uses: whelk-io/maven-settings-xml-action@v4
-                with:
-                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
-                    repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
-            -   run: cat ~/.m2/settings.xml
             -   name: Cache Maven packages
                 uses: actions/cache@v2
                 with:
                     path: ~/.m2
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+            -   name: Create settings.xml
+                uses: whelk-io/maven-settings-xml-action@v4
+                with:
+                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
+                    repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
                     restore-keys: ${{ runner.os }}-m2
             -   name: Get version
                 env:

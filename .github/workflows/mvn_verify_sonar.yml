@@ -43,7 +43,13 @@ jobs:
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'adopt'
-            -   name: 'Create settings.xml'
+            -   name: Cache Maven packages
+                uses: actions/cache@v2
+                with:
+                    path: ~/.m2
+                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: ${{ runner.os }}-m2
+            -   name: Create settings.xml
                 uses: whelk-io/maven-settings-xml-action@v4
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
@@ -54,11 +60,5 @@ jobs:
                     path: ~/.sonar/cache
                     key: ${{ runner.os }}-sonar
                     restore-keys: ${{ runner.os }}-sonar
-            -   name: Cache Maven packages
-                uses: actions/cache@v2
-                with:
-                    path: ~/.m2
-                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-m2
             -   name: Run analysis using Maven
                 run: mvn --batch-mode --update-snapshots -f ${{ inputs.parent_pom }} clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
