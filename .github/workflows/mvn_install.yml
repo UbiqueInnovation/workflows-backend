@@ -39,7 +39,7 @@ jobs:
             -   name: Cache Maven packages
                 uses: actions/cache@v2
                 with:
-                    path: ~/.m2
+                    path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
             -   name: Create settings.xml
                 uses: whelk-io/maven-settings-xml-action@v4
