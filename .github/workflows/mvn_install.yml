@@ -41,6 +41,7 @@ jobs:
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
+            -   run: cat ~/.m2/settings.xml
             -   name: Cache Maven packages
                 uses: actions/cache@v2
                 with:
