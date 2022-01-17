@@ -17,6 +17,11 @@ on:
                 default: '17'
                 type: string
                 required: false
+            jib_container_volumes:
+                default: '/config/'
+                type: string
+                required: false
+                description: comma-separated container volumes for jib-maven-plugin (default /config/)
 
         secrets:
             artifactory_user:
@@ -78,6 +83,6 @@ jobs:
                     -Djib.from.image=eclipse-temurin:${{ inputs.java_version }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
-                    -Djib.container.volumes=/config/ \
+                    -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.jvmFlags=-XX:MinRAMPercentage=60.0,-XX:MaxRAMPercentage=80.0
 
