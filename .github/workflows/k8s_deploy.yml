@@ -94,7 +94,7 @@ jobs:
 
             -   name: Check deployment.yaml existence
                 id: check_deployment_file
-                uses: andstor/file-existence-action@v1
+                uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
                 with:
                     files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml"
                     
@@ -113,7 +113,7 @@ jobs:
             
             -   name: Check service.yaml existence
                 id: check_service_file
-                uses: andstor/file-existence-action@v1
+                uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
                 with:
                     files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/service.yaml"        
             
@@ -129,7 +129,7 @@ jobs:
                                            
             -   name: Check ingress.yaml existence
                 id: check_ingress_file
-                uses: andstor/file-existence-action@v1
+                uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
                 with:
                     files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/ingress.yaml"    
 

@@ -61,7 +61,7 @@ jobs:
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2
             -   name: Create settings.xml
-                uses: whelk-io/maven-settings-xml-action@v4
+                uses: whelk-io/maven-settings-xml-action@8a613be18185c8521e1501081adad5041840f2c8
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
