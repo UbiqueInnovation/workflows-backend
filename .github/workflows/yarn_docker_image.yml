@@ -52,16 +52,16 @@ jobs:
         name: Build Project
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
 
-            -   uses: actions/setup-node@v2
+            -   uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561
                 with:
                     node-version: '${{ inputs.node_version }}'
                     check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
 
-            -   uses: actions/setup-python@v2
+            -   uses: actions/setup-python@f38219332975fe8f9c04cca981d674bf22aea1d3
                 if: ${{ inputs.poeditor_translations_loc != '' }}
                 with:
                     python-version: '3.x'
@@ -77,7 +77,7 @@ jobs:
                     yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/build .
 
-            -   uses: azure/docker-login@v1
+            -   uses: azure/docker-login@81744f9799e7eaa418697cb168452a2882ae844a
                 with:
                     login-server: ${{ secrets.acr_registry }}
                     username: ${{ secrets.acr_username }}
