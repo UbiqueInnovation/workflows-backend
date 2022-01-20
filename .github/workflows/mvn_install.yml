@@ -30,14 +30,14 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+            -   uses: actions/checkout@v2
             -   name: Set up JDK
-                uses: actions/setup-java@f0bb91606209742fe3ea40199be2f3ef195ecabf
+                uses: actions/setup-java@v2
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'adopt'
             -   name: Cache Maven packages
-                uses: actions/cache@937d24475381cd9c75ae6db12cb4e79714b926ed
+                uses: actions/cache@v2
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
