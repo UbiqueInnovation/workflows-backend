@@ -11,6 +11,11 @@ on:
                 required: true
                 type: string
                 description: dev|prod    
+            finalize:
+                required: false
+                default: true
+                type: boolean
+                description: is it a final release (default true)   
 
         secrets:
             sentry_auth_token:
@@ -36,3 +41,4 @@ jobs:
                 with:
                     environment: ${{ inputs.target }}
                     version: ${{ inputs.ref_name }}
+                    finalize: ${{ inputs.finalize }}
