@@ -33,6 +33,11 @@ on:
                 default: true
                 type: boolean
                 description: set to false to disable creating a configmap
+            tag_add_commithash:
+                required: false
+                default: false
+                type: boolean
+                description: Add the current commit hash to the branch (necessary when deploying from a branch)
             cluster:
                 default: 'ub-kub-dev'
                 type: string
@@ -66,6 +71,14 @@ jobs:
             -   uses: actions/checkout@v2
                 with:
                     ref: ${{ inputs.ref_name }}
+
+            -   name: Set TAG_NAME with commit hash
+                if: ${{ inputs.tag_add_commithash }}
+                run: echo "TAG_NAME=${{ inputs.ref_name }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+            -   name: Set TAG_NAME
+                if: ${{ ! inputs.tag_add_commithash }}
+                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
             -   name: Set AKS context
                 uses: azure/aks-set-context@v1
@@ -105,7 +118,7 @@ jobs:
                     manifests: |
                         ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
                     images: |
-                        ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ inputs.ref_name }}
+                        ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }}
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
