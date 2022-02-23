@@ -1,0 +1,37 @@
+name: Sentry Release
+on:
+    workflow_call:
+
+        inputs:
+            ref_name:
+                required: true
+                type: string
+                description: tag or branch name
+            target:
+                required: true
+                type: string
+                description: dev|prod    
+
+        secrets:
+            sentry_auth_token:
+                required: true
+            sentry_org:
+                required: true
+            sentry_project:
+                required: true
+
+jobs:
+    sentry-release:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    ref: ${{ inputs.ref_name }}
+            -   name: Create Sentry release
+                uses: getsentry/action-release@744e4b262278339b79fb39c8922efcae71e98e39
+                env:
+                    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                    SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+                    SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+                with:
+                    environment: ${{ inputs.target }}
