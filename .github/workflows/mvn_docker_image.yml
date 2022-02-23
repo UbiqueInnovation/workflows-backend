@@ -77,7 +77,7 @@ jobs:
 
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=${{ inputs.ref_name }}${GITHUB_SHA::8}" >> $GITHUB_ENV
+                run: echo "TAG_NAME=${{ inputs.ref_name }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
 
             -   name: Set TAG_NAME
                 if: ${{ ! inputs.tag_add_commithash }}
@@ -85,8 +85,6 @@ jobs:
 
             -   name: Get version from TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
-                env:
-                    REF_NAME: ${{ inputs.ref_name }}
                 run: echo "VERSION=${TAG_NAME}" >> $GITHUB_ENV
 
             -   name: Get version from tag
