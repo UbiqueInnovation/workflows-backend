@@ -22,6 +22,11 @@ on:
                 type: string
                 required: false
                 description: comma-separated container volumes for jib-maven-plugin (default /config/)
+            tag_add_commithash:
+                required: false
+                default: false
+                type: boolean
+                description: Add the current commit hash to the branch (necessary when deploying from a branch)
 
         secrets:
             artifactory_user:
@@ -47,42 +52,63 @@ jobs:
                 uses: actions/checkout@v2
                 with:
                     ref: ${{ inputs.ref_name }}
+
             -   name: Git Status
                 run: git status
+
             -   name: Set up JDK
                 uses: actions/setup-java@v2
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'adopt'
+
             -   name: Cache Maven packages
                 uses: actions/cache@v2
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2
+
             -   name: Create settings.xml
                 uses: whelk-io/maven-settings-xml-action@8a613be18185c8521e1501081adad5041840f2c8
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
-            -   name: Get version
+
+            -   name: Set TAG_NAME with commit hash
+                if: ${{ inputs.tag_add_commithash }}
+                run: echo "TAG_NAME=${{ inputs.ref_name }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+            -   name: Set TAG_NAME
+                if: ${{ ! inputs.tag_add_commithash }}
+                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+
+            -   name: Get version from TAG_NAME with commit hash
+                if: ${{ inputs.tag_add_commithash }}
+                run: echo "VERSION=${TAG_NAME}" >> $GITHUB_ENV
+
+            -   name: Get version from tag
+                if: ${{ ! inputs.tag_add_commithash }}
                 env:
                     REF_NAME: ${{ inputs.ref_name }}
                 run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
+
             -   name: Set versions
                 run: mvn -f ${{ inputs.app_directory }}/../pom.xml versions:set -DnewVersion=$VERSION
+
             -   name: Commit versions
                 run: mvn -f ${{ inputs.app_directory }}/../pom.xml versions:commit
+
             -   name: Build with Maven
                 run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ inputs.app_directory }}/../pom.xml
+
             -   name: Build and push docker
                 run: |
                     mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.1.4:build \
                     -f ${{ inputs.app_directory }}/pom.xml \
-                    -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ inputs.ref_name }} \
+                    -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
                     -Djib.from.image=eclipse-temurin:${{ inputs.java_version }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.jvmFlags=-XX:MinRAMPercentage=60.0,-XX:MaxRAMPercentage=80.0
-
