@@ -14,7 +14,6 @@ on:
                 required: true
                 type: string
             mvn_root_directory:
-                default: '..'
                 required: false
                 type: string
             java_version:
@@ -97,14 +96,23 @@ jobs:
                     REF_NAME: ${{ inputs.ref_name }}
                 run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
 
+            -   name: Set default maven root directory if empty
+                if: "${{ ! inputs.mvn_root_directory  }}"
+                run: echo "MVN_ROOT_DIR=${{ inputs.app_directory }}/.." >> $GITHUB_ENV   
+                run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
+
+            -   name: Set default maven root directory if empty
+                if: "${{ inputs.mvn_root_directory  }}"
+                run: echo "MVN_ROOT_DIR=${{ inputs.mvn_root_directory }}" >> $GITHUB_ENV   
+
             -   name: Set versions
-                run: mvn -f ${{ inputs.app_directory }}/${{ inputs.mvn_root_directory }}/pom.xml versions:set -DnewVersion=$VERSION
+                run: mvn -f ${{ env.MVN_ROOT_DIR }}/pom.xml versions:set -DnewVersion=$VERSION
 
             -   name: Commit versions
-                run: mvn -f ${{ inputs.app_directory }}/${{ inputs.mvn_root_directory }}/pom.xml versions:commit
+                run: mvn -f ${{ env.MVN_ROOT_DIR }}/pom.xml versions:commit
 
             -   name: Build with Maven
-                run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ inputs.app_directory }}/${{ inputs.mvn_root_directory }}/pom.xml
+                run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ env.MVN_ROOT_DIR }}/pom.xml
 
             -   name: Build and push docker
                 run: |
