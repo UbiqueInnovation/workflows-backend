@@ -13,6 +13,10 @@ on:
             app_directory:
                 required: true
                 type: string
+            mvn_root_directory:
+                default: '..'
+                required: false
+                type: string
             java_version:
                 default: '17'
                 type: string
@@ -94,13 +98,13 @@ jobs:
                 run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
 
             -   name: Set versions
-                run: mvn -f ${{ inputs.app_directory }}/../pom.xml versions:set -DnewVersion=$VERSION
+                run: mvn -f ${{ inputs.app_directory }}/${{ inputs.mvn_root_directory }}/pom.xml versions:set -DnewVersion=$VERSION
 
             -   name: Commit versions
-                run: mvn -f ${{ inputs.app_directory }}/../pom.xml versions:commit
+                run: mvn -f ${{ inputs.app_directory }}/${{ inputs.mvn_root_directory }}/pom.xml versions:commit
 
             -   name: Build with Maven
-                run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ inputs.app_directory }}/../pom.xml
+                run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ inputs.app_directory }}/${{ inputs.mvn_root_directory }}/pom.xml
 
             -   name: Build and push docker
                 run: |
