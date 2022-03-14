@@ -27,16 +27,21 @@ on:
                 default: false
                 type: boolean
                 description: Add the current commit hash to the branch (necessary when deploying from a branch)
+            use_mvn_central:
+                default: false
+                type: boolean
+                required: false
+                description: If false, use artifactory_* input secrets
 
         secrets:
             artifactory_user:
-                required: true
+                required: false
             artifactory_password:
-                required: true
+                required: false
             artifactory_url:
-                required: true
+                required: false
             artifactory_repo:
-                required: true
+                required: false
             acr_registry:
                 required: true
             acr_username:
@@ -69,11 +74,19 @@ jobs:
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2
 
-            -   name: Create settings.xml
+            -   name: Create maven central settings.xml
+                if: ${{ inputs.use_mvn_central }}
+                uses: whelk-io/maven-settings-xml-action@8a613be18185c8521e1501081adad5041840f2c8
+                with:
+                    restore-keys: ${{ runner.os }}-m2-settings-mvn-central
+
+            -   name: Create custom artifactory settings.xml
+                if: ${{ ! inputs.use_mvn_central }}
                 uses: whelk-io/maven-settings-xml-action@8a613be18185c8521e1501081adad5041840f2c8
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
+                    restore-keys: ${{ runner.os }}-m2-settings-artifactory
 
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
