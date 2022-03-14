@@ -77,8 +77,6 @@ jobs:
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}
                 uses: whelk-io/maven-settings-xml-action@8a613be18185c8521e1501081adad5041840f2c8
-                with:
-                    restore-keys: ${{ runner.os }}-m2-settings-mvn-central
 
             -   name: Create custom artifactory settings.xml
                 if: ${{ ! inputs.use_mvn_central }}
@@ -86,7 +84,6 @@ jobs:
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
-                    restore-keys: ${{ runner.os }}-m2-settings-artifactory
 
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
