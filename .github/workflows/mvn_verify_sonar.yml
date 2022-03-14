@@ -14,16 +14,21 @@ on:
                 default: '17'
                 type: string
                 required: false
+            use_mvn_central:
+                default: false
+                type: boolean
+                required: false
+                description: If false, use artifactory_* input secrets
 
         secrets:
             artifactory_user:
-                required: true
+                required: false
             artifactory_password:
-                required: true
+                required: false
             artifactory_url:
-                required: true
+                required: false
             artifactory_repo:
-                required: true
+                required: false
             sonar_token:
                 required: true
 
@@ -40,26 +45,36 @@ jobs:
                 with:
                     fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
             -   name: Set up JDK
+
                 uses: actions/setup-java@v2
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'adopt'
+
             -   name: Cache Maven packages
                 uses: actions/cache@v2
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2
-            -   name: Create settings.xml
+
+            -   name: Create maven central settings.xml
+                if: ${{ inputs.use_mvn_central }}
+                uses: whelk-io/maven-settings-xml-action@8a613be18185c8521e1501081adad5041840f2c8
+
+            -   name: Create custom artifactory settings.xml
+                if: ${{ ! inputs.use_mvn_central }}
                 uses: whelk-io/maven-settings-xml-action@8a613be18185c8521e1501081adad5041840f2c8
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
+
             -   name: Cache SonarCloud packages
                 uses: actions/cache@v2
                 with:
                     path: ~/.sonar/cache
                     key: ${{ runner.os }}-sonar
                     restore-keys: ${{ runner.os }}-sonar
+
             -   name: Run analysis using Maven
                 run: mvn --batch-mode --update-snapshots -f ${{ inputs.parent_pom }} clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
