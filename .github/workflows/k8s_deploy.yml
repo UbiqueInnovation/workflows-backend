@@ -43,7 +43,7 @@ on:
                 type: string
                 required: false
                 description: 'name of the cluster (default: ub-kub-dev)'
-            cluster-resource-group:
+            cluster_resource_group:
                 default: 'ub-schweiz-cluster'
                 type: string
                 required: false
