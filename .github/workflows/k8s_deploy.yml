@@ -85,7 +85,7 @@ jobs:
                 with:
                     creds: '${{ secrets.az_service_principal }}'
                     cluster-name: ${{ inputs.cluster }}
-                    resource-group: ${{ inputs.cluster-resource-group }}
+                    resource-group: ${{ inputs.cluster_resource_group }}
 
             -   name: Create namespace (if it doesn't exist)
                 run: |
