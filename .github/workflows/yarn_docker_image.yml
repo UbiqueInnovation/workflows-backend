@@ -70,6 +70,12 @@ jobs:
                 if: ${{ inputs.poeditor_translations_loc != '' }}
                 with:
                     python-version: '3.x'
+                    cache: 'pip'
+
+            -   name: Install required python module using pip
+                if: ${{ inputs.poeditor_translations_loc != '' }}
+                run: |
+                    pip install requests
 
             -   name: Run getTranslations.py
                 if: ${{ inputs.poeditor_translations_loc != '' }}
