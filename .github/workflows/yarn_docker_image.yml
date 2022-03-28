@@ -32,11 +32,10 @@ on:
                 required: true
                 type: string
                 description: directory that contains the package.json
-            poeditor_translations_loc:
+            run_poeditor:
                 required: false
-                default: ''
-                type: string
-                description: e.g. ${app_directory}/getTranslations.py
+                default: false
+                type: boolean
 
         secrets:
             acr_registry:
@@ -47,10 +46,10 @@ on:
                 required: true
             poeditor_api_key:
                 required: false
-                description: necessary if input.poeditor_translations_loc is used
+                description: necessary if input.run_poeditor is true
             poeditor_project_id:
                 required: false
-                description: necessary if input.poeditor_translations_loc is used
+                description: necessary if input.run_poeditor is true
 
 jobs:
     build:
@@ -67,14 +66,27 @@ jobs:
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
 
             -   uses: actions/setup-python@v2
-                if: ${{ inputs.poeditor_translations_loc != '' }}
+                if: ${{ inputs.run_poeditor }}
                 with:
                     python-version: '3.x'
+                    cache: 'pip'
+
+            -   name: Check requirements.txt existence
+                if: ${{ inputs.run_poeditor }}
+                id: check_requirements_txt
+                uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
+                with:
+                    files: "requirements.txt"
+
+            -   name: Install required python module using pip
+                if: ${{ steps.check_requirements_txt.outputs.files_exists == 'true' }}
+                run: |
+                    python -m pip install -r requirements.txt
 
             -   name: Run getTranslations.py
-                if: ${{ inputs.poeditor_translations_loc != '' }}
+                if: ${{ inputs.run_poeditor }}
                 run: |
-                    python ${{ inputs.poeditor_translations_loc }} ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
+                    python ${{ inputs.app_directory }}/getTranslations.py ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
 
             -   name: Build using yarn
                 run: |
