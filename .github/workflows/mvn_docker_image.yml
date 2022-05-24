@@ -162,6 +162,7 @@ jobs:
                     -f ${{ inputs.app_directory }}/pom.xml \
                     -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
                     -Djib.from.image=eclipse-temurin:${{ inputs.java_version }} \
+                    -Djib.pluginExtensions.pluginExtension.implementation=com.google.cloud.tools.jib.maven.extension.layerfilter.JibLayerFilterExtension \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
