@@ -26,10 +26,9 @@ on:
                 required: false
                 description: comma-separated container volumes for jib-maven-plugin (default /config/)
             jib_custom_docker_image:
-                default: 'eclipse-temurin:${{ inputs.java_version }}'
                 type: string
                 required: false
-                description: custom docker image for jib build.
+                description: custom docker image for jib build.              
             tag_add_commithash:
                 required: false
                 default: false
@@ -66,6 +65,15 @@ on:
             poeditor_project_id:
                 required: false
                 description: necessary if input.run_poeditor is true
+            jib_custom_docker_image_repo:
+                required: false
+                description: custom docker image repo jib build.                     
+            jib_custom_docker_image_repo_user:
+                required: false
+                description: custom docker image repo user for jib build.
+            jib_custom_docker_image_repo_password:
+                required: false
+                description: custom docker image repo password for jib build.                
 
 jobs:
     create-docker-image:
@@ -161,14 +169,28 @@ jobs:
             -   name: Build with Maven
                 run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ env.MVN_ROOT_DIR }}/pom.xml
 
+            -   name: Set default docker image
+                if: "${{ inputs.jib_custom_docker_image == '' }}"
+                run: |
+                    echo "DOCKER_IMAGE=eclipse-temurin:${{ inputs.java_version }}" >> $GITHUB_ENV
+
+            -   name: Set custom docker image                    
+                if: "${{ inputs.jib_custom_docker_image != '' }}"
+                run: |
+                    echo "DOCKER_IMAGE=${{ secrets.jib_custom_docker_image_repo }}/${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
+
+            -   name: Docker image for JIB build
+                run: |
+                    echo "Docker image jor JIB build: $DOCKER_IMAGE"
+
             -   name: Build and push docker
                 run: |
                     mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.1.4:build \
                     -f ${{ inputs.app_directory }}/pom.xml \
                     -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
-                    -Djib.from.image=eclipse-temurin:${{ inputs.java_version }} \
-                    -Djib.from.auth.username=${{ secrets.acr_username }} \
-                    -Djib.from.auth.password=${{ secrets.acr_password }} \                    
+                    -Djib.from.image=${{ env.DOCKER_IMAGE }} \
+                    -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
+                    -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
