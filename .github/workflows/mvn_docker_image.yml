@@ -25,6 +25,11 @@ on:
                 type: string
                 required: false
                 description: comma-separated container volumes for jib-maven-plugin (default /config/)
+            jib_custom_docker_image:
+                default: 'eclipse-temurin:${{ inputs.java_version }}'
+                type: string
+                required: false
+                description: custom docker image for jib build.
             tag_add_commithash:
                 required: false
                 default: false
@@ -162,6 +167,8 @@ jobs:
                     -f ${{ inputs.app_directory }}/pom.xml \
                     -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
                     -Djib.from.image=eclipse-temurin:${{ inputs.java_version }} \
+                    -Djib.from.auth.username=${{ secrets.acr_username }} \
+                    -Djib.from.auth.password=${{ secrets.acr_password }} \                    
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
