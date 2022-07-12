@@ -86,7 +86,7 @@ jobs:
 
             -   name: Set TAG_NAME from inputs.image_tag_to_deploy
                 if: ${{ inputs.image_tag_to_deploy }}
-                run: echo "TAG_NAME=${{ inputs.image_tag_to_deploy }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
+                run: echo "TAG_NAME=${{ inputs.image_tag_to_deploy }}" >> $GITHUB_ENV
 
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
