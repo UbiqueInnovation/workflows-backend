@@ -96,6 +96,9 @@ jobs:
                 if: ${{ ! inputs.tag_add_commithash }}
                 run: echo "TAG_NAME=${{ env.TAG_NAME }}" >> $GITHUB_ENV
 
+            -   name: Image to deploy
+                run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
+
             -   name: Set AKS context
                 uses: azure/aks-set-context@v1
                 with:
