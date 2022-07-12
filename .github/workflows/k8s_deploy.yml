@@ -61,6 +61,10 @@ on:
                 type: string
                 required: false
                 description: Tag of the image, take ref_name if not set. Useful to deploy pushserver from backend repo.
+            config_map_refix:
+                type: string
+                required: false
+                description: Prefix for the configmap (without '-dev/prod-config'). Will default to app_name if not set.
 
         secrets:
             acr_registry:
@@ -113,7 +117,7 @@ jobs:
             -   name: Create configmap
                 if: ${{ inputs.with_configmap }}
                 run: |
-                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_refix && inputs.config_map_refix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create image pull secret for ACR
                 uses: azure/k8s-create-secret@v1
