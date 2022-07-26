@@ -77,4 +77,4 @@ jobs:
                     restore-keys: ${{ runner.os }}-sonar
 
             -   name: Run analysis using Maven
-                run: mvn --batch-mode --update-snapshots -f ${{ inputs.parent_pom }} clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+                run: mvn --batch-mode -X --update-snapshots -f ${{ inputs.parent_pom }} clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
