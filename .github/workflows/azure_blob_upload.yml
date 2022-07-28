@@ -6,6 +6,11 @@ on:
         required: true
         type: string
         description: name of the artifact to upload
+      container_name:
+        required: false
+        default: $web
+        type: string
+        description: name of the container name. default is '$web'
       
     secrets:
       blob_connection_string:
