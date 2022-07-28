@@ -1,18 +1,29 @@
 name: Upload To Azure Blob Storage
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      artifact_to_upload:
+        required: true
+        type: string
+        description: name of the artifact to upload
+      
+    secrets:
+      blob_connection_string:
+        required: true
+        description: connection string to the azure blob
+
 jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact_to_upload }}
+          path: upload
       
       - uses: bacongobbler/azure-blob-storage-upload@67563b802095fca59502cb0c240fdd6d6abf3d69 
         with:
-          source_dir: build_prod
-          container_name: $web
-          connection_string: ${{ secrets.BlobConnectionString }}
-          # WARNING: this will overwrite existing blobs in your blob storage
+          source_dir: upload
+          container_name: ${{ inputs.container_name }}
+          connection_string: ${{ secrets.blob_connection_string }}
           overwrite: 'true'
