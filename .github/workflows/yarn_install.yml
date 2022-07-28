@@ -25,6 +25,11 @@ on:
                 required: false
                 type: string
                 description: if set the given env build is also executed
+            yarn_ci_flag:
+                required: false
+                default: true
+                type: boolean
+                description: flag for overriding yarn CI flag
 
 jobs:
     build:
@@ -44,4 +49,4 @@ jobs:
             -   name: Build for Enviornment
                 if: ${{ inputs.release_env }}
                 run: |
-                    yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
+                    CI=${{ inputs.yarn_ci_flag }} yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
