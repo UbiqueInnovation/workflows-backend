@@ -50,3 +50,8 @@ jobs:
                 if: ${{ inputs.release_env }}
                 run: |
                     CI=${{ inputs.yarn_ci_flag }} yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
+            -   uses: actions/upload-artifact@v3
+                if: ${{ inputs.release_env }}
+                with:
+                    name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
+                    path: ${{ inputs.app_directory }}/build/
