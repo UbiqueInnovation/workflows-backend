@@ -21,6 +21,10 @@ on:
                 required: true
                 type: string
                 description: directory that contains the package.json
+            release_env:
+                required: false
+                type: string
+                description: if set the given env build is also executed
 
 jobs:
     build:
@@ -35,4 +39,9 @@ jobs:
                     check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
-            -   run: yarn --cwd ${{ inputs.app_directory }}
+            -   run: |
+                    yarn --cwd ${{ inputs.app_directory }}
+            -   name: Build for Enviornment
+                if: ${{ inputs.release_env }}
+                run: |
+                    yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
