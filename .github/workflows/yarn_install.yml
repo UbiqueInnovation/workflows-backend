@@ -29,7 +29,7 @@ on:
                 required: false
                 default: true
                 type: boolean
-                description: flag for overriding yarn CI flag
+                description: flag for overriding yarn CI flag (DO NOT USE IT FOR NEW PROJECTS!)
 
 jobs:
     build:
