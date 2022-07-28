@@ -1,4 +1,4 @@
-name: Runs Maven Install
+name: Runs Yarn Install
 on:
     workflow_call:
 
@@ -7,7 +7,7 @@ on:
                 required: false
                 default: ''
                 type: string
-                description: tag or branch name, used for mvn versions:set
+                description: tag or branch name for checkout
             node_version:
                 default: '16'
                 type: string
