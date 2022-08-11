@@ -170,12 +170,17 @@ jobs:
                 run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ env.MVN_ROOT_DIR }}/pom.xml
 
             -   name: Set default docker image
-                if: "${{ inputs.jib_custom_docker_image == '' }}"
+                if: "${{ ! inputs.jib_custom_docker_image }}"
                 run: |
                     echo "DOCKER_IMAGE=eclipse-temurin:${{ inputs.java_version }}" >> $GITHUB_ENV
 
-            -   name: Set custom docker image                    
-                if: "${{ inputs.jib_custom_docker_image != '' }}"
+            -   name: Set custom docker image from official docker repo
+                if: "${{ inputs.jib_custom_docker_image && ! inputs.jib_custom_docker_image_repo }}"
+                run: |
+                    echo "DOCKER_IMAGE=${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
+
+            -   name: Set custom docker image from custom repo
+                if: "${{ inputs.jib_custom_docker_image && inputs.jib_custom_docker_image_repo }}"
                 run: |
                     echo "DOCKER_IMAGE=${{ secrets.jib_custom_docker_image_repo }}/${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
 
