@@ -18,7 +18,11 @@ on:
             app_directory:
                 required: true
                 type: string
-                description: e.g. ub-pushservive/ub-pushserver, swisstopo-backend/swisstopo-ws, schweizmobil-backend/schweizmobil-ws
+                description: e.g. ub-pushservice/ub-pushserver, swisstopo-backend/swisstopo-ws, schweizmobil-backend/schweizmobil-ws
+            manifests_directory:
+                required: false
+                type: string
+                default: manifests
             target:
                 required: true
                 type: string
@@ -109,14 +113,14 @@ jobs:
                 id: check_deployment_file
                 uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
                 with:
-                    files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml"
+                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
                     
             -   name: Apply Deployment config
                 uses: azure/k8s-deploy@v1
                 if: steps.check_deployment_file.outputs.files_exists == 'true'
                 with:
                     manifests: |
-                        ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
+                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
                     images: |
                         ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }}
                     imagepullsecrets: |
@@ -128,14 +132,14 @@ jobs:
                 id: check_service_file
                 uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
                 with:
-                    files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/service.yaml"        
+                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
             
             -   name: Apply Service config
                 uses: azure/k8s-deploy@v1
                 if: steps.check_service_file.outputs.files_exists == 'true'
                 with:
                     manifests: |
-                        ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/service.yaml
+                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}  
@@ -144,14 +148,14 @@ jobs:
                 id: check_ingress_file
                 uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
                 with:
-                    files: "${{ inputs.app_directory }}/manifests/${{ inputs.target }}/ingress.yaml"    
+                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
             -   name: Apply Ingress config
                 uses: azure/k8s-deploy@v1
                 if: steps.check_ingress_file.outputs.files_exists == 'true'
                 with:
                     manifests: |
-                        ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/ingress.yaml
+                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
                     namespace: ingress-basic
