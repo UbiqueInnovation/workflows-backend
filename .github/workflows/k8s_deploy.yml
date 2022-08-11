@@ -61,7 +61,7 @@ on:
                 type: string
                 required: false
                 description: Tag of the image, take ref_name if not set. Useful to deploy pushserver from backend repo.
-            config_map_refix:
+            config_map_prefix:
                 type: string
                 required: false
                 description: Prefix for the configmap (without '-dev/prod-config'). Will default to app_name if not set.
