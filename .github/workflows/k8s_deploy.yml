@@ -57,6 +57,14 @@ on:
                 type: string
                 required: false
                 description: 'image pull secret to use (default: ub-acr-secret)'
+            image_tag_to_deploy:
+                type: string
+                required: false
+                description: Tag of the image, take ref_name if not set. Useful to deploy pushserver from backend repo.
+            config_map_prefix:
+                type: string
+                required: false
+                description: Prefix for the configmap (without '-dev/prod-config'). Will default to app_name if not set.
 
         secrets:
             acr_registry:
@@ -76,13 +84,24 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
 
+            -   name: Set TAG_NAME from inputs.ref_name
+                if: ${{ ! inputs.image_tag_to_deploy }}
+                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+
+            -   name: Set TAG_NAME from inputs.image_tag_to_deploy
+                if: ${{ inputs.image_tag_to_deploy }}
+                run: echo "TAG_NAME=${{ inputs.image_tag_to_deploy }}" >> $GITHUB_ENV
+
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=${{ inputs.ref_name }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
+                run: echo "TAG_NAME=${{ env.TAG_NAME }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
 
             -   name: Set TAG_NAME
                 if: ${{ ! inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+                run: echo "TAG_NAME=${{ env.TAG_NAME }}" >> $GITHUB_ENV
+
+            -   name: Image to deploy
+                run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
             -   name: Set AKS context
                 uses: azure/aks-set-context@v1
@@ -98,7 +117,7 @@ jobs:
             -   name: Create configmap
                 if: ${{ inputs.with_configmap }}
                 run: |
-                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_refix && inputs.config_map_refix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create image pull secret for ACR
                 uses: azure/k8s-create-secret@v1
