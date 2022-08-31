@@ -1,4 +1,4 @@
-name: Runs Maven Install
+name: Runs Yarn Install
 on:
     workflow_call:
 
@@ -7,7 +7,7 @@ on:
                 required: false
                 default: ''
                 type: string
-                description: tag or branch name, used for mvn versions:set
+                description: tag or branch name for checkout
             node_version:
                 default: '16'
                 type: string
@@ -21,6 +21,15 @@ on:
                 required: true
                 type: string
                 description: directory that contains the package.json
+            release_env:
+                required: false
+                type: string
+                description: if set the given env build is also executed
+            yarn_ci_flag:
+                required: false
+                default: true
+                type: boolean
+                description: flag for overriding yarn CI flag (DO NOT USE IT FOR NEW PROJECTS!)
 
 jobs:
     build:
@@ -35,4 +44,14 @@ jobs:
                     check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
-            -   run: yarn --cwd ${{ inputs.app_directory }}
+            -   run: |
+                    yarn --cwd ${{ inputs.app_directory }}
+            -   name: Build for Enviornment
+                if: ${{ inputs.release_env }}
+                run: |
+                    CI=${{ inputs.yarn_ci_flag }} yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
+            -   uses: actions/upload-artifact@v3
+                if: ${{ inputs.release_env }}
+                with:
+                    name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
+                    path: ${{ inputs.app_directory }}/build/
