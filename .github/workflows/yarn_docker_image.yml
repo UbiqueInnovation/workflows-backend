@@ -18,7 +18,17 @@ on:
             release_env:
                 required: true
                 type: string
-                description: 'ENV to build. dev|prod. runs "yarn run build-${release_env}"'
+                description: 'ENV to build. dev|prod. runs "yarn run build${build_cmd_prefix}:${release_env}"'
+            build_cmd_postfix:
+                required: false
+                default: ""
+                type: string
+                description: 'Runs "yarn run build${build_cmd_prefix}:${release_env}"'
+            image_name_postfix:
+                required: false
+                default: ""
+                type: string
+                description: 'Creates image name in the form ${app_name}-${image_name_postfix}-${release_env}'
             tag_add_commithash:
                 required: false
                 default: false
@@ -91,7 +101,7 @@ jobs:
             -   name: Build using yarn
                 run: |
                     yarn --cwd ${{ inputs.app_directory }}
-                    yarn --cwd ${{ inputs.app_directory }} run build-${{ inputs.release_env }}
+                    yarn --cwd ${{ inputs.app_directory }} run build${{ build_cmd_prefix }}:${{ inputs.release_env }}
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/build .
 
             -   name: Set TAG_NAME with commit hash
