@@ -101,7 +101,7 @@ jobs:
             -   name: Build using yarn
                 run: |
                     yarn --cwd ${{ inputs.app_directory }}
-                    yarn --cwd ${{ inputs.app_directory }} run build${{ build_cmd_postfix }}:${{ inputs.release_env }}
+                    yarn --cwd ${{ inputs.app_directory }} run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/build .
 
             -   name: Set TAG_NAME with commit hash
