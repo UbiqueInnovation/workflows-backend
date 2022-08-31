@@ -28,7 +28,7 @@ on:
                 required: false
                 default: ""
                 type: string
-                description: 'Creates image name in the form ${app_name}-${image_name_postfix}-${release_env}'
+                description: 'Creates image name in the form ${app_name}${image_name_postfix}-${release_env}'
             tag_add_commithash:
                 required: false
                 default: false
@@ -119,5 +119,5 @@ jobs:
                     password: ${{ secrets.acr_password }}
 
             -   run: |
-                    docker build -t ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ env.TAG_NAME }} docker/${{ inputs.app_name }}
+                    docker build -t ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.image_name_postfix }}-${{ inputs.release_env }}:${{ env.TAG_NAME }} docker/${{ inputs.app_name }}
                     docker image push ${{ secrets.acr_registry }}/${{ inputs.app_name }}-${{ inputs.release_env }}:${{ env.TAG_NAME }}
