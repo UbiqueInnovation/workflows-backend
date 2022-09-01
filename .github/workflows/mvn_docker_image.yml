@@ -174,13 +174,17 @@ jobs:
                 run: |
                     echo "DOCKER_IMAGE=eclipse-temurin:${{ inputs.java_version }}-focal" >> $GITHUB_ENV
 
+            -   name: jib_custom_docker_image_repo to env variable for use in if check
+                run: |
+                    echo "SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO=${{ secrets.jib_custom_docker_image_repo }}" >> $GITHUB_ENV
+
             -   name: Set custom docker image from official docker repo
-                if: "${{ inputs.jib_custom_docker_image && ! secrets.jib_custom_docker_image_repo }}"
+                if: "${{ inputs.jib_custom_docker_image && ! env.SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO }}"
                 run: |
                     echo "DOCKER_IMAGE=${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
 
             -   name: Set custom docker image from custom repo
-                if: "${{ inputs.jib_custom_docker_image && secrets.jib_custom_docker_image_repo }}"
+                if: "${{ inputs.jib_custom_docker_image && env.SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO }}"
                 run: |
                     echo "DOCKER_IMAGE=${{ secrets.jib_custom_docker_image_repo }}/${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
 
