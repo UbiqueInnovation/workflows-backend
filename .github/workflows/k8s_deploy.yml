@@ -103,10 +103,14 @@ jobs:
             -   name: Image to deploy
                 run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
+            -   name: Azure Login
+                uses: azure/login@v1
+                with:
+                   creds: '${{ secrets.az_service_principal }}'
+
             -   name: Set AKS context
                 uses: azure/aks-set-context@v3
                 with:
-                    creds: '${{ secrets.az_service_principal }}'
                     cluster-name: ${{ inputs.cluster }}
                     resource-group: ${{ inputs.cluster_resource_group }}
 
