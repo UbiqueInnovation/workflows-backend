@@ -80,7 +80,7 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
                 with:
                     ref: ${{ inputs.ref_name }}
 
@@ -104,7 +104,7 @@ jobs:
                 run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
             -   name: Set AKS context
-                uses: azure/aks-set-context@v1
+                uses: azure/aks-set-context@v3
                 with:
                     creds: '${{ secrets.az_service_principal }}'
                     cluster-name: ${{ inputs.cluster }}
@@ -120,7 +120,7 @@ jobs:
                     kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_refix && inputs.config_map_refix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create image pull secret for ACR
-                uses: azure/k8s-create-secret@v1
+                uses: azure/k8s-create-secret@v4
                 with:
                     container-registry-url: ${{ secrets.acr_registry }}
                     container-registry-username: ${{ secrets.acr_username }}
@@ -130,12 +130,12 @@ jobs:
 
             -   name: Check deployment.yaml existence
                 id: check_deployment_file
-                uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
+                uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
                 with:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
-                    
+
             -   name: Apply Deployment config
-                uses: azure/k8s-deploy@v1
+                uses: azure/k8s-deploy@v4
                 if: steps.check_deployment_file.outputs.files_exists == 'true'
                 with:
                     manifests: |
@@ -145,32 +145,32 @@ jobs:
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
-                    
-            
+
+
             -   name: Check service.yaml existence
                 id: check_service_file
-                uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
+                uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
                 with:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
-            
+
             -   name: Apply Service config
-                uses: azure/k8s-deploy@v1
+                uses: azure/k8s-deploy@v4
                 if: steps.check_service_file.outputs.files_exists == 'true'
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.namespace }}  
-                                           
+                    namespace: ${{ inputs.namespace }}
+
             -   name: Check ingress.yaml existence
                 id: check_ingress_file
-                uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
+                uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
                 with:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
             -   name: Apply Ingress config
-                uses: azure/k8s-deploy@v1
+                uses: azure/k8s-deploy@v4
                 if: steps.check_ingress_file.outputs.files_exists == 'true'
                 with:
                     manifests: |
