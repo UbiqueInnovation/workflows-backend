@@ -66,16 +66,16 @@ jobs:
         name: Build Project
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v2
 
-            -   uses: actions/setup-node@v3
+            -   uses: actions/setup-node@v2
                 with:
                     node-version: '${{ inputs.node_version }}'
                     check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
 
-            -   uses: actions/setup-python@v4
+            -   uses: actions/setup-python@v2
                 if: ${{ inputs.run_poeditor }}
                 with:
                     python-version: '3.x'
@@ -84,7 +84,7 @@ jobs:
             -   name: Check requirements.txt existence
                 if: ${{ inputs.run_poeditor }}
                 id: check_requirements_txt
-                uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
+                uses: andstor/file-existence-action@87d74d4732ddb824259d80c8a508c0124bf1c673
                 with:
                     files: "requirements.txt"
 
