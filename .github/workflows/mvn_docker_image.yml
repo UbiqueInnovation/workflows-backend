@@ -203,5 +203,5 @@ jobs:
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
-                    -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/" \
+                    -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/",SPRING_CONFIG_NAME="${{ inputs.app_name }}" \
                     -Djib.container.jvmFlags=-XX:MinRAMPercentage=60.0,-XX:MaxRAMPercentage=80.0
