@@ -42,6 +42,11 @@ on:
                 default: false
                 type: boolean
                 description: Add the current commit hash to the branch (necessary when deploying from a branch)
+            ingress_namespace:
+                required: false
+                default: 'ingress-basic'
+                type: string
+                description: optionally apply the ingress in the given namespace. defaults to ingress-basic
             cluster:
                 default: 'ub-kub-dev'
                 type: string
@@ -181,4 +186,4 @@ jobs:
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
-                    namespace: ingress-basic
+                    namespace: ${{ inputs.ingress_namespace }}
