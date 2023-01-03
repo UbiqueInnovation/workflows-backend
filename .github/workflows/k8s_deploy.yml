@@ -132,6 +132,22 @@ jobs:
                     secret-name: ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
 
+            -   name: Check serviceaccount.yaml existence
+                id: check_serviceaccount_file
+                uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
+                with:
+                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
+
+            -   name: Apply Service Account config
+                uses: azure/k8s-deploy@v4
+                if: steps.check_serviceaccount_file.outputs.files_exists == 'true'
+                with:
+                    manifests: |
+                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml
+                    imagepullsecrets: |
+                        ${{ inputs.pull_secret_name }}
+                    namespace: ${{ inputs.namespace }}
+
             -   name: Check deployment.yaml existence
                 id: check_deployment_file
                 uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
