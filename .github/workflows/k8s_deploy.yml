@@ -106,7 +106,7 @@ jobs:
             -   name: Azure Login
                 uses: azure/login@v1
                 with:
-                   creds: '${{ secrets.az_service_principal }}'
+                    creds: '${{ secrets.az_service_principal }}'
 
             -   name: Set AKS context
                 uses: azure/aks-set-context@v3
@@ -121,7 +121,7 @@ jobs:
             -   name: Create configmap
                 if: ${{ inputs.with_configmap }}
                 run: |
-                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_refix && inputs.config_map_refix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_prefix && inputs.config_map_prefix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create image pull secret for ACR
                 uses: azure/k8s-create-secret@v4
