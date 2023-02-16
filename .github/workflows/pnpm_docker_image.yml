@@ -10,6 +10,10 @@ on:
         default: "16"
         type: string
         required: false
+      cache_dependency_path:
+        default: "pnpm-lock.yaml"
+        type: string
+        required: false
       release_env:
         required: true
         type: string
@@ -71,6 +75,7 @@ jobs:
         with:
           node-version: "${{ inputs.node_version }}"
           cache: "pnpm"
+          cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
       - uses: actions/setup-python@v4
         if: ${{ inputs.run_poeditor }}
