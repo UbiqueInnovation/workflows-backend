@@ -17,7 +17,7 @@ on:
       release_env:
         required: true
         type: string
-      description: 'ENV to build. dev|prod. runs "pnpm build${build_cmd_postfix}:${release_env}"'
+        description: 'ENV to build. dev|prod. runs "pnpm build${build_cmd_postfix}:${release_env}"'
       build_cmd_postfix:
         required: false
         default: ""
