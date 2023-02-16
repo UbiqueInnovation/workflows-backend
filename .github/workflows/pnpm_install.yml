@@ -42,13 +42,11 @@ jobs:
           cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
       - name: Install dependencies
         run: |
-          cd ${{ inputs.app_directory }}
-          pnpm install
+          pnpm --workspace-root=${{ inputs.app_directory }} install
       - name: Build for Enviornment
         if: ${{ inputs.release_env }}
         run: |
-          cd ${{ inputs.app_directory }}
-          pnpm build
+          pnpm --workspace-root=${{ inputs.app_directory }} build:${{ inputs.release_env }}
       - uses: actions/upload-artifact@v3
         if: ${{ inputs.release_env }}
         with:

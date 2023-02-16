@@ -17,12 +17,12 @@ on:
       release_env:
         required: true
         type: string
-        description: 'ENV to build. dev|prod. runs "pnpm build" anyways'
+      description: 'ENV to build. dev|prod. runs "pnpm build${build_cmd_postfix}:${release_env}"'
       build_cmd_postfix:
         required: false
         default: ""
         type: string
-        description: 'Runs "pnpm build" anyways'
+        description: 'Runs "pnpm build${build_cmd_postfix}:${release_env}"'
       image_name_postfix:
         required: false
         default: ""
@@ -102,9 +102,8 @@ jobs:
 
       - name: Build using pnpm
         run: |
-          cd ${{ inputs.app_directory }}
-          pnpm install
-          pnpm build
+          pnpm --workspace-root=${{ inputs.app_directory }} install
+          pnpm --workspace-root=${{ inputs.app_directory }} build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
           tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/dist .
 
       - name: Set TAG_NAME with commit hash
