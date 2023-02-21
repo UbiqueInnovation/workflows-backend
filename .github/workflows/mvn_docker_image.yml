@@ -142,6 +142,10 @@ jobs:
                 if: ${{ ! inputs.tag_add_commithash }}
                 run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
+            -   name: Remove slashes from TAG_NAME
+                if: ${{ inputs.tag_add_commithash }}
+                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
+
             -   name: Get version from TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
                 run: echo "VERSION=${TAG_NAME}" >> $GITHUB_ENV
