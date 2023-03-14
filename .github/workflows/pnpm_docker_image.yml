@@ -6,6 +6,10 @@ on:
         required: true
         type: string
         description: tag or branch name
+      build_tag:
+        required: false
+        type: string
+        description: tag for base image
       node_version:
         default: "16"
         type: string
@@ -124,5 +128,5 @@ jobs:
           password: ${{ secrets.acr_password }}
 
       - run: |
-          docker build --build-arg build_tag=${{ env.TAG_NAME }} -t ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} docker/${{ inputs.app_name }}
+          docker build --build-arg build_tag=${{ inputs.build_tag }} -t ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} docker/${{ inputs.app_name }}
           docker image push ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
