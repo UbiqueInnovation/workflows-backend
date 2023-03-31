@@ -34,7 +34,7 @@ jobs:
           ref: ${{ inputs.ref_name }}
       - uses: pnpm/action-setup@v2
         with:
-          version: 7
+          version: 8
       - uses: actions/setup-node@v3
         with:
           node-version: "${{ inputs.node_version }}"
