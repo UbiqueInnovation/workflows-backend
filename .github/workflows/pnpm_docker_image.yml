@@ -128,5 +128,5 @@ jobs:
           password: ${{ secrets.acr_password }}
 
       - run: |
-          docker build --build-arg build_tag=${{ inputs.build_tag }} -t ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} docker/${{ inputs.app_name }}
+          docker build --build-arg build_tag=${{ inputs.build_tag }} -t ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} -f docker/${{ inputs.app_name }} .
           docker image push ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
