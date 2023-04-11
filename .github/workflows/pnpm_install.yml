@@ -51,4 +51,4 @@ jobs:
         if: ${{ inputs.release_env }}
         with:
           name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
-          path: ${{ inputs.app_directory }}/dist/
+          path: ${{ inputs.app_directory }}/.next/
