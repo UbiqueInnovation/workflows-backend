@@ -229,6 +229,7 @@ jobs:
                 uses: docker/login-action@v2
                 if: "${{ inputs.native_image }}"
                 with:
+                    registry: ${{ secrets.acr_registry }}
                     username: ${{ secrets.acr_username }}
                     password: ${{ secrets.acr_password }}
 
