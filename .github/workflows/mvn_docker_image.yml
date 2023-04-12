@@ -28,7 +28,7 @@ on:
             jib_custom_docker_image:
                 type: string
                 required: false
-                description: custom docker image for jib build.
+                description: custom docker image for docker build.
             tag_add_commithash:
                 required: false
                 default: false
@@ -43,6 +43,15 @@ on:
                 required: false
                 default: false
                 type: boolean
+            native_image:
+                required: false
+                default: false
+                type: boolean
+            target_env:
+                required: false
+                default: local
+                type: string
+                description: Currently only used for native builds
 
         secrets:
             artifactory_user:
@@ -67,13 +76,13 @@ on:
                 description: necessary if input.run_poeditor is true
             jib_custom_docker_image_repo:
                 required: false
-                description: custom docker image repo jib build.
+                description: custom docker image repo for docker build.
             jib_custom_docker_image_repo_user:
                 required: false
-                description: custom docker image repo user for jib build.
+                description: custom docker image repo user for for docker build.
             jib_custom_docker_image_repo_password:
                 required: false
-                description: custom docker image repo password for jib build.
+                description: custom docker image repo password for for docker build.
 
 jobs:
     create-docker-image:
@@ -191,11 +200,12 @@ jobs:
                 run: |
                     echo "DOCKER_IMAGE=${{ secrets.jib_custom_docker_image_repo }}/${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
 
-            -   name: Docker image for JIB build
+            -   name: Docker image for build
                 run: |
-                    echo "Docker image jor JIB build: $DOCKER_IMAGE"
+                    echo "Docker image jor build: $DOCKER_IMAGE"
 
-            -   name: Build and push docker
+            -   name: Build and push job docker
+                if: "${{ ! inputs.native_image }}"
                 run: |
                     mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.3.1:build \
                     -f ${{ inputs.app_directory }}/pom.xml \
@@ -207,4 +217,15 @@ jobs:
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/" \
-                    -Djib.container.entrypoint='sh,-c,java $ADDITIONAL_JAVA_OPTS -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 -cp @/app/jib-classpath-file @/app/jib-main-class-file $@' 
+                    -Djib.container.entrypoint='sh,-c,java $ADDITIONAL_JAVA_OPTS -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
+
+
+            -   name: Build and push native docker image
+                if: "${{ inputs.native_image }}"
+                run: |
+                    docker build . \
+                        --secret id=maven_settings,src="$HOME/.m2/settings.xml" \
+                        --tag "${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }}" \
+                        --build-arg MODULE_TO_BUILD="${{ inputs.app_name }}" \
+                        --build-arg DEPLOY_ENV="${{ inputs.target_env }}" \
+                        --file docker/Dockerfile
