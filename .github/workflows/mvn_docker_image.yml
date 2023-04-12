@@ -96,6 +96,9 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
 
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v2
+
             -   name: Git Status
                 run: git status
 
@@ -226,7 +229,7 @@ jobs:
             -   name: Build and push native docker image
                 if: "${{ inputs.native_image }}"
                 run: |
-                    docker build "${{ inputs.app_parent_directory }}" \
+                    docker buildx build "${{ inputs.app_parent_directory }}" \
                         --secret id=maven_settings,src="$HOME/.m2/settings.xml" \
                         --tag "${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }}" \
                         --build-arg MODULE_TO_BUILD="${{ inputs.app_name }}" \
