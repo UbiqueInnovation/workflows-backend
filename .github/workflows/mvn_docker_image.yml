@@ -13,6 +13,9 @@ on:
             app_directory:
                 required: true
                 type: string
+            app_parent_directory:
+                required: false
+                type: string
             mvn_root_directory:
                 required: false
                 type: string
@@ -223,9 +226,9 @@ jobs:
             -   name: Build and push native docker image
                 if: "${{ inputs.native_image }}"
                 run: |
-                    docker build . \
+                    docker build "${{ inputs.app_parent_directory }}" \
                         --secret id=maven_settings,src="$HOME/.m2/settings.xml" \
                         --tag "${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }}" \
                         --build-arg MODULE_TO_BUILD="${{ inputs.app_name }}" \
                         --build-arg DEPLOY_ENV="${{ inputs.target_env }}" \
-                        --file "${{ inputs.app_directory }}/../docker/Dockerfile"
+                        --file "${{ inputs.app_parent_directory }}/docker/Dockerfile"
