@@ -228,4 +228,4 @@ jobs:
                         --tag "${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }}" \
                         --build-arg MODULE_TO_BUILD="${{ inputs.app_name }}" \
                         --build-arg DEPLOY_ENV="${{ inputs.target_env }}" \
-                        --file docker/Dockerfile
+                        --file "${{ inputs.app_directory }}/../docker/Dockerfile"
