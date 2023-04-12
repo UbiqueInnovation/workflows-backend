@@ -225,8 +225,7 @@ jobs:
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/" \
                     -Djib.container.entrypoint='sh,-c,java $ADDITIONAL_JAVA_OPTS -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
 
-
-            -   name: Build and push native docker image
+            -   name: Build native docker image
                 if: "${{ inputs.native_image }}"
                 run: |
                     docker buildx build "${{ inputs.app_parent_directory }}" \
@@ -235,3 +234,8 @@ jobs:
                         --build-arg MODULE_TO_BUILD="${{ inputs.app_name }}" \
                         --build-arg DEPLOY_ENV="${{ inputs.target_env }}" \
                         --file "${{ inputs.app_parent_directory }}/docker/Dockerfile"
+
+            -   name: Push native docker image
+                if: "${{ inputs.native_image }}"
+                run: |
+                    docker push "${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }}"
