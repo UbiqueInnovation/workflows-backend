@@ -8,11 +8,11 @@ on:
                 type: string
                 description: tag or branch name
             node_version:
-                default: '16'
+                default: "16"
                 type: string
                 required: false
             cache_dependency_path:
-                default: 'yarn.lock'
+                default: "yarn.lock"
                 type: string
                 required: false
             release_env:
@@ -28,7 +28,7 @@ on:
                 required: false
                 default: ""
                 type: string
-                description: 'Creates image name in the form ${app_name}${image_name_postfix}-${release_env}'
+                description: "Creates image name in the form ${app_name}${image_name_postfix}-${release_env}"
             tag_add_commithash:
                 required: false
                 default: false
@@ -70,16 +70,16 @@ jobs:
 
             -   uses: actions/setup-node@v3
                 with:
-                    node-version: '${{ inputs.node_version }}'
+                    node-version: "${{ inputs.node_version }}"
                     check-latest: true
-                    cache: 'yarn'
-                    cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
+                    cache: "yarn"
+                    cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
                 with:
-                    python-version: '3.x'
-                    cache: 'pip'
+                    python-version: "3.x"
+                    cache: "pip"
 
             -   name: Check requirements.txt existence
                 if: ${{ inputs.run_poeditor }}
