@@ -103,6 +103,11 @@ jobs:
             -   name: Image to deploy
                 run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
+            -   name: Set up kubelogin for non-interactive login
+                uses: azure/use-kubelogin@v1
+                with:
+                    kubelogin-version: 'v0.0.28'
+
             -   name: Azure Login
                 uses: azure/login@v1
                 with:
