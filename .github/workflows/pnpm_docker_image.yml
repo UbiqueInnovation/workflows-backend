@@ -50,6 +50,14 @@ on:
                 required: false
                 default: false
                 type: boolean
+            run_build:
+                required: false
+                default: true
+                type: boolean
+            build_dir:
+                required: false
+                default: build
+                type: string
 
         secrets:
             acr_registry:
@@ -79,6 +87,7 @@ jobs:
             -   uses: actions/setup-node@v3
                 with:
                     node-version: "${{ inputs.node_version }}"
+                    check-latest: true
                     cache: "pnpm"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
@@ -105,11 +114,18 @@ jobs:
                 run: |
                     python ${{ inputs.app_directory }}/getTranslations.py ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
 
-            -   name: Build using pnpm
+            -   name: Install using pnpm
                 run: |
                     pnpm --dir ${{ inputs.app_directory }} install
-                    pnpm --dir ${{ inputs.app_directory }} build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
-                    tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/.next .
+
+            -   name: Build using pnpm
+                if: ${{ inputs.run_build }}
+                run: |
+                    pnpm --dir ${{ inputs.app_directory }} run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
+
+            -   name: Tar Build dir to docker
+                run: |
+                    tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/${{ inputs.build_dir }} .
 
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}

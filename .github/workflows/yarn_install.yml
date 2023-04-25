@@ -25,6 +25,10 @@ on:
                 required: false
                 type: string
                 description: if set the given env build is also executed
+            build_dir:
+                required: false
+                default: build
+                type: string
             yarn_ci_flag:
                 required: false
                 default: true
@@ -44,8 +48,9 @@ jobs:
                     check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
-            -   run: |
-                    yarn --cwd ${{ inputs.app_directory }}
+            -   name: Install dependencies
+                run: |
+                    yarn --cwd ${{ inputs.app_directory }} install
             -   name: Build for Environment
                 if: ${{ inputs.release_env }}
                 run: |
@@ -54,4 +59,4 @@ jobs:
                 if: ${{ inputs.release_env }}
                 with:
                     name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
-                    path: ${{ inputs.app_directory }}/build/
+                    path: ${{ inputs.app_directory }}/${{ inputs.build_dir }}/
