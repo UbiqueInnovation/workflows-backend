@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: |
           pnpm --dir=${{ inputs.app_directory }} install
-      - name: Build for Enviornment
+      - name: Build for Environment
         if: ${{ inputs.release_env }}
         run: |
           pnpm --dir=${{ inputs.app_directory }} build:${{ inputs.release_env }}
