@@ -118,6 +118,7 @@ jobs:
                 with:
                     cluster-name: ${{ inputs.cluster }}
                     resource-group: ${{ inputs.cluster_resource_group }}
+                    use-kubelogin: 'true'
 
             -   name: Create namespace (if it doesn't exist)
                 run: |
