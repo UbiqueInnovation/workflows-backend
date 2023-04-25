@@ -12,7 +12,7 @@ on:
                 type: string
                 description: tag for base image
             node_version:
-                default: "16"
+                default: "18"
                 type: string
                 required: false
             cache_dependency_path:
