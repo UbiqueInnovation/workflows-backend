@@ -57,6 +57,18 @@ on:
                 type: string
                 required: false
                 description: 'image pull secret to use (default: ub-acr-secret)'
+            az_client_id:
+                type: string
+                required: true
+                description: 'Client ID for authentication'
+            az_tenant_id:
+                type: string
+                required: true
+                description: 'Tenant ID for authentication'
+            az_subscription_id:
+                type: string
+                required: true
+                description: 'Subcscription ID for authentication'
             image_tag_to_deploy:
                 type: string
                 required: false
@@ -83,7 +95,8 @@ on:
                 required: true
             az_service_principal:
                 required: true
-
+permissions:
+    id-token: write
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -114,7 +127,9 @@ jobs:
             -   name: Azure Login
                 uses: azure/login@v1
                 with:
-                    creds: '${{ secrets.az_service_principal }}'
+                    client-id: ${{ inputs.az_client_id }}
+                    tenant-id: ${{ inputs.az_tenant_id }}
+                    subscription-id: ${{ inputs.az_subscription_id }}
 
             -   name: Set up kubelogin for non-interactive login
                 uses: azure/use-kubelogin@v1
