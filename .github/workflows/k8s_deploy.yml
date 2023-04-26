@@ -57,18 +57,6 @@ on:
                 type: string
                 required: false
                 description: 'image pull secret to use (default: ub-acr-secret)'
-            az_client_id:
-                type: string
-                required: true
-                description: 'Client ID for authentication'
-            az_tenant_id:
-                type: string
-                required: true
-                description: 'Tenant ID for authentication'
-            az_subscription_id:
-                type: string
-                required: true
-                description: 'Subcscription ID for authentication'
             image_tag_to_deploy:
                 type: string
                 required: false
@@ -94,6 +82,12 @@ on:
             acr_password:
                 required: true
             az_service_principal:
+                required: true
+            az_client_id:
+                required: true
+            az_tenant_id:
+                required: true
+            az_subscription_id:
                 required: true
 permissions:
     id-token: write
