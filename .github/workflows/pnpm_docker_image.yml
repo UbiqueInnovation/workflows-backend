@@ -116,12 +116,12 @@ jobs:
 
             -   name: Install using pnpm
                 run: |
-                    pnpm --dir ${{ inputs.app_directory }} install
+                    cd ${{ inputs.app_directory }} && pnpm install
 
             -   name: Build using pnpm
                 if: ${{ inputs.run_build }}
                 run: |
-                    pnpm --dir ${{ inputs.app_directory }} run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
+                    cd ${{ inputs.app_directory }} && pnpm run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
 
             -   name: Tar Build dir to docker
                 run: |

@@ -108,12 +108,12 @@ jobs:
 
             -   name: Install using yarn
                 run: |
-                    yarn install --cwd ${{ inputs.app_directory }}
+                    cd ${{ inputs.app_directory }} && yarn install
 
             -   name: Build using yarn
                 if: ${{ inputs.run_build }}
                 run: |
-                    yarn run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }} --cwd ${{ inputs.app_directory }}
+                    cd ${{ inputs.app_directory }} && yarn run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
 
             -   name: Tar Build dir to docker
                 run: |
