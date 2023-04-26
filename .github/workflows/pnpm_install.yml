@@ -1,54 +1,59 @@
 name: Runs Pnpm Install
 on:
-  workflow_call:
-    inputs:
-      ref_name:
-        required: false
-        default: ""
-        type: string
-        description: tag or branch name for checkout
-      node_version:
-        default: "16"
-        type: string
-        required: false
-      cache_dependency_path:
-        default: "pnpm-lock.yaml"
-        type: string
-        required: false
-        description: path to e.g. pnpm-lock.yaml from ${app_directory}/
-      app_directory:
-        required: true
-        type: string
-        description: directory that contains the package.json
-      release_env:
-        required: false
-        type: string
-        description: if set the given env build is also executed
+    workflow_call:
+        inputs:
+            ref_name:
+                required: false
+                default: ''
+                type: string
+                description: tag or branch name for checkout
+            node_version:
+                default: '18'
+                type: string
+                required: false
+            cache_dependency_path:
+                default: 'pnpm-lock.yaml'
+                type: string
+                required: false
+                description: path to e.g. pnpm-lock.yaml from ${app_directory}/
+            app_directory:
+                required: true
+                type: string
+                description: directory that contains the package.json
+            release_env:
+                required: false
+                type: string
+                description: if set the given env build is also executed
+            build_dir:
+                required: false
+                default: build
+                type: string
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.ref_name }}
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "${{ inputs.node_version }}"
-          cache: "pnpm"
-          cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
-      - name: Install dependencies
-        run: |
-          pnpm --dir=${{ inputs.app_directory }} install
-      - name: Build for Enviornment
-        if: ${{ inputs.release_env }}
-        run: |
-          pnpm --dir=${{ inputs.app_directory }} build:${{ inputs.release_env }}
-      - uses: actions/upload-artifact@v3
-        if: ${{ inputs.release_env }}
-        with:
-          name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
-          path: ${{ inputs.app_directory }}/dist/
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v3
+                with:
+                    ref: ${{ inputs.ref_name }}
+            -   uses: pnpm/action-setup@v2
+                with:
+                    version: 8
+            -   uses: actions/setup-node@v3
+                with:
+                    node-version: '${{ inputs.node_version }}'
+                    check-latest: true
+                    cache: 'pnpm'
+                    cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
+            -   name: Install dependencies
+                run: |
+                    pnpm --dir ${{ inputs.app_directory }} install
+            -   name: Build for Environment
+                if: ${{ inputs.release_env }}
+                run: |
+                    pnpm --dir ${{ inputs.app_directory }} build:${{ inputs.release_env }}
+            -   uses: actions/upload-artifact@v3
+                if: ${{ inputs.release_env }}
+                with:
+                    name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
+                    path: ${{ inputs.app_directory }}/${{ inputs.build_dir }}/
