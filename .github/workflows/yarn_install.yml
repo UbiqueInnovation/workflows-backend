@@ -50,11 +50,11 @@ jobs:
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
             -   name: Install dependencies
                 run: |
-                    yarn --cwd ${{ inputs.app_directory }} install
+                    cd ${{ inputs.app_directory }} && yarn install
             -   name: Build for Environment
                 if: ${{ inputs.release_env }}
                 run: |
-                    CI=${{ inputs.yarn_ci_flag }} yarn --cwd ${{ inputs.app_directory }} run build:${{ inputs.release_env }}
+                    cd ${{ inputs.app_directory }} && CI=${{ inputs.yarn_ci_flag }} yarn build:${{ inputs.release_env }}
             -   uses: actions/upload-artifact@v3
                 if: ${{ inputs.release_env }}
                 with:
