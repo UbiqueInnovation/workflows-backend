@@ -81,8 +81,6 @@ on:
                 required: true
             acr_password:
                 required: true
-            az_service_principal:
-                required: true
             az_client_id:
                 required: true
             az_tenant_id:
