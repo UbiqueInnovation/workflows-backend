@@ -54,7 +54,7 @@ jobs:
             -   name: Build for Environment
                 if: ${{ inputs.release_env }}
                 run: |
-                    cd ${{ inputs.app_directory }} && CI=${{ inputs.yarn_ci_flag }} yarn build:${{ inputs.release_env }}
+                    cd ${{ inputs.app_directory }} && CI=${{ inputs.yarn_ci_flag }} REACT_APP_VERSION_STRING=${{ github.event.inputs.tag }} yarn build:${{ inputs.release_env }}
             -   uses: actions/upload-artifact@v3
                 if: ${{ inputs.release_env }}
                 with:
