@@ -49,7 +49,12 @@ on:
             dirs_for_docker_build:
                 required: true
                 type: string
-                description: Space-separated list of files or glob pattern to include in docker build context. E.g. 'public .next' for .next builds or 'build' for other web builds.
+                description: Space-separated list of files or glob pattern to include in docker build context. E.g. 'public .next' for .next builds or '.' for other web builds.
+            tar_directory:
+                required: false
+                default: ""
+                type: string
+                description: Change to this directory before packaging files as tar.gz. For regular web builds this would usually be 'build'
 
         secrets:
             acr_registry:
@@ -112,7 +117,7 @@ jobs:
 
             -   name: Tar Build dir to docker
                 run: |
-                    tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/${{ inputs.dirs_for_docker_build }}
+                    tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/${{ inputs.tar_directory}} ${{ inputs.dirs_for_docker_build }}
 
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
