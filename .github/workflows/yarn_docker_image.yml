@@ -113,7 +113,7 @@ jobs:
 
             -   name: Build using yarn
                 run: |
-                    cd ${{ inputs.app_directory }} && yarn run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
+                    cd ${{ inputs.app_directory }} && REACT_APP_VERSION_STRING=${{ inputs.ref_name }} yarn run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
 
             -   name: Tar Build dir to docker
                 run: |
