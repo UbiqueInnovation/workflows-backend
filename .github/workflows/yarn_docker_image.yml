@@ -8,11 +8,11 @@ on:
                 type: string
                 description: tag or branch name
             node_version:
-                default: '16'
+                default: "18"
                 type: string
                 required: false
             cache_dependency_path:
-                default: 'yarn.lock'
+                default: "yarn.lock"
                 type: string
                 required: false
             release_env:
@@ -28,7 +28,7 @@ on:
                 required: false
                 default: ""
                 type: string
-                description: 'Creates image name in the form ${app_name}${image_name_postfix}-${release_env}'
+                description: "Creates image name in the form ${app_name}${image_name_postfix}-${release_env}"
             tag_add_commithash:
                 required: false
                 default: false
@@ -46,6 +46,15 @@ on:
                 required: false
                 default: false
                 type: boolean
+            dirs_for_docker_build:
+                required: true
+                type: string
+                description: Space-separated list of files or glob pattern to include in docker build context. E.g. 'public .next' for .next builds or '.' for other web builds.
+            tar_directory:
+                required: false
+                default: ""
+                type: string
+                description: Change to this directory before packaging files as tar.gz. For regular web builds this would usually be 'build'
 
         secrets:
             acr_registry:
@@ -70,16 +79,16 @@ jobs:
 
             -   uses: actions/setup-node@v3
                 with:
-                    node-version: '${{ inputs.node_version }}'
+                    node-version: "${{ inputs.node_version }}"
                     check-latest: true
-                    cache: 'yarn'
-                    cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
+                    cache: "yarn"
+                    cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
                 with:
-                    python-version: '3.x'
-                    cache: 'pip'
+                    python-version: "3.x"
+                    cache: "pip"
 
             -   name: Check requirements.txt existence
                 if: ${{ inputs.run_poeditor }}
@@ -98,11 +107,17 @@ jobs:
                 run: |
                     python ${{ inputs.app_directory }}/getTranslations.py ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
 
+            -   name: Install using yarn
+                run: |
+                    cd ${{ inputs.app_directory }} && yarn install
+
             -   name: Build using yarn
                 run: |
-                    yarn --cwd ${{ inputs.app_directory }}
-                    yarn --cwd ${{ inputs.app_directory }} run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
-                    tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/build .
+                    cd ${{ inputs.app_directory }} && REACT_APP_VERSION_STRING=${{ inputs.ref_name }} yarn run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
+
+            -   name: Tar Build dir to docker
+                run: |
+                    tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }}/${{ inputs.tar_directory}} ${{ inputs.dirs_for_docker_build }}
 
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
