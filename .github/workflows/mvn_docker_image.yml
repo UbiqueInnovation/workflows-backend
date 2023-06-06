@@ -150,26 +150,15 @@ jobs:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
 
-            -   name: Set TAG_NAME with commit hash
-                if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=${{ inputs.ref_name }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
-
-            -   name: Set TAG_NAME
-                if: ${{ ! inputs.tag_add_commithash }}
+            -   name: Get TAG_NAME from ref_name
                 run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
-            -   name: Remove slashes from TAG_NAME
+            -   name: Replace `/` by `-` in TAG_NAME
                 run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
 
-            -   name: Get version from TAG_NAME with commit hash
+            -   name: Append commit hash (first 8 characters) to TAG_NAME
                 if: ${{ inputs.tag_add_commithash }}
-                run: echo "VERSION=${TAG_NAME}" >> $GITHUB_ENV
-
-            -   name: Get version from tag
-                if: ${{ ! inputs.tag_add_commithash }}
-                env:
-                    REF_NAME: ${{ inputs.ref_name }}
-                run: echo "VERSION=${REF_NAME/[v\/]/}" >> $GITHUB_ENV
+                run: echo "TAG_NAME=TAG_NAME-${GITHUB_SHA::8}" >> $GITHUB_ENV
 
             -   name: Set default maven root directory if empty
                 if: ${{ ! inputs.mvn_root_directory  }}

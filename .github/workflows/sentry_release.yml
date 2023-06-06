@@ -33,7 +33,7 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
             -   name: Create Sentry release
-                uses: getsentry/action-release@426b54786363ee2ecb27129f04b99cf714a36d38
+                uses: getsentry/action-release@7d9c3a86a287efcbedca1328c56e15f2f15d5f80
                 env:
                     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
                     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
