@@ -134,18 +134,15 @@ jobs:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
 
-            -   name: Get VERSION from ref_name
-                run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
+            -   name: Get TAG_NAME from ref_name
+                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
-            -   name: Replace `/` by `-` in VERSION
-                run: echo "VERSION=${VERSION/\//-}" >> $GITHUB_ENV
+            -   name: Replace `/` by `-` in TAG_NAME
+                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
 
-            -   name: Strip leading `v` from VERSION
-                run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
-
-            -   name: Append commit hash (first 8 characters) to VERSION
+            -   name: Append commit hash (first 8 characters) to TAG_NAME
                 if: ${{ inputs.tag_add_commithash }}
-                run: echo "VERSION=VERSION-${GITHUB_SHA::8}" >> $GITHUB_ENV
+                run: echo "TAG_NAME=TAG_NAME-${GITHUB_SHA::8}" >> $GITHUB_ENV
 
             -   name: Set default maven root directory if empty
                 if: "${{ ! inputs.mvn_root_directory  }}"
@@ -191,12 +188,12 @@ jobs:
                 run: |
                     mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.3.1:build \
                     -f ${{ inputs.app_directory }}/pom.xml \
-                    -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.VERSION }} \
+                    -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
                     -Djib.from.image=${{ env.DOCKER_IMAGE }} \
                     -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
-                    -Djib.container.environment=VERSION_TAG_NAME="${{ env.VERSION }}",SPRING_CONFIG_LOCATION="/config/" \
+                    -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/" \
                     -Djib.container.entrypoint='sh,-c,java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@' 
