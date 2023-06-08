@@ -19,5 +19,5 @@ jobs:
         steps:
             -   uses: actions/checkout@v3
             -   name: Run Api Tests
-                run: java -cp "/intellij-http-client/*" com.intellij.httpClient.cli.HttpClientMain -e ${{ github.event.inputs.environment_to_test}} -v ${{ github.event.inputs.test_directory}}/http-client.env.json --report ${{ github.event.inputs.test_directory}}/*.http
+                run: java -cp "/intellij-http-client/*" com.intellij.httpClient.cli.HttpClientMain -e ${{ inputs.environment_to_test}} -v ${{ inputs.test_directory}}/http-client.env.json --report ${{ inputs.test_directory}}/*.http
     
