@@ -1,0 +1,23 @@
+name: Run Api Tests
+on:
+    workflow_call:
+        inputs:
+            environment_to_test:
+                required: true
+                type: string
+                description: environment to run tests against
+            test_directory:
+                required: true
+                type: string
+                description: directory containing env.json file and *.http files
+
+jobs:
+    api-tests:
+        runs-on: ubuntu-latest
+        container:
+            image: jetbrains/intellij-http-client:latest
+        steps:
+            -   uses: actions/checkout@v3
+            -   name: Run Api Tests
+                run: java -cp "/intellij-http-client/*" com.intellij.httpClient.cli.HttpClientMain -e ${{ github.event.inputs.environment_to_test}} -v ${{ github.event.inputs.test_directory}}/http-client.env.json --report ${{ github.event.inputs.test_directory}}/*.http
+    
