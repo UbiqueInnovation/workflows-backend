@@ -35,7 +35,7 @@ on:
             artifact_dir:
                 required: false
                 default: ""
-                description: space separated list for all artifact dirs
+                description: glob pattern for all artifact dirs
                 type: string
 
         secrets:
