@@ -46,6 +46,11 @@ on:
                 required: true
                 type: string
                 description: directory that contains the package.json
+            root_directory:
+                required: false
+                type: string
+                default: ""
+                description: root dir for pnpm monorepo
             run_poeditor:
                 required: false
                 default: false
@@ -112,7 +117,7 @@ jobs:
 
             -   name: Install using pnpm
                 run: |
-                    cd ${{ inputs.app_directory }} && pnpm install
+                    cd ${{ inputs.root_directory || inputs.app_directory }} && pnpm install
 
             -   name: Build using pnpm
                 run: |
