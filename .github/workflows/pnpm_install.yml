@@ -32,6 +32,11 @@ on:
                 required: false
                 default: false
                 type: boolean
+            artifact_dir:
+                required: false
+                default: ""
+                description: space separated list for all artifact dirs
+                type: string
 
         secrets:
             poeditor_api_key:
@@ -88,8 +93,16 @@ jobs:
                 if: ${{ inputs.release_env }}
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm build:${{ inputs.release_env }}
+            -   name: set artifact dir from input
+                if: ${{ inputs.artifact_dir }}
+                run: |
+                    echo "ARTIFACT_DIR='${{ inputs.artifact_dir }}'" >> $GITHUB_ENV
+            -   name: set artifact dir as default
+                if: ${{ ! inputs.artifact_dir }}
+                run: |
+                    echo "ARTIFACT_DIR=${{ inputs.app_directory }}/${{ inputs.build_dir }}/" >> $GITHUB_ENV
             -   uses: actions/upload-artifact@v3
                 if: ${{ inputs.release_env }}
                 with:
                     name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
-                    path: ${{ inputs.app_directory }}/${{ inputs.build_dir }}/
+                    path: ${{ env.ARTIFACT_DIR }}
