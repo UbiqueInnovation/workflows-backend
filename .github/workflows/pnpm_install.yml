@@ -102,7 +102,6 @@ jobs:
                 run: |
                     echo "ARTIFACT_DIR=${{ inputs.app_directory }}/${{ inputs.build_dir }}/" >> $GITHUB_ENV
             -   uses: actions/upload-artifact@v3
-                if: ${{ inputs.release_env }}
                 with:
                     name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
                     path: ${{ env.ARTIFACT_DIR }}
