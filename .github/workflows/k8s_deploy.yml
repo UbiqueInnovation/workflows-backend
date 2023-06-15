@@ -155,7 +155,7 @@ jobs:
 
             -   name: Apply Service Account config
                 uses: azure/k8s-deploy@v4
-                if: steps.check_serviceaccount_file.outputs.files_exists == 'true'
+                if: ${{  steps.check_serviceaccount_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml
@@ -171,7 +171,7 @@ jobs:
 
             -   name: Apply Deployment config
                 uses: azure/k8s-deploy@v4
-                if: steps.check_deployment_file.outputs.files_exists == 'true' && ! input.additional_image
+                if: ${{  steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
@@ -183,7 +183,7 @@ jobs:
 
             -   name: Apply Deployment config with additional image
                 uses: azure/k8s-deploy@v4
-                if: steps.check_deployment_file.outputs.files_exists == 'true' && input.additional_image
+                if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && inputs.additional_image_name }}
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
@@ -203,7 +203,7 @@ jobs:
 
             -   name: Apply Service config
                 uses: azure/k8s-deploy@v4
-                if: steps.check_service_file.outputs.files_exists == 'true'
+                if: ${{  steps.check_service_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml
@@ -219,7 +219,7 @@ jobs:
 
             -   name: Apply Ingress config
                 uses: azure/k8s-deploy@v4
-                if: steps.check_ingress_file.outputs.files_exists == 'true'
+                if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml
