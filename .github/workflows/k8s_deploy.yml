@@ -65,6 +65,14 @@ on:
                 type: string
                 required: false
                 description: Prefix for the configmap (without '-dev/prod-config'). Will default to app_name if not set.
+            additional_image_name:
+                type: string
+                required: false
+                description: Set to add an additional image in the the apply step for the deployment.yaml
+            additional_image_tag:
+                type: string
+                required: false
+                description: Set to add a separate tag for the additional_image_name, defaults to the tag of the "normal"image if not set
 
         secrets:
             acr_registry:
@@ -163,12 +171,25 @@ jobs:
 
             -   name: Apply Deployment config
                 uses: azure/k8s-deploy@v4
-                if: steps.check_deployment_file.outputs.files_exists == 'true'
+                if: steps.check_deployment_file.outputs.files_exists == 'true' && ! input.additional_image
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
                     images: |
                         ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }}
+                    imagepullsecrets: |
+                        ${{ inputs.pull_secret_name }}
+                    namespace: ${{ inputs.namespace }}
+
+            -   name: Apply Deployment config with additional image
+                uses: azure/k8s-deploy@v4
+                if: steps.check_deployment_file.outputs.files_exists == 'true' && input.additional_image
+                with:
+                    manifests: |
+                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
+                    images: |
+                        ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }}
+                        ${{ secrets.acr_registry }}/${{ inputs.additional_image_name }}:${{ inputs.additional_image_tag && inputs.additional_image_tag || env.TAG_NAME }}
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
