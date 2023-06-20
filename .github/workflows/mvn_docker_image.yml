@@ -206,7 +206,7 @@ jobs:
                 run: |
                     echo "Docker image jor build: $DOCKER_IMAGE"
 
-            -   name: Build and push docker
+            -   name: Build and push docker image
                 if: ${{ ! inputs.native_image }}
                 run: |
                     mvn --batch-mode compile jib:build \
@@ -221,21 +221,19 @@ jobs:
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/" \
                     -Djib.container.entrypoint='sh,-c,java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
 
-            -   name: Login to Docker Hub
-                uses: docker/login-action@v2
-                if: ${{ inputs.native_image }}
-                with:
-                    registry: ${{ secrets.acr_registry }}
-                    username: ${{ secrets.acr_username }}
-                    password: ${{ secrets.acr_password }}
-
             -   name: Build and push native docker image
                 if: ${{ inputs.native_image }}
                 run: |
-                    docker buildx build "${{ inputs.app_parent_directory }}" \
-                        --secret id=maven_settings,src="$HOME/.m2/settings.xml" \
-                        --tag "${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }}" \
-                        --build-arg MODULE_TO_BUILD="${{ inputs.app_name }}" \
-                        --build-arg DEPLOY_ENV="${{ inputs.target_env }}" \
-                        --file "${{ inputs.app_parent_directory }}/docker/Dockerfile" \
-                        --push
+                    mvn --batch-mode package jib:build -Pnative \
+                    -f ${{ inputs.app_directory }}/pom.xml \
+                    -Ddeploy.env=${{ inputs.target_env }} -Dspring.config.location=/config/
+                    -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }} \
+                    -Djib.from.image=${{ env.DOCKER_IMAGE }} \
+                    -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
+                    -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
+                    -Djib.to.auth.username=${{ secrets.acr_username }} \
+                    -Djib.to.auth.password=${{ secrets.acr_password }} \
+                    -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
+                    -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/" \
+                    -Djib.container.entrypoint='sh,-c,java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
+
