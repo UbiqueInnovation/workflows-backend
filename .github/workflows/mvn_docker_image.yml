@@ -168,6 +168,12 @@ jobs:
                 if: ${{ inputs.mvn_root_directory  }}
                 run: echo "MVN_ROOT_DIR=${{ inputs.mvn_root_directory }}" >> $GITHUB_ENV
 
+            -   name: Set VERSION from TAG_NAME
+                run: echo "VERSION=${TAG_NAME}" >> $GITHUB_ENV
+
+            -   name: Strip leading `v` from VERSION
+                run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
+
             -   name: Set versions
                 run: mvn -f ${{ env.MVN_ROOT_DIR }}/pom.xml versions:set -DnewVersion=$VERSION
 
@@ -203,7 +209,7 @@ jobs:
             -   name: Build and push docker
                 if: ${{ ! inputs.native_image }}
                 run: |
-                    mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.3.1:build \
+                    mvn --batch-mode compile jib:build \
                     -f ${{ inputs.app_directory }}/pom.xml \
                     -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
                     -Djib.from.image=${{ env.DOCKER_IMAGE }} \

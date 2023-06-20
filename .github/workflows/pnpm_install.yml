@@ -28,6 +28,23 @@ on:
                 required: false
                 default: build
                 type: string
+            run_poeditor:
+                required: false
+                default: false
+                type: boolean
+            artifact_dir:
+                required: false
+                default: ""
+                description: glob pattern for all artifact dirs
+                type: string
+
+        secrets:
+            poeditor_api_key:
+                required: false
+                description: necessary if input.run_poeditor is true
+            poeditor_project_id:
+                required: false
+                description: necessary if input.run_poeditor is true
 
 jobs:
     build:
@@ -45,6 +62,30 @@ jobs:
                     check-latest: true
                     cache: 'pnpm'
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
+
+            -   uses: actions/setup-python@v4
+                if: ${{ inputs.run_poeditor }}
+                with:
+                    python-version: "3.x"
+                    cache: "pip"
+
+            -   name: Check requirements.txt existence
+                if: ${{ inputs.run_poeditor }}
+                id: check_requirements_txt
+                uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
+                with:
+                    files: "requirements.txt"
+
+            -   name: Install required python module using pip
+                if: ${{ steps.check_requirements_txt.outputs.files_exists == 'true' }}
+                run: |
+                    python -m pip install -r requirements.txt
+
+            -   name: Run getTranslations.py
+                if: ${{ inputs.run_poeditor }}
+                run: |
+                    python ${{ inputs.app_directory }}/getTranslations.py ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
+
             -   name: Install dependencies
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm install
@@ -52,8 +93,15 @@ jobs:
                 if: ${{ inputs.release_env }}
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm build:${{ inputs.release_env }}
+            -   name: set artifact dir from input
+                if: ${{ inputs.artifact_dir }}
+                run: |
+                    echo "ARTIFACT_DIR='${{ inputs.artifact_dir }}'" >> $GITHUB_ENV
+            -   name: set artifact dir as default
+                if: ${{ ! inputs.artifact_dir }}
+                run: |
+                    echo "ARTIFACT_DIR=${{ inputs.app_directory }}/${{ inputs.build_dir }}/" >> $GITHUB_ENV
             -   uses: actions/upload-artifact@v3
-                if: ${{ inputs.release_env }}
                 with:
                     name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
-                    path: ${{ inputs.app_directory }}/${{ inputs.build_dir }}/
+                    path: ${{ env.ARTIFACT_DIR }}
