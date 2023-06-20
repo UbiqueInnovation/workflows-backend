@@ -192,7 +192,7 @@ jobs:
 
             -   name: Build and push docker
                 run: |
-                    mvn --batch-mode compile com.google.cloud.tools:jib-maven-plugin:3.3.1:build \
+                    mvn --batch-mode compile jib:build \
                     -f ${{ inputs.app_directory }}/pom.xml \
                     -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
                     -Djib.from.image=${{ env.DOCKER_IMAGE }} \
