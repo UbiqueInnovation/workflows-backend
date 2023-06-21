@@ -56,7 +56,7 @@ jobs:
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-m2
+                    restore-keys: ${{ runner.os }}-m2-
 
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}

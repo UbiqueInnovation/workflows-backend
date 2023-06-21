@@ -114,7 +114,7 @@ jobs:
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-m2
+                    restore-keys: ${{ runner.os }}-m2-
 
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
