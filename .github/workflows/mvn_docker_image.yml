@@ -104,10 +104,18 @@ jobs:
                 run: git status
 
             -   name: Set up JDK
+                if: ${{ ! inputs.native_image }}
                 uses: actions/setup-java@v3
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'temurin'
+
+            -   name: Set up GraalVM JDK
+                if: ${{ inputs.native_image }}
+                uses: graalvm/setup-graalvm@v1
+                with:
+                    java-version: ${{ inputs.java_version }}
+                    distribution: 'graalvm'
 
             -   name: Cache Maven packages
                 uses: actions/cache@v3
