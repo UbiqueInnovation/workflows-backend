@@ -211,6 +211,7 @@ jobs:
                 run: |
                     mvn --batch-mode compile jib:build \
                     -f ${{ inputs.app_directory }}/pom.xml \
+                    -Dconfig.directory=/config
                     -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
                     -Djib.from.image=${{ env.DOCKER_IMAGE }} \
                     -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
