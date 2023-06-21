@@ -226,7 +226,7 @@ jobs:
                 run: |
                     mvn --batch-mode package jib:build -Pnative \
                     -f ${{ inputs.app_directory }}/pom.xml \
-                    -Ddeploy.env=${{ inputs.target_env }} -Dspring.config.location=/config/
+                    -Dconfig.deploy.env=${{ inputs.target_env }} -Dconfig.directory=/config
                     -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }} \
                     -Djib.from.image=${{ env.DOCKER_IMAGE }} \
                     -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
