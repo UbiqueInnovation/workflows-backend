@@ -98,6 +98,9 @@ on:
 jobs:
     create-docker-image:
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2
+            contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2, but only if actions/checkout is used
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
