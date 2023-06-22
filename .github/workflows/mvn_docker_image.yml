@@ -56,6 +56,11 @@ on:
                 default: local
                 type: string
                 description: Currently only used for native builds
+            runs_on:
+                required: false
+                default: ubuntu-latest
+                type: string
+                description: Set to 'self-hosted' if needed.
 
         secrets:
             artifactory_user:
@@ -90,7 +95,8 @@ on:
 
 jobs:
     create-docker-image:
-        runs-on: ubuntu-latest
+        name: Create Docker Image
+        runs-on: ${{ inputs.runs_on }}
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
