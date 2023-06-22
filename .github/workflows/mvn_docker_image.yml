@@ -74,9 +74,11 @@ on:
             acr_registry:
                 required: true
             acr_username:
-                required: true
+                required: false
+                description: required if input container_registry_type is 'azure-cr'
             acr_password:
-                required: true
+                required: false
+                description: required if input container_registry_type is 'azure-cr'
             poeditor_api_key:
                 required: false
                 description: necessary if input.run_poeditor is true
