@@ -56,6 +56,11 @@ on:
                 default: local
                 type: string
                 description: Currently only used for native builds
+            container_registry_type:
+                required: false
+                default: 'azure-cr'
+                type: string
+                description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
 
         secrets:
             artifactory_user:
@@ -91,6 +96,8 @@ on:
 jobs:
     create-docker-image:
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
@@ -214,6 +221,25 @@ jobs:
                 run: |
                     echo "Docker image jor build: $DOCKER_IMAGE"
 
+            -   name: Login to Azure CR
+                if: ${{ inputs.container_registry_type == 'azure-cr' }}
+                uses: azure/docker-login@v1
+                with:
+                    login-server: ${{ secrets.acr_registry }}
+                    username: ${{ secrets.acr_username }}
+                    password: ${{ secrets.acr_password }}
+
+            -   name: Configure AWS credentials
+                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                uses: aws-actions/configure-aws-credentials@v2
+                with:
+                    role-to-assume: arn:aws:iam::979586646521:role/github-actions-ecr
+                    aws-region: eu-west-1
+
+            -   name: Login to Amazon ECR
+                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                uses: aws-actions/amazon-ecr-login@v1
+
             -   name: Build and push docker image
                 if: ${{ ! inputs.native_image }}
                 run: |
@@ -224,8 +250,6 @@ jobs:
                     -Djib.from.image=${{ env.DOCKER_IMAGE }} \
                     -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
-                    -Djib.to.auth.username=${{ secrets.acr_username }} \
-                    -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/" \
                     -Djib.container.entrypoint='sh,-c,java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
@@ -240,8 +264,6 @@ jobs:
                     -Djib.from.image=${{ env.DOCKER_IMAGE }} \
                     -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
-                    -Djib.to.auth.username=${{ secrets.acr_username }} \
-                    -Djib.to.auth.password=${{ secrets.acr_password }} \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SPRING_CONFIG_LOCATION="/config/" \
                     -Djib.container.entrypoint='sh,-c,java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
