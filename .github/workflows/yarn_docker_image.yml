@@ -82,16 +82,22 @@ jobs:
         steps:
             -   uses: actions/checkout@v3
 
-            -   uses: actions/setup-node@v3
+            -   name: Setup Nodejs and npm
+                if: ${{ inputs.runs_on == 'self-hosted' }}
+                uses: actions/setup-node@v3
                 with:
                     node-version: "${{ inputs.node_version }}"
-                    check-latest: true
-                    cache: "yarn"
-                    cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   name: Setup yarn
                 if: ${{ inputs.runs_on == 'self-hosted' }}
                 run: npm install -g yarn
+
+            -   name: Setup Nodejs with yarn caching
+                uses: actions/setup-node@v3
+                with:
+                    node-version: "${{ inputs.node_version }}"
+                    cache: yarn
+                    cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
