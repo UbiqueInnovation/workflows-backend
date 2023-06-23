@@ -89,6 +89,10 @@ jobs:
                     cache: "yarn"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
+            -   name: Setup yarn
+                if: ${{ inputs.runs_on == 'self-hosted' }}
+                run: npm install -g yarn
+
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
                 with:

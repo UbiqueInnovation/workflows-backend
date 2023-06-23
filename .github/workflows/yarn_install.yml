@@ -34,10 +34,15 @@ on:
                 default: true
                 type: boolean
                 description: flag for overriding yarn CI flag (DO NOT USE IT FOR NEW PROJECTS!)
+            runs_on:
+                required: false
+                default: ubuntu-latest
+                type: string
+                description: Set to 'self-hosted' if needed, default 'ubuntu-latest'
 
 jobs:
     build:
-        runs-on: ubuntu-latest
+        runs-on: ${{ inputs.runs_on }}
         steps:
             -   uses: actions/checkout@v3
                 with:
@@ -48,6 +53,11 @@ jobs:
                     check-latest: true
                     cache: 'yarn'
                     cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
+
+            -   name: Setup yarn
+                if: ${{ inputs.runs_on == 'self-hosted' }}
+                run: npm install -g yarn
+
             -   name: Install dependencies
                 run: |
                     cd ${{ inputs.app_directory }} && yarn install
