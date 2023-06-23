@@ -50,6 +50,16 @@ on:
                 required: true
                 type: string
                 description: Space-separated list of files or glob pattern to include in docker build context. E.g. 'public .next' for .next builds or 'build' for other web builds.
+            runs_on:
+                required: false
+                default: ubuntu-latest
+                type: string
+                description: Set to 'self-hosted' if needed, default 'ubuntu-latest'
+            dockerfile_name:
+                required: false
+                default: 'Dockerfile'
+                type: string
+                description: Name of the Dockerfile, defaults to 'Dockerfile'
 
         secrets:
             acr_registry:
@@ -66,9 +76,9 @@ on:
                 description: necessary if input.run_poeditor is true
 
 jobs:
-    build:
-        name: Build Project
-        runs-on: ubuntu-latest
+    create-docker-image:
+        name: Create Docker Image
+        runs-on: ${{ inputs.runs_on }}
         steps:
             -   uses: actions/checkout@v3
 
@@ -132,5 +142,7 @@ jobs:
                     password: ${{ secrets.acr_password }}
 
             -   run: |
-                    docker build -t ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} docker/${{ inputs.app_name }}
+                    docker build -t ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} \
+                        -f docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }} \
+                        docker/${{ inputs.app_name }}
                     docker image push ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
