@@ -96,7 +96,8 @@ jobs:
                 uses: actions/setup-node@v3
                 with:
                     node-version: "${{ inputs.node_version }}"
-                    cache: yarn
+                    check-latest: true
+                    cache: "yarn"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   name: Set up Docker Buildx
@@ -156,8 +157,7 @@ jobs:
 
             -   name: Docker build
                 run: |
-                    docker buildx build \
+                    docker buildx build docker/${{ inputs.app_name }} \
                         --tag ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} \
                         --file docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }} \
-                        --push \
-                        docker/${{ inputs.app_name }}
+                        --push
