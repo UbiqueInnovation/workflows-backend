@@ -19,6 +19,11 @@ on:
                 required: false
                 type: string
                 description: name to tag the image with. Defaults to inputs.pull_image_tag
+            runs_on:
+                required: false
+                default: ubuntu-latest
+                type: string
+                description: Set to 'self-hosted' if needed, default 'ubuntu-latest'
 
         secrets:
             pull_container_registry:
@@ -39,7 +44,7 @@ on:
 
 jobs:
     pull_tag_push_image:
-        runs-on: ubuntu-latest
+        runs-on: ${{ inputs.runs_on }}
         steps:
             -   name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry if not set)
                 env:
@@ -56,8 +61,8 @@ jobs:
             -   name: SET PULL_IMAGE
                 run: echo "PULL_IMAGE=${{ env.PULL_IMAGE_REGISTRY }}${{ inputs.pull_image_name }}:${{ inputs.pull_image_tag }}" >> $GITHUB_ENV
 
-            -   name: SET PULL_IMAGE
-                run: echo "PULL_IMAGE=${{ secrets.push_image_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ inputs.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
+            -   name: SET PUSH_IMAGE
+                run: echo "PUSH_IMAGE=${{ secrets.push_image_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ inputs.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
 
             -   name: Set up Docker Buildx
                 uses: docker/setup-buildx-action@v2
