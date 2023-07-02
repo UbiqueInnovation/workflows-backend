@@ -3,10 +3,6 @@ on:
     workflow_call:
 
         inputs:
-            ref_name:
-                required: true
-                type: string
-                description: tag or branch to check out
             pull_image_name:
                 required: false
                 type: string
@@ -45,20 +41,6 @@ jobs:
     augment_docker_image:
         runs-on: ubuntu-latest
         steps:
-            -   name: Checkout code
-                uses: actions/checkout@v3
-                with:
-                    ref: ${{ inputs.ref_name }}
-
-            -   name: Set TAG_NAME from ref_name
-                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
-
-            -   name: Replace `/` by `-` in TAG_NAME
-                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
-
-            -   name: Replace `/` by `-` in TAG_NAME
-                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
-
             -   name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry if not set)
                 env:
                     PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
