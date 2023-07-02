@@ -1,0 +1,98 @@
+name: Pull Docker Image, augment it and push to different repository
+on:
+    workflow_call:
+
+        inputs:
+            ref_name:
+                required: true
+                type: string
+                description: tag or branch to check out
+            pull_image_name:
+                required: false
+                type: string
+                description: Image name to pull from secrets.pull_container_registry. Optional, default may be specified in Dockerfile.
+            pull_image_tag:
+                required: true
+                type: string
+                description: Image tag to pull from secrets.pull_container_registry. Optional, default may be specified in Dockerfile.
+            push_image_name:
+                required: false
+                type: string
+                description: name to tag the image with. Defaults to inputs.pull_image_name
+            push_image_tag:
+                required: false
+                type: string
+                description: name to tag the image with. Defaults to inputs.pull_image_tag
+
+        secrets:
+            pull_container_registry:
+                required: false
+                description: defaults to push_container_registry
+            pull_container_registry_username:
+                required: false
+                description: defaults to push_container_registry_username
+            pull_container_registry_password:
+                required: false
+                description: defaults to push_container_registry_password
+            push_container_registry:
+                required: true
+            push_container_registry_username:
+                required: true
+            push_container_registry_password:
+                required: true
+
+jobs:
+    augment_docker_image:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v3
+                with:
+                    ref: ${{ inputs.ref_name }}
+
+            -   name: Set TAG_NAME from ref_name
+                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+
+            -   name: Replace `/` by `-` in TAG_NAME
+                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
+
+            -   name: Replace `/` by `-` in TAG_NAME
+                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
+
+            -   name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry if not set)
+                env:
+                    PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
+                if: ${{ env.PULL_CONTAINER_REGISTRY }}
+                run: echo "PULL_IMAGE_REGISTRY=${{ secrets.pull_container_registry }}/" >> $GITHUB_ENV
+
+            -   name: SET PUSH_IMAGE_NAME to push_image_name or default pull_image_name
+                run: echo "PUSH_IMAGE_NAME=${{ inputs.push_image_name || inputs.pull_image_name }}" >> $GITHUB_ENV
+
+            -   name: SET PUSH_IMAGE_TAG to push_image_tag or default pull_image_tag
+                run: echo "PUSH_IMAGE_TAG=${{ inputs.push_image_tag || inputs.pull_image_tag }}" >> $GITHUB_ENV
+
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v2
+
+            -   uses: azure/docker-login@v1
+                env:
+                    PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
+                if: ${{ env.PULL_CONTAINER_REGISTRY }}
+                with:
+                    login-server: ${{ secrets.pull_container_registry }}
+                    username: ${{ secrets.pull_container_registry_username }}
+                    password: ${{ secrets.pull_container_registry_password }}
+
+            -   uses: azure/docker-login@v1
+                with:
+                    login-server: ${{ secrets.push_container_registry }}
+                    username: ${{ secrets.push_container_registry_username }}
+                    password: ${{ secrets.push_container_registry_password }}
+
+            -   name: Tag and push docker
+                run: |
+                    docker tag \
+                        ${{ env.PULL_IMAGE_REGISTRY }}${{ inputs.pull_image_name }}:${{ inputs.pull_image_tag }} \
+                        ${{ secrets.push_image_registry }}${{ env.PUSH_IMAGE_NAME }}:${{ inputs.pull_image_tag }}
+                    docker push ${{ secrets.push_image_registry }}${{ env.PUSH_IMAGE_NAME }}:${{ inputs.pull_image_tag }}
+                    
