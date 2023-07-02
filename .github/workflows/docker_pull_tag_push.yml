@@ -23,7 +23,7 @@ on:
         secrets:
             pull_container_registry:
                 required: false
-                description: defaults to push_container_registry
+                description: defaults to default docker.io
             pull_container_registry_username:
                 required: false
                 description: defaults to push_container_registry_username
@@ -53,6 +53,12 @@ jobs:
             -   name: SET PUSH_IMAGE_TAG to push_image_tag or default pull_image_tag
                 run: echo "PUSH_IMAGE_TAG=${{ inputs.push_image_tag || inputs.pull_image_tag }}" >> $GITHUB_ENV
 
+            -   name: SET PULL_IMAGE
+                run: echo "PULL_IMAGE=${{ env.PULL_IMAGE_REGISTRY }}${{ inputs.pull_image_name }}:${{ inputs.pull_image_tag }}" >> $GITHUB_ENV
+
+            -   name: SET PULL_IMAGE
+                run: echo "PULL_IMAGE=${{ secrets.push_image_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ inputs.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
+
             -   name: Set up Docker Buildx
                 uses: docker/setup-buildx-action@v2
 
@@ -73,8 +79,7 @@ jobs:
 
             -   name: Tag and push docker
                 run: |
-                    docker tag \
-                        ${{ env.PULL_IMAGE_REGISTRY }}${{ inputs.pull_image_name }}:${{ inputs.pull_image_tag }} \
-                        ${{ secrets.push_image_registry }}${{ env.PUSH_IMAGE_NAME }}:${{ inputs.pull_image_tag }}
-                    docker push ${{ secrets.push_image_registry }}${{ env.PUSH_IMAGE_NAME }}:${{ inputs.pull_image_tag }}
+                    docker pull ${{ env.PULL_IMAGE }}
+                    docker tag ${{ env.PULL_IMAGE }} ${{ env.PUSH_IMAGE }}
+                    docker push ${{ env.PUSH_IMAGE }}
                     
