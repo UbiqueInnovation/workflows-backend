@@ -15,6 +15,10 @@ on:
                 default: "18"
                 type: string
                 required: false
+            pnpm_version:
+                default: "8"
+                type: string
+                required: false
             cache_dependency_path:
                 default: "pnpm-lock.yaml"
                 type: string
@@ -93,7 +97,7 @@ jobs:
 
             -   uses: pnpm/action-setup@v2
                 with:
-                    version: 8
+                    version: ${{ inputs.pnpm_version }}
 
             -   uses: actions/setup-node@v3
                 with:
