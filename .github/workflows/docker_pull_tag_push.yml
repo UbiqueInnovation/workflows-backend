@@ -38,7 +38,7 @@ on:
                 required: true
 
 jobs:
-    augment_docker_image:
+    pull_tag_push_image:
         runs-on: ubuntu-latest
         steps:
             -   name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry if not set)
