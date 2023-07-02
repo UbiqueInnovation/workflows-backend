@@ -11,6 +11,10 @@ on:
                 default: "18"
                 type: string
                 required: false
+            yarn_version:
+                default: "1.22.19"
+                type: string
+                required: false
             cache_dependency_path:
                 default: "yarn.lock"
                 type: string
@@ -82,18 +86,15 @@ jobs:
         steps:
             -   uses: actions/checkout@v3
 
-            -   name: Setup Nodejs and npm
+            -   name: Install yarn without node
                 if: ${{ inputs.runs_on == 'self-hosted' }}
-                uses: actions/setup-node@v3
-                with:
-                    node-version: "${{ inputs.node_version }}"
+                run: |
+                    curl -fsSL --create-dirs -o $HOME/bin/yarn \
+                    https://github.com/yarnpkg/yarn/releases/download/v${{ inputs.yarn_version }}/yarn-${{ inputs.yarn_version }}.js
+                    chmod +x $HOME/bin/yarn
+                    echo "$HOME/bin" >> $GITHUB_PATH
 
-            -   name: Setup yarn
-                if: ${{ inputs.runs_on == 'self-hosted' }}
-                run: npm install -g yarn
-
-            -   name: Setup Nodejs with yarn caching
-                uses: actions/setup-node@v3
+            -   uses: actions/setup-node@v3
                 with:
                     node-version: "${{ inputs.node_version }}"
                     check-latest: true
