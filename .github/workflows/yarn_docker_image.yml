@@ -139,7 +139,7 @@ jobs:
                 run: |
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }} ${{ inputs.dirs_for_docker_build }}
 
-            -   name: Get TAG_NAME from ref_name
+            -   name: Set TAG_NAME from ref_name
                 run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
             -   name: Replace `/` by `-` in TAG_NAME

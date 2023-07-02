@@ -206,7 +206,7 @@ jobs:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
 
-            -   name: Get TAG_NAME from ref_name
+            -   name: Set TAG_NAME from ref_name
                 run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
             -   name: Replace `/` by `-` in TAG_NAME
