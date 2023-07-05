@@ -6,7 +6,7 @@
 
 #### Breaking Changes
 
-Previously, jib-maven-plugin was defined inside the project poms, yet now it isn't. All projects need to have their usages of mvn_docker_image.yml@main updated to mvn_docker_image.yml@v1 or do the following changes in their poms:
+Previously, jib-maven-plugin was not defined inside the project poms, yet now it is. All projects need to have their usages of mvn_docker_image.yml@main updated to mvn_docker_image.yml@v1 or do the following changes in their poms:
 
 - Parent `pom.xml`:
 ```xml
