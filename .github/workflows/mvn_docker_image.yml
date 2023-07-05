@@ -13,10 +13,6 @@ on:
             app_directory:
                 required: true
                 type: string
-            app_parent_directory:
-                required: false
-                type: string
-                description: Required for native image build
             mvn_root_directory:
                 required: false
                 type: string
