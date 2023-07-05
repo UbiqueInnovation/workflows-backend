@@ -2,7 +2,7 @@
 
 ## Reusable Workflows
 
-A collection of reusable workflows needed for different projects. 
+A collection of reusable workflows needed for different projects.
 
 ### Usage
 
@@ -11,3 +11,7 @@ See [https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#c
 ## License
 
 This project is licensed under the terms of the MPL 2 license. See the [LICENSE](LICENSE) file for details.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md)
