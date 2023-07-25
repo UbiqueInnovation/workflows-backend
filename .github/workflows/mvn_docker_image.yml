@@ -121,8 +121,7 @@ jobs:
                 if: ${{ inputs.runs_on == 'self-hosted'}}
                 uses: docker/setup-buildx-action@v2
                 with:
-                    endpoint: /var/run/docker/docker.sock
-                    driver: kubernetes
+                    endpoint: unix:///var/run/docker/docker.sock
 
             -   name: Set up Docker Buildx
                 if: ${{ inputs.runs_on != 'self-hosted'}}
