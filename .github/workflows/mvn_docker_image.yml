@@ -147,13 +147,13 @@ jobs:
                 if: ${{ inputs.runs_on == 'self-hosted'}}
                 uses: tespkg/actions-cache@12721c08d65e046d6006e5729ba76bff421ac0ef
                 with:
-                    endpoint: ${{ inputs.self_hosted_cache_endpoint }}
-                    port: ${{ inputs.self_hosted_cache_port }}
+                    endpoint: ${{ secrets.self_hosted_cache_endpoint }}
+                    port: ${{ secrets.self_hosted_cache_port }}
                     insecure: true
-                    accessKey: ${{ inputs.self_hosted_cache_access_key }}
-                    secretKey: ${{ inputs.self_hosted_cache_secret_key }}
-                    bucket: ${{ inputs.self_hosted_cache_bucket }}
-                    region: ${{ inputs.self_hosted_cache_region }}
+                    accessKey: ${{ secrets.self_hosted_cache_access_key }}
+                    secretKey: ${{ secrets.self_hosted_cache_secret_key }}
+                    bucket: ${{ secrets.self_hosted_cache_bucket }}
+                    region: ${{ secrets.self_hosted_cache_region }}
                     use-fallback: true
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
