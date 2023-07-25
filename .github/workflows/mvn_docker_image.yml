@@ -112,12 +112,6 @@ jobs:
         name: Create Docker Image
         runs-on: ${{ inputs.runs_on }}
         steps:
-            -   name: "Set current date as env variable"
-                shell: bash
-                run: |
-                    echo "CHECKOUT_DATE=$(date +'%V-%Y')" >> $GITHUB_ENV
-                id: date
-
             -   name: Checkout code
                 uses: actions/checkout@v3
                 with:
