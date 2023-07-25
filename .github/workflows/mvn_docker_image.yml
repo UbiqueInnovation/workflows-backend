@@ -88,12 +88,36 @@ on:
             jib_custom_docker_image_repo_password:
                 required: false
                 description: custom docker image repo password for for docker build.
+            self_hosted_cache_endpoint:
+                required: false
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_port:
+                required: false
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_access_key:
+                required: false
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_secret_key:
+                required: false
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_bucket:
+                required: false
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_region:
+                required: false
+                description: required if runs_on == 'self-hosted'
 
 jobs:
     create-docker-image:
         name: Create Docker Image
         runs-on: ${{ inputs.runs_on }}
         steps:
+            -   name: "Set current date as env variable"
+                shell: bash
+                run: |
+                    echo "CHECKOUT_DATE=$(date +'%V-%Y')" >> $GITHUB_ENV
+                id: date
+
             -   name: Checkout code
                 uses: actions/checkout@v3
                 with:
@@ -119,7 +143,24 @@ jobs:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'graalvm'
 
+            -   name: Cache Maven packages on self-hosted MinIO
+                if: ${{ inputs.runs_on == 'self-hosted'}}
+                uses: tespkg/actions-cache@12721c08d65e046d6006e5729ba76bff421ac0ef
+                with:
+                    endpoint: ${{ inputs.self_hosted_cache_endpoint }}
+                    port: ${{ inputs.self_hosted_cache_port }}
+                    insecure: true
+                    accessKey: ${{ inputs.self_hosted_cache_access_key }}
+                    secretKey: ${{ inputs.self_hosted_cache_secret_key }}
+                    bucket: ${{ inputs.self_hosted_cache_bucket }}
+                    region: ${{ inputs.self_hosted_cache_region }}
+                    use-fallback: true
+                    path: ~/.m2/repository
+                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: ${{ runner.os }}-m2-
+
             -   name: Cache Maven packages
+                if: ${{ inputs.runs_on != 'self-hosted'}}
                 uses: actions/cache@v3
                 with:
                     path: ~/.m2/repository
