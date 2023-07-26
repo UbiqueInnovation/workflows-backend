@@ -13,10 +13,6 @@ on:
             app_directory:
                 required: true
                 type: string
-            app_parent_directory:
-                required: false
-                type: string
-                description: Required for native image build
             mvn_root_directory:
                 required: false
                 type: string
@@ -61,6 +57,11 @@ on:
                 default: 'azure-cr'
                 type: string
                 description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
+            runs_on:
+                required: false
+                default: ubuntu-latest
+                type: string
+                description: Set to 'self-hosted' if needed.
 
         secrets:
             artifactory_user:
@@ -101,6 +102,8 @@ jobs:
         permissions:
             id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2
             contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2, but only if actions/checkout is used
+        name: Create Docker Image
+        runs-on: ${{ inputs.runs_on }}
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
