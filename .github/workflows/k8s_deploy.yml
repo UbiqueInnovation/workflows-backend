@@ -73,6 +73,11 @@ on:
                 type: string
                 required: false
                 description: Set to add a separate tag for the additional_image_name, defaults to the tag of the "normal"image if not set
+            az_login_flow:
+                type: string
+                default: 'oidc'
+                required: false
+                description: set to 'service_principal' to login with service principal flow. secrets 'az_client/tenant/subscription_id' required for oidc flow and 'az_service_principal' for service principal flow
 
         secrets:
             acr_registry:
@@ -82,8 +87,16 @@ on:
             acr_password:
                 required: true
             az_service_principal:
-                required: true
-
+                required: false
+            az_client_id:
+                required: false
+            az_tenant_id:
+                required: false
+            az_subscription_id:
+                required: false
+permissions:
+    id-token: write
+    contents: read
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -111,7 +124,16 @@ jobs:
             -   name: Image to deploy
                 run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
-            -   name: Azure Login
+            -   name: Azure Login with OIDC flow
+                if: ${{ inputs.az_login_flow == 'oidc' }}
+                uses: azure/login@v1
+                with:
+                    client-id: ${{ secrets.az_client_id }}
+                    tenant-id: ${{ secrets.az_tenant_id }}
+                    subscription-id: ${{ secrets.az_subscription_id }}
+
+            -   name: Azure Login with service principal
+                if: ${{ inputs.az_login_flow == 'service_principal' }}
                 uses: azure/login@v1
                 with:
                     creds: '${{ secrets.az_service_principal }}'
