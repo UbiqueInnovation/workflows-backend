@@ -110,7 +110,7 @@ on:
 jobs:
     create-docker-image:
         name: Create Docker Image
-        runs-on: [ ${{ inputs.runs_on }}, linux ]
+        runs-on: [ "${{ inputs.runs_on }}", linux ]
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
