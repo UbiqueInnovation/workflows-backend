@@ -1,5 +1,9 @@
 # CHANGELOG
 
+If your project **does not** use tag based workflows (e.g. using `@main`) and something breaks, you need to figure out which of the breaking changes listed below applies.
+
+**Quick fix:** Update all usages of `some-workflow@main` to `some-workflow@v1`.
+
 ## v2
 
 ### k8s_deploy.yml
@@ -35,14 +39,12 @@ Service principal authenctication is still supported, but not by default:
         with:
     +       az_login_flow: service_principal
     ```
-## v1
 
 ### mvn_docker_image.yml
 
 #### Breaking Changes
 
-Previously, jib-maven-plugin was not defined inside the project poms, yet now it is. All projects need to have their
-usages of mvn_docker_image.yml@main updated to mvn_docker_image.yml@v1 or do the following changes in their poms:
+Previously, jib-maven-plugin was not defined inside the project poms, yet now it is:
 
 - Parent `pom.xml`:
 ```xml
@@ -119,3 +121,7 @@ usages of mvn_docker_image.yml@main updated to mvn_docker_image.yml@v1 or do the
     </plugins>
 </build>
 ```
+
+## v1
+
+First well-defined version. 
