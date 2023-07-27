@@ -18,7 +18,7 @@ Service principal authenctication is still supported, but not by default:
             +       az_client_id: secret-client-id
             +       az_tenant_id: secret-tenant-id
             +       az_subscription_id: secret-subscription-id
-            ```
+        ```
     - Execute the following for your repo with the token having the `repo` permissions set:
         ```shell
         curl -vvvv -L \
