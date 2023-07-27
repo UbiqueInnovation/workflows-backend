@@ -117,14 +117,6 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
 
-            -   name: Set up Docker Buildx for self-hosted
-                if: ${{ inputs.runs_on == 'self-hosted'}}
-                uses: docker/setup-buildx-action@v2
-
-            -   name: Set up Docker Buildx
-                if: ${{ inputs.runs_on != 'self-hosted'}}
-                uses: docker/setup-buildx-action@v2
-
             -   name: Git Status
                 run: git status
 
