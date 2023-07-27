@@ -122,7 +122,7 @@ jobs:
                 if: ${{ inputs.runs_on == 'self-hosted'}}
                 uses: docker/setup-buildx-action@v2
                 with:
-                    endpoint: unix://var/run/docker/docker.sock
+                    endpoint: unix:///run/docker/docker.sock
 
             -   name: Set up Docker Buildx
                 if: ${{ inputs.runs_on != 'self-hosted'}}
