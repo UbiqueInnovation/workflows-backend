@@ -54,9 +54,9 @@ on:
                 description: Currently only used for native builds
             runs_on:
                 required: false
-                default: "['ubuntu-latest']"
+                default: '["ubuntu-latest"]'
                 type: string
-                description: Set to "['self-hosted', 'linux']" if needed.
+                description: Set to '["self-hosted", "linux"]' if needed.
             self_hosted_cache_endpoint:
                 required: false
                 default: 'truenas.local.lan'
