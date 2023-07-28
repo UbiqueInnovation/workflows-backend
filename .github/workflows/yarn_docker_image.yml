@@ -158,10 +158,10 @@ jobs:
                     username: ${{ secrets.acr_username }}
                     password: ${{ secrets.acr_password }}
 
-            -   name: Docker build
-                run: >
-                    docker buildx build
-                    --tag ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
-                    --file docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
-                    --push
-                    docker/${{ inputs.app_name }}
+            -   name: Docker build and push
+                uses: docker/build-push-action@v4
+                with:
+                    tags: ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
+                    file: docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
+                    push: true
+                    context: docker/${{ inputs.app_name }}
