@@ -57,6 +57,26 @@ on:
                 default: ubuntu-latest
                 type: string
                 description: Set to 'self-hosted' if needed.
+            self_hosted_cache_endpoint:
+                required: false
+                default: 'truenas.local.lan'
+                type: string
+                description: only applicable if runs_on == 'self-hosted'
+            self_hosted_cache_port:
+                required: false
+                default: 9000
+                type: number
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_bucket:
+                required: false
+                default: github-actions-cache
+                type: string
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_region:
+                required: false
+                default: local
+                type: string
+                description: required if runs_on == 'self-hosted'
 
         secrets:
             artifactory_user:
@@ -88,19 +108,22 @@ on:
             jib_custom_docker_image_repo_password:
                 required: false
                 description: custom docker image repo password for for docker build.
+            self_hosted_cache_access_key:
+                required: false
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_secret_key:
+                required: false
+                description: required if runs_on == 'self-hosted'
 
 jobs:
     create-docker-image:
         name: Create Docker Image
-        runs-on: ${{ inputs.runs_on }}
+        runs-on: [ "${{ inputs.runs_on }}", linux, stable ]
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
                 with:
                     ref: ${{ inputs.ref_name }}
-
-            -   name: Set up Docker Buildx
-                uses: docker/setup-buildx-action@v2
 
             -   name: Git Status
                 run: git status
@@ -119,12 +142,35 @@ jobs:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'graalvm'
 
+            -   name: Cache Maven packages on self-hosted MinIO
+                if: ${{ inputs.runs_on == 'self-hosted'}}
+                uses: tespkg/actions-cache@12721c08d65e046d6006e5729ba76bff421ac0ef
+                with:
+                    endpoint: ${{ inputs.self_hosted_cache_endpoint }}
+                    port: ${{ inputs.self_hosted_cache_port }}
+                    insecure: true
+                    accessKey: ${{ secrets.self_hosted_cache_access_key }}
+                    secretKey: ${{ secrets.self_hosted_cache_secret_key }}
+                    bucket: ${{ inputs.self_hosted_cache_bucket }}
+                    region: ${{ inputs.self_hosted_cache_region }}
+                    use-fallback: true
+                    path: ~/.m2/repository
+                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: ${{ runner.os }}-m2-
+
             -   name: Cache Maven packages
+                if: ${{ inputs.runs_on != 'self-hosted'}}
                 uses: actions/cache@v3
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2-
+
+            -   name: Set up Maven
+                if: ${{ inputs.runs_on == 'self-hosted'}}
+                uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f
+                with:
+                    maven-version: 3.9.3
 
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
