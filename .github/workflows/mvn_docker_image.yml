@@ -61,7 +61,7 @@ on:
                 required: false
                 default: 'truenas.local.lan'
                 type: string
-                description: required if runs_on == 'self-hosted'
+                description: only applicable if runs_on == 'self-hosted'
             self_hosted_cache_port:
                 required: false
                 default: 9000
