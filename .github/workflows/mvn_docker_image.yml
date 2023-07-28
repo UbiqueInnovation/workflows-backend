@@ -57,6 +57,26 @@ on:
                 default: ubuntu-latest
                 type: string
                 description: Set to 'self-hosted' if needed.
+            self_hosted_cache_endpoint:
+                required: false
+                default: 'truenas.local.lan'
+                type: string
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_port:
+                required: false
+                default: 9000
+                type: number
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_bucket:
+                required: false
+                default: github-actions-cache
+                type: string
+                description: required if runs_on == 'self-hosted'
+            self_hosted_cache_region:
+                required: false
+                default: local
+                type: string
+                description: required if runs_on == 'self-hosted'
 
         secrets:
             artifactory_user:
@@ -88,22 +108,10 @@ on:
             jib_custom_docker_image_repo_password:
                 required: false
                 description: custom docker image repo password for for docker build.
-            self_hosted_cache_endpoint:
-                required: false
-                description: required if runs_on == 'self-hosted'
-            self_hosted_cache_port:
-                required: false
-                description: required if runs_on == 'self-hosted'
             self_hosted_cache_access_key:
                 required: false
                 description: required if runs_on == 'self-hosted'
             self_hosted_cache_secret_key:
-                required: false
-                description: required if runs_on == 'self-hosted'
-            self_hosted_cache_bucket:
-                required: false
-                description: required if runs_on == 'self-hosted'
-            self_hosted_cache_region:
                 required: false
                 description: required if runs_on == 'self-hosted'
 
@@ -138,13 +146,13 @@ jobs:
                 if: ${{ inputs.runs_on == 'self-hosted'}}
                 uses: tespkg/actions-cache@12721c08d65e046d6006e5729ba76bff421ac0ef
                 with:
-                    endpoint: ${{ secrets.self_hosted_cache_endpoint }}
-                    port: ${{ secrets.self_hosted_cache_port }}
+                    endpoint: ${{ inputs.self_hosted_cache_endpoint }}
+                    port: ${{ inputs.self_hosted_cache_port }}
                     insecure: true
                     accessKey: ${{ secrets.self_hosted_cache_access_key }}
                     secretKey: ${{ secrets.self_hosted_cache_secret_key }}
-                    bucket: ${{ secrets.self_hosted_cache_bucket }}
-                    region: ${{ secrets.self_hosted_cache_region }}
+                    bucket: ${{ inputs.self_hosted_cache_bucket }}
+                    region: ${{ inputs.self_hosted_cache_region }}
                     use-fallback: true
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
