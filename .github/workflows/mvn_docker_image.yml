@@ -54,29 +54,29 @@ on:
                 description: Currently only used for native builds
             runs_on:
                 required: false
-                default: ubuntu-latest
+                default: '["ubuntu-latest"]'
                 type: string
-                description: Set to 'self-hosted' if needed.
+                description: Set to '["self-hosted", "linux"]' if needed.
             self_hosted_cache_endpoint:
                 required: false
                 default: 'truenas.local.lan'
                 type: string
-                description: only applicable if runs_on == 'self-hosted'
+                description: only applicable if runs_on self_hosted
             self_hosted_cache_port:
                 required: false
                 default: 9000
                 type: number
-                description: required if runs_on == 'self-hosted'
+                description: only applicable if runs_on self_hosted
             self_hosted_cache_bucket:
                 required: false
                 default: github-actions-cache
                 type: string
-                description: required if runs_on == 'self-hosted'
+                description: only applicable if runs_on self_hosted
             self_hosted_cache_region:
                 required: false
                 default: local
                 type: string
-                description: required if runs_on == 'self-hosted'
+                description: only applicable if runs_on self_hosted
 
         secrets:
             artifactory_user:
@@ -110,15 +110,15 @@ on:
                 description: custom docker image repo password for for docker build.
             self_hosted_cache_access_key:
                 required: false
-                description: required if runs_on == 'self-hosted'
+                description: required if runs_on self_hosted
             self_hosted_cache_secret_key:
                 required: false
-                description: required if runs_on == 'self-hosted'
+                description: required if runs_on self_hosted
 
 jobs:
     create-docker-image:
         name: Create Docker Image
-        runs-on: [ "${{ inputs.runs_on }}", linux, stable ]
+        runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
@@ -143,7 +143,7 @@ jobs:
                     distribution: 'graalvm'
 
             -   name: Cache Maven packages on self-hosted MinIO
-                if: ${{ inputs.runs_on == 'self-hosted'}}
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted'}}
                 uses: tespkg/actions-cache@12721c08d65e046d6006e5729ba76bff421ac0ef
                 with:
                     endpoint: ${{ inputs.self_hosted_cache_endpoint }}
@@ -159,7 +159,7 @@ jobs:
                     restore-keys: ${{ runner.os }}-m2-
 
             -   name: Cache Maven packages
-                if: ${{ inputs.runs_on != 'self-hosted'}}
+                if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted'}}
                 uses: actions/cache@v3
                 with:
                     path: ~/.m2/repository
@@ -167,7 +167,7 @@ jobs:
                     restore-keys: ${{ runner.os }}-m2-
 
             -   name: Set up Maven
-                if: ${{ inputs.runs_on == 'self-hosted'}}
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted'}}
                 uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f
                 with:
                     maven-version: 3.9.3
