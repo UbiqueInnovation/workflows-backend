@@ -158,6 +158,12 @@ jobs:
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2-
 
+            -   name: Set up Maven
+                if: ${{ inputs.runs_on == 'self-hosted'}}
+                uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f
+                with:
+                    maven-version: 3.9.3
+
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
                 with:
