@@ -118,7 +118,7 @@ on:
 jobs:
     create-docker-image:
         name: Create Docker Image
-        runs-on: ${{ fromJson(inputs.runs-on) }}
+        runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
