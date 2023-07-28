@@ -64,11 +64,6 @@ on:
                 default: 'Dockerfile'
                 type: string
                 description: Name of the Dockerfile, defaults to 'Dockerfile'
-            runs_on_image_tag:
-                required: false
-                default: stable
-                type: string
-                description: Set to 'uzh' if runs_on == self-hosted
 
         secrets:
             acr_registry:
@@ -87,7 +82,7 @@ on:
 jobs:
     create-docker-image:
         name: Create Docker Image
-        runs-on: [ "${{ inputs.runs_on }}", linux, "${{ inputs.runs_on_image_tag }}" ]
+        runs-on: ${{ fromJson(inputs.runs-on) }}
         steps:
             -   uses: actions/checkout@v3
 
