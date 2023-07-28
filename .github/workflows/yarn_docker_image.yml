@@ -82,7 +82,7 @@ on:
 jobs:
     create-docker-image:
         name: Create Docker Image
-        runs-on: ${{ inputs.runs_on }}
+        runs-on: [ "${{ inputs.runs_on }}", linux ]
         steps:
             -   uses: actions/checkout@v3
 
