@@ -78,6 +78,15 @@ on:
                 default: 'oidc'
                 required: false
                 description: set to 'service_principal' to login with service principal flow. secrets 'az_client/tenant/subscription_id' required for oidc flow and 'az_service_principal' for service principal flow
+            k8s_type:
+                required: false
+                default: 'aks'
+                type: string
+                description: "the type of k8s. Supports 'aks', 'eks'"
+            eks_region:
+                required: false
+                type: string
+                description: required if input k8s_type is eks        
 
         secrets:
             acr_registry:
@@ -94,9 +103,18 @@ on:
                 required: false
             az_subscription_id:
                 required: false
+            eks_role_to_assume:
+                required: false
+                description: required if k8s_type is eks
+            aws_access_key:
+                required: false
+            aws_secret_key:
+                required: false
+
 permissions:
     id-token: write
     contents: read
+
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -125,7 +143,7 @@ jobs:
                 run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
             -   name: Azure Login with OIDC flow
-                if: ${{ inputs.az_login_flow == 'oidc' }}
+                if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'oidc' }}
                 uses: azure/login@v1
                 with:
                     client-id: ${{ secrets.az_client_id }}
@@ -133,23 +151,44 @@ jobs:
                     subscription-id: ${{ secrets.az_subscription_id }}
 
             -   name: Azure Login with service principal
-                if: ${{ inputs.az_login_flow == 'service_principal' }}
+                if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'service_principal' }}
                 uses: azure/login@v1
                 with:
                     creds: '${{ secrets.az_service_principal }}'
 
             -   name: Set up kubelogin for non-interactive login
+                if: ${{ inputs.k8s_type == 'aks' }}
                 uses: azure/use-kubelogin@v1
                 with:
                     kubelogin-version: 'v0.0.28'
 
             -   name: Set AKS context
+                if: ${{ inputs.k8s_type == 'aks' }}
                 uses: azure/aks-set-context@v3
                 with:
                     cluster-name: ${{ inputs.cluster }}
                     resource-group: ${{ inputs.cluster_resource_group }}
                     admin: 'false'
                     use-kubelogin: 'true'
+
+            # TODO: make login to aws with oidc and assume role and setup kubecontext
+            -   name: Configure AWS credentials
+                if: ${{ inputs.k8s_type == 'eks' }}
+                uses: aws-actions/configure-aws-credentials@v2
+                with:
+                    aws-access-key-id: ${{ secrets.aws_access_key }}
+                    aws-secret-access-key: ${{ secrets.aws_secret_key }}
+                    aws-region: ${{ inputs.eks_region }}
+
+            -   name: Set EKS context 1
+                if: ${{ inputs.k8s_type == 'eks' }}            
+                run: |
+                    aws eks update-kubeconfig --name met --region ${{ inputs.eks_region }} --role-arn ${{ secrets.eks_role_to_assume }}
+                    kubectl config use-context arn:aws:eks:eu-central-2:852349318571:cluster/met
+                    EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+                    echo "KUBECONFIG<<$EOF" >> "$GITHUB_ENV"
+                    kubectl config view >> "$GITHUB_ENV"
+                    echo "$EOF" >> "$GITHUB_ENV"
 
             -   name: Create namespace (if it doesn't exist)
                 run: |
@@ -159,6 +198,15 @@ jobs:
                 if: ${{ inputs.with_configmap }}
                 run: |
                     kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_prefix && inputs.config_map_prefix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+
+
+            -   name: Set EKS context 2
+                if: ${{ inputs.k8s_type == 'eks' }}
+                uses: azure/k8s-set-context@v3
+                with:
+                    method: kubeconfig
+                    kubeconfig: ${{ env.KUBECONFIG }}
+                    context: arn:aws:eks:eu-central-2:852349318571:cluster/met
 
             -   name: Create image pull secret for ACR
                 uses: azure/k8s-create-secret@v4
@@ -193,7 +241,7 @@ jobs:
 
             -   name: Apply Deployment config
                 uses: azure/k8s-deploy@v4
-                if: ${{  steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
+                if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
                 with:
                     manifests: |
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
