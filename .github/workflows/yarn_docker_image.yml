@@ -160,8 +160,8 @@ jobs:
 
             -   name: Docker build
                 run: >
-                    docker buildx build \
-                    --tag ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} \
-                    --file docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }} \
-                    --push \
+                    docker buildx build
+                    --tag ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
+                    --file docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
+                    --push
                     docker/${{ inputs.app_name }}
