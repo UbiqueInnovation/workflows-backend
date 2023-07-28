@@ -54,9 +54,9 @@ on:
                 description: Currently only used for native builds
             runs_on:
                 required: false
-                default: "['ubuntu-latest']"
+                default: '["ubuntu-latest"]'
                 type: string
-                description: Set to "['self-hosted', 'linux']" if needed.
+                description: Set to '["self-hosted", "linux"]' if needed.
             self_hosted_cache_endpoint:
                 required: false
                 default: 'truenas.local.lan'
@@ -143,7 +143,7 @@ jobs:
                     distribution: 'graalvm'
 
             -   name: Cache Maven packages on self-hosted MinIO
-                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted'}}
+                if: ${{ fromJson(inputs.runs_on)[0] == "self-hosted"}}
                 uses: tespkg/actions-cache@12721c08d65e046d6006e5729ba76bff421ac0ef
                 with:
                     endpoint: ${{ inputs.self_hosted_cache_endpoint }}
@@ -159,7 +159,7 @@ jobs:
                     restore-keys: ${{ runner.os }}-m2-
 
             -   name: Cache Maven packages
-                if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted'}}
+                if: ${{ fromJson(inputs.runs_on)[0] != "self-hosted"}}
                 uses: actions/cache@v3
                 with:
                     path: ~/.m2/repository
@@ -167,7 +167,7 @@ jobs:
                     restore-keys: ${{ runner.os }}-m2-
 
             -   name: Set up Maven
-                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted'}}
+                if: ${{ fromJson(inputs.runs_on)[0] == "self-hosted"}}
                 uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f
                 with:
                     maven-version: 3.9.3
