@@ -36,26 +36,26 @@ on:
                 description: flag for overriding yarn CI flag (DO NOT USE IT FOR NEW PROJECTS!)
             runs_on:
                 required: false
-                default: ubuntu-latest
+                default: '["ubuntu-latest"]'
                 type: string
-                description: Set to 'self-hosted' if needed, default 'ubuntu-latest'
+                description: Set to '["self-hosted", "linux"]' if needed.
 
 jobs:
     build:
-        runs-on: [ "${{ inputs.runs_on }}", linux, stable ]
+        runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   uses: actions/checkout@v3
                 with:
                     ref: ${{ inputs.ref_name }}
 
             -   name: Setup Nodejs and npm
-                if: ${{ inputs.runs_on == 'self-hosted' }}
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
                 uses: actions/setup-node@v3
                 with:
                     node-version: "${{ inputs.node_version }}"
 
             -   name: Setup yarn
-                if: ${{ inputs.runs_on == 'self-hosted' }}
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
                 run: npm install -g yarn
 
             -   name: Setup Nodejs with yarn caching

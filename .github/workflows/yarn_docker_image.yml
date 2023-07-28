@@ -56,9 +56,9 @@ on:
                 description: Space-separated list of files or glob pattern to include in docker build context. E.g. 'public .next' for .next builds or 'build' for other web builds.
             runs_on:
                 required: false
-                default: ubuntu-latest
+                default: '["ubuntu-latest"]'
                 type: string
-                description: Set to 'self-hosted' if needed, default 'ubuntu-latest'
+                description: Set to '["self-hosted", "linux"]' if needed.
             dockerfile_name:
                 required: false
                 default: 'Dockerfile'
@@ -82,12 +82,12 @@ on:
 jobs:
     create-docker-image:
         name: Create Docker Image
-        runs-on: ${{ fromJson(inputs.runs-on) }}
+        runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   uses: actions/checkout@v3
 
             -   name: Install yarn without node
-                if: ${{ inputs.runs_on == 'self-hosted' }}
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
                 run: |
                     curl -fsSL --create-dirs -o $HOME/bin/yarn \
                     https://github.com/yarnpkg/yarn/releases/download/v${{ inputs.yarn_version }}/yarn-${{ inputs.yarn_version }}.js
