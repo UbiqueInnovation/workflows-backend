@@ -68,6 +68,11 @@ on:
                 default: ubuntu-latest
                 type: string
                 description: Set to 'self-hosted' if needed, default 'ubuntu-latest'
+            runs_on_image_tag:
+                required: false
+                default: stable
+                type: string
+                description: Set to 'uzh' if runs_on == self-hosted
             dockerfile_name:
                 required: false
                 default: 'Dockerfile'
@@ -91,7 +96,7 @@ on:
 jobs:
     create-docker-image:
         name: Create Docker Image
-        runs-on: [ "${{ inputs.runs_on }}", linux, stable ]
+        runs-on: [ "${{ inputs.runs_on }}", linux, "${{ inputs.runs_on_image_tag }}" ]
         steps:
             -   uses: actions/checkout@v3
 
