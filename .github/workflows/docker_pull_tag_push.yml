@@ -62,7 +62,7 @@ jobs:
                 run: echo "PULL_IMAGE=${{ env.PULL_IMAGE_REGISTRY }}${{ inputs.pull_image_name }}:${{ inputs.pull_image_tag }}" >> $GITHUB_ENV
 
             -   name: SET PUSH_IMAGE
-                run: echo "PUSH_IMAGE=${{ secrets.push_container_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ inputs.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
+                run: echo "PUSH_IMAGE=${{ secrets.push_container_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ env.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
 
             -   name: Set up Docker Buildx
                 uses: docker/setup-buildx-action@v2
