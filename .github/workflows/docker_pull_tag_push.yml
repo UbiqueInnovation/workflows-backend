@@ -21,9 +21,9 @@ on:
                 description: name to tag the image with. Defaults to inputs.pull_image_tag
             runs_on:
                 required: false
-                default: ubuntu-latest
+                default: '["ubuntu-latest"]'
                 type: string
-                description: Set to 'self-hosted' if needed, default 'ubuntu-latest'
+                description: Set to '["self-hosted", "linux", "stable"]' if needed.
 
         secrets:
             pull_container_registry:
@@ -44,13 +44,13 @@ on:
 
 jobs:
     pull_tag_push_image:
-        runs-on: ${{ inputs.runs_on }}
+        runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry if not set)
-                env:
-                    PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
                 if: ${{ env.PULL_CONTAINER_REGISTRY }}
                 run: echo "PULL_IMAGE_REGISTRY=${{ secrets.pull_container_registry }}/" >> $GITHUB_ENV
+                env:
+                    PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
 
             -   name: SET PUSH_IMAGE_NAME to push_image_name or default pull_image_name
                 run: echo "PUSH_IMAGE_NAME=${{ inputs.push_image_name || inputs.pull_image_name }}" >> $GITHUB_ENV
@@ -68,9 +68,9 @@ jobs:
                 uses: docker/setup-buildx-action@v2
 
             -   uses: azure/docker-login@v1
+                if: ${{ env.PULL_CONTAINER_REGISTRY }}
                 env:
                     PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
-                if: ${{ env.PULL_CONTAINER_REGISTRY }}
                 with:
                     login-server: ${{ secrets.pull_container_registry }}
                     username: ${{ secrets.pull_container_registry_username }}
