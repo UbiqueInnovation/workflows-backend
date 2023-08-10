@@ -1,0 +1,66 @@
+name: Build and Push Docker Images on release/
+on:
+  workflow_call:
+    inputs:
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name
+      image_name_postfix:
+        required: false
+        default: ''
+        type: string
+        description: 'Creates image name in the form ${app_name}${image_name_postfix}-${release_env}'
+      release_env:
+        required: true
+        type: string
+        description: 'Creates image name in the form ${app_name}${image_name_postfix}-${release_env}'
+      tag_add_commithash:
+        required: false
+        default: false
+        type: boolean
+        description: Add the current commit hash to the branch (necessary when deploying from a branch)
+      app_name:
+        required: true
+        type: string
+        description: name to tag the image with
+      app_directory:
+        required: true
+        type: string
+        description: directory that contains the Dockerfile
+
+    secrets:
+      acr_registry:
+        required: true
+      acr_username:
+        required: true
+      acr_password:
+        required: true
+
+jobs:
+  build:
+    name: Build Project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set TAG_NAME with commit hash
+        if: ${{ inputs.tag_add_commithash }}
+        run: echo "TAG_NAME=${{ inputs.ref_name }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+      - name: Set TAG_NAME
+        if: ${{ ! inputs.tag_add_commithash }}
+        run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+
+      - name: Set IMAGE_NAME
+        run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}-${{ inputs.release_env }}" >> $GITHUB_ENV
+
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.acr_registry }}
+          username: ${{ secrets.acr_username }}
+          password: ${{ secrets.acr_password }}
+
+      - run: |
+          docker build -t ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} ${{ inputs.app_directory }}
+          docker image push ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
