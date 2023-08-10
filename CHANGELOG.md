@@ -4,6 +4,12 @@ If your project **does not** use tag based workflows (e.g. using `@main`) and so
 
 **Quick fix:** Update all usages of `some-workflow@main` to `some-workflow@v1`.
 
+## v2.1
+
+### New Features
+
+- Added Workflow for building and pushing a generic docker image
+
 ## v2
 
 ### k8s_deploy.yml
