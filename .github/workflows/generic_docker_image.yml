@@ -10,11 +10,7 @@ on:
         required: false
         default: ''
         type: string
-        description: 'Creates image name in the form ${app_name}${image_name_postfix}-${release_env}'
-      release_env:
-        required: true
-        type: string
-        description: 'Creates image name in the form ${app_name}${image_name_postfix}-${release_env}'
+        description: 'Creates image name in the form ${app_name}${image_name_postfix}'
       tag_add_commithash:
         required: false
         default: false
@@ -53,7 +49,7 @@ jobs:
         run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
       - name: Set IMAGE_NAME
-        run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}-${{ inputs.release_env }}" >> $GITHUB_ENV
+        run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}" >> $GITHUB_ENV
 
       - uses: azure/docker-login@v1
         with:
