@@ -115,6 +115,16 @@ jobs:
                     python-version: "3.x"
                     cache: "pip"
 
+            -   name: Set TAG_NAME from ref_name
+                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+
+            -   name: Replace `/` by `-` in TAG_NAME
+                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
+
+            -   name: Append commit hash (first 8 characters) to TAG_NAME
+                if: ${{ inputs.tag_add_commithash }}
+                run: echo "TAG_NAME=TAG_NAME-${GITHUB_SHA::8}" >> $GITHUB_ENV
+
             -   name: Check requirements.txt existence
                 if: ${{ inputs.run_poeditor }}
                 id: check_requirements_txt
@@ -143,16 +153,6 @@ jobs:
             -   name: Tar Build dir to docker
                 run: |
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }} ${{ inputs.dirs_for_docker_build }}
-
-            -   name: Set TAG_NAME from ref_name
-                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
-
-            -   name: Replace `/` by `-` in TAG_NAME
-                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
-
-            -   name: Append commit hash (first 8 characters) to TAG_NAME
-                if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=TAG_NAME-${GITHUB_SHA::8}" >> $GITHUB_ENV
 
             -   name: Set IMAGE_NAME
                 run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}-${{ inputs.release_env }}" >> $GITHUB_ENV
