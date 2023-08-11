@@ -43,9 +43,6 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - name: Set IMAGE_NAME
-              run: echo "IMAGE_NAME=${{ inputs.app_name }}" >> $GITHUB_ENV
-
             - uses: azure/docker-login@v1
               with:
                   login-server: ${{ secrets.acr_registry }}
