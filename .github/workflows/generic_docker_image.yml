@@ -21,7 +21,7 @@ on:
             app_directory:
                 required: true
                 type: string
-                description: directory that contains the Dockerfile
+                description: directory that contains the Dockerfile (format docker/<app_directory>/Dockerfile), so might include app_name
             dockerfile_name:
                 required: false
                 default: "Dockerfile"
@@ -56,6 +56,6 @@ jobs:
               uses: docker/build-push-action@v4
               with:
                   tags: ${{ secrets.acr_registry }}/${{ inputs.image_name }}:${{ inputs.tag_name }}
-                  file: docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
+                  file: docker/${{ inputs.app_directory }}/${{ inputs.dockerfile_name }}
                   push: true
-                  context: docker/${{ inputs.app_name }}
+                  context: docker/${{ inputs.app_directory }}
