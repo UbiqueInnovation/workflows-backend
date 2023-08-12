@@ -4,7 +4,7 @@ If your project **does not** use tag based workflows (e.g. using `@main`) and so
 
 **Quick fix:** Update all usages of `some-workflow@main` to `some-workflow@v1`.
 
-## v2.1
+## v3 (upcoming)
 
 ### New Features
 
