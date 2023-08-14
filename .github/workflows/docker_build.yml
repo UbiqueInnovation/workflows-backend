@@ -1,59 +1,59 @@
-name: Build and Push Docker Images on release/
+name: Build and Push Docker Image
 on:
-  workflow_call:
-    inputs:
-      runs_on:
-        required: false
-        default: '["ubuntu-latest"]'
-        type: string
-        description: Set to '["self-hosted", "linux", "stable"]' if needed.
-      image_name:
-        required: true
-        type: string
-        description: name of the image to build
-      tag_name:
-        required: true
-        type: string
-        description: name of the tag to build
-      context:
-        required: false
-        default: "."
-        type: string
-        description: You can specify the path of the folder containing the Dockerfile and neccesary build files
+    workflow_call:
+        inputs:
+            runs_on:
+                required: false
+                default: '["ubuntu-latest"]'
+                type: string
+                description: Set to '["self-hosted", "linux", "stable"]' if needed.
+            image_name:
+                required: true
+                type: string
+                description: name of the image to build
+            tag_name:
+                required: true
+                type: string
+                description: name of the tag to build
+            context:
+                required: false
+                default: "."
+                type: string
+                description: You can specify the path of the folder containing the Dockerfile and neccesary build files
 
-    secrets:
-      acr_registry:
-        required: true
-      acr_username:
-        required: true
-      acr_password:
-        required: true
+        secrets:
+            acr_registry:
+                required: true
+            acr_username:
+                required: true
+            acr_password:
+                required: true
 
 jobs:
-  build:
-    name: Build Project
-    runs-on: ${{ fromJson(inputs.runs_on) }}
-    steps:
-      - uses: actions/checkout@v3
+    build:
+        name: Build Project
+        runs-on: ${{ fromJson(inputs.runs_on) }}
+        steps:
+            -   uses: actions/checkout@v3
 
-      - name: Get TAG from inputs
-        run: echo "TAG=${{ inputs.tag_name }}" >> $GITHUB_ENV
+            -   name: Get TAG from inputs
+                run: echo "TAG=${{ inputs.tag_name }}" >> $GITHUB_ENV
 
-      - name: Replace `/` by `-` in TAG
-        run: echo "TAG=${TAG/\//-}" >> $GITHUB_ENV
+            -   name: Replace `/` by `-` in TAG
+                run: echo "TAG=${TAG/\//-}" >> $GITHUB_ENV
 
-      - name: Strip leading `v` from TAG
-        run: echo "TAG=${TAG##v}" >> $GITHUB_ENV
+            -   name: Strip leading `v` from TAG
+                run: echo "TAG=${TAG##v}" >> $GITHUB_ENV
 
-      - uses: azure/docker-login@v1
-        with:
-          login-server: ${{ secrets.acr_registry }}
-          username: ${{ secrets.acr_username }}
-          password: ${{ secrets.acr_password }}
+            -   uses: azure/docker-login@v1
+                with:
+                    login-server: ${{ secrets.acr_registry }}
+                    username: ${{ secrets.acr_username }}
+                    password: ${{ secrets.acr_password }}
 
-      - name: Docker build and push
-        uses: docker/build-push-action@v4
-        with:
-          tags: ${{ secrets.acr_registry }}/${{ inputs.image_name }}:${{ env.TAG }}
-          push: true
-          context: ${{ inputs.context }}
+            -   name: Docker build and push
+                uses: docker/build-push-action@v4
+                with:
+                    tags: ${{ secrets.acr_registry }}/${{ inputs.image_name }}:${{ env.TAG }}
+                    push: true
+                    context: ${{ inputs.context }}
