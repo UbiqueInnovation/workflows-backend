@@ -8,7 +8,7 @@ If your project **does not** use tag based workflows (e.g. using `@main`) and so
 
 ### New Features
 
-- Added Workflow for building and pushing a generic docker image
+- Added Workflow for building and pushing a generic docker image (`docker_build.yml`)
 
 ## v2
 

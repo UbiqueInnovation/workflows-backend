@@ -9,15 +9,15 @@ on:
             tag_name:
                 required: true
                 type: string
-                description: name of the tag
+                description: name of the tag to build
             app_name:
                 required: true
                 type: string
                 description: name to tag the image with
             app_directory:
-                required: true
+                required: false
                 type: string
-                description: directory that contains the Dockerfile (format docker/<app_directory>/Dockerfile), so might include app_name
+                description: directory that is the root context, defaults to docker/app_name
             dockerfile_name:
                 required: false
                 default: "Dockerfile"
@@ -39,6 +39,14 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
+            - name: Set default maven root directory if not empty
+              if: ${{ inputs.app_directory  }}
+              run: echo "APP_DIRECTORY=${{ inputs.app_directory }}" >> $GITHUB_ENV
+
+            - name: Set default maven root directory if empty
+              if: ${{ ! inputs.app_directory  }}
+              run: echo "APP_DIRECTORY=docker/${{ inputs.app_name }}" >> $GITHUB_ENV
+
             - uses: azure/docker-login@v1
               with:
                   login-server: ${{ secrets.acr_registry }}
@@ -49,6 +57,6 @@ jobs:
               uses: docker/build-push-action@v4
               with:
                   tags: ${{ secrets.acr_registry }}/${{ inputs.image_name }}:${{ inputs.tag_name }}
-                  file: docker/${{ inputs.app_directory }}/${{ inputs.dockerfile_name }}
+                  file: docker/${{ env.APP_DIRECTORY }}/${{ inputs.dockerfile_name }}
                   push: true
-                  context: docker/${{ inputs.app_directory }}
+                  context: docker/${{ env.APP_DIRECTORY }}
