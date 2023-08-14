@@ -11,6 +11,10 @@ on:
                 default: "18"
                 type: string
                 required: false
+            yarn_version:
+                default: "1.22.19"
+                type: string
+                required: false
             cache_dependency_path:
                 default: "yarn.lock"
                 type: string
@@ -50,6 +54,16 @@ on:
                 required: true
                 type: string
                 description: Space-separated list of files or glob pattern to include in docker build context. E.g. 'public .next' for .next builds or 'build' for other web builds.
+            runs_on:
+                required: false
+                default: '["ubuntu-latest"]'
+                type: string
+                description: Set to '["self-hosted", "linux"]' if needed.
+            dockerfile_name:
+                required: false
+                default: 'Dockerfile'
+                type: string
+                description: Name of the Dockerfile, defaults to 'Dockerfile'
 
         secrets:
             acr_registry:
@@ -66,11 +80,19 @@ on:
                 description: necessary if input.run_poeditor is true
 
 jobs:
-    build:
-        name: Build Project
-        runs-on: ubuntu-latest
+    create-docker-image:
+        name: Create Docker Image
+        runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   uses: actions/checkout@v3
+
+            -   name: Install yarn without node
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
+                run: |
+                    curl -fsSL --create-dirs -o $HOME/bin/yarn \
+                    https://github.com/yarnpkg/yarn/releases/download/v${{ inputs.yarn_version }}/yarn-${{ inputs.yarn_version }}.js
+                    chmod +x $HOME/bin/yarn
+                    echo "$HOME/bin" >> $GITHUB_PATH
 
             -   uses: actions/setup-node@v3
                 with:
@@ -78,6 +100,9 @@ jobs:
                     check-latest: true
                     cache: "yarn"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
+
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v2
 
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
@@ -114,13 +139,15 @@ jobs:
                 run: |
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }} ${{ inputs.dirs_for_docker_build }}
 
-            -   name: Set TAG_NAME with commit hash
-                if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=${{ inputs.ref_name }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
-
-            -   name: Set TAG_NAME
-                if: ${{ ! inputs.tag_add_commithash }}
+            -   name: Get TAG_NAME from ref_name
                 run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+
+            -   name: Replace `/` by `-` in TAG_NAME
+                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
+
+            -   name: Append commit hash (first 8 characters) to TAG_NAME
+                if: ${{ inputs.tag_add_commithash }}
+                run: echo "TAG_NAME=TAG_NAME-${GITHUB_SHA::8}" >> $GITHUB_ENV
 
             -   name: Set IMAGE_NAME
                 run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}-${{ inputs.release_env }}" >> $GITHUB_ENV
@@ -131,6 +158,10 @@ jobs:
                     username: ${{ secrets.acr_username }}
                     password: ${{ secrets.acr_password }}
 
-            -   run: |
-                    docker build -t ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} docker/${{ inputs.app_name }}
-                    docker image push ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
+            -   name: Docker build and push
+                uses: docker/build-push-action@v4
+                with:
+                    tags: ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
+                    file: docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
+                    push: true
+                    context: docker/${{ inputs.app_name }}
