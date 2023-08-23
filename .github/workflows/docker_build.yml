@@ -51,9 +51,21 @@ jobs:
                     username: ${{ secrets.acr_username }}
                     password: ${{ secrets.acr_password }}
 
+            -   name: Docker meta
+                id: docker_meta
+                uses: docker/metadata-action@v4
+                with:
+                    # list of Docker images to use as base name for tags
+                    images: |
+                        ${{ secrets.acr_registry }}/${{ inputs.image_name }}
+                    # generate Docker tags based on the following events/attributes
+                    tags: |
+                        type=semver,pattern={{raw}},value=${{ inputs.tag_name }}
+
             -   name: Docker build and push
                 uses: docker/build-push-action@v4
                 with:
-                    tags: ${{ secrets.acr_registry }}/${{ inputs.image_name }}:${{ env.TAG }}
+                    tags: ${{ steps.docker_meta.outputs.tags }}
+                    labels: ${{ steps.docker_meta.outputs.labels }}
                     push: true
                     context: ${{ inputs.context }}

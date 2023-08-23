@@ -115,16 +115,6 @@ jobs:
                     python-version: "3.x"
                     cache: "pip"
 
-            -   name: Set TAG_NAME from ref_name
-                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
-
-            -   name: Replace `/` by `-` in TAG_NAME
-                run: echo "TAG_NAME=${TAG_NAME/\//-}" >> $GITHUB_ENV
-
-            -   name: Append commit hash (first 8 characters) to TAG_NAME
-                if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=TAG_NAME-${GITHUB_SHA::8}" >> $GITHUB_ENV
-
             -   name: Check requirements.txt existence
                 if: ${{ inputs.run_poeditor }}
                 id: check_requirements_txt
@@ -157,6 +147,22 @@ jobs:
             -   name: Set IMAGE_NAME
                 run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}-${{ inputs.release_env }}" >> $GITHUB_ENV
 
+            -   name: Docker meta
+                id: docker_meta
+                uses: docker/metadata-action@v4
+                with:
+                    # list of Docker images to use as base name for tags
+                    images: |
+                        ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}
+                    # generate Docker tags based on the following events/attributes
+                    tags: |
+                        # set the tag from the raw git tag if tag_add_commithash is disabled
+                        type=semver,pattern={{raw}},enable=${{ ! inputs.tag_add_commithash }}
+                        # dynamically set the branch name and sha as a custom tag if tag_add_commithash is enabled
+                        type=raw,value={{branch}}-{{sha}},enable=${{ inputs.tag_add_commithash }}
+                        # set latest tag for default branch
+                        type=raw,value=latest,enable={{is_default_branch}}
+
             -   uses: azure/docker-login@v1
                 with:
                     login-server: ${{ secrets.acr_registry }}
@@ -166,7 +172,8 @@ jobs:
             -   name: Docker build and push
                 uses: docker/build-push-action@v4
                 with:
-                    tags: ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
+                    tags: ${{ steps.docker_meta.outputs.tags }}
+                    labels: ${{ steps.docker_meta.outputs.labels }}
                     file: docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
                     build-args: build_tag=${{ inputs.build_tag }}
                     push: true
