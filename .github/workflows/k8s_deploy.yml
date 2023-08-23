@@ -67,6 +67,7 @@ on:
                 description: Prefix for the configmap (without '-dev/prod-config'). Will default to app_name if not set.
             additional_image_name:
                 type: string
+                default: ''
                 required: false
                 description: Set to add an additional image in the the apply step for the deployment.yaml
             additional_image_tag:
