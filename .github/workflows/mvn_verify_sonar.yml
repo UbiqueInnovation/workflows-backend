@@ -10,6 +10,11 @@ on:
                 required: true
                 type: string
                 description: tag or branch name
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
+                description: Checkout with lfs, default false
             java_version:
                 default: '17'
                 type: string
@@ -44,6 +49,7 @@ jobs:
             -   uses: actions/checkout@v3
                 with:
                     fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+                    lfs: ${{ inputs.checkout_lfs }}
             -   name: Set up JDK
 
                 uses: actions/setup-java@v3
