@@ -8,6 +8,11 @@ on:
                 default: ''
                 type: string
                 description: tag or branch name, used for mvn versions:set
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
+                description: Checkout with lfs, default false
             parent_pom:
                 required: true
                 type: string
@@ -36,6 +41,8 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Set up JDK
                 uses: actions/setup-java@v3
