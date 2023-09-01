@@ -69,3 +69,5 @@ jobs:
                     labels: ${{ steps.docker_meta.outputs.labels }}
                     push: true
                     context: ${{ inputs.context }}
+                    cache-from: type=gha
+                    cache-to: type=gha,mode=max

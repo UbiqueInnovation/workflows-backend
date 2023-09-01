@@ -172,3 +172,5 @@ jobs:
                     file: docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
                     push: true
                     context: docker/${{ inputs.app_name }}
+                    cache-from: type=gha
+                    cache-to: type=gha,mode=max
