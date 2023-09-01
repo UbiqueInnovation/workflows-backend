@@ -144,7 +144,7 @@ jobs:
 
             -   name: Cache Maven packages on self-hosted MinIO
                 if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-                uses: tespkg/actions-cache@12721c08d65e046d6006e5729ba76bff421ac0ef
+                uses: tespkg/actions-cache@adf4e5e57e916ad83e63cc047ce271ef0843a24c
                 with:
                     endpoint: ${{ inputs.self_hosted_cache_endpoint }}
                     port: ${{ inputs.self_hosted_cache_port }}
