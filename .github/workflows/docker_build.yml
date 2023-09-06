@@ -51,7 +51,10 @@ jobs:
                     username: ${{ secrets.acr_username }}
                     password: ${{ secrets.acr_password }}
 
-            -   name: Docker meta
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v2
+
+            -   name: Docker Metadata
                 id: docker_meta
                 uses: docker/metadata-action@v4
                 with:
