@@ -14,6 +14,10 @@ on:
                 default: '17'
                 type: string
                 required: false
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
             use_mvn_central:
                 default: false
                 type: boolean
@@ -35,8 +39,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3
-            -   name: Set up JDK
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
 
+            -   name: Set up JDK
                 uses: actions/setup-java@v3
                 with:
                     java-version: ${{ inputs.java_version }}

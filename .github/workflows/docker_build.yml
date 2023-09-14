@@ -7,6 +7,10 @@ on:
                 default: '["ubuntu-latest"]'
                 type: string
                 description: Set to '["self-hosted", "linux", "stable"]' if needed.
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
             image_name:
                 required: true
                 type: string
@@ -19,7 +23,7 @@ on:
                 required: false
                 default: "."
                 type: string
-                description: You can specify the path of the folder containing the Dockerfile and neccesary build files
+                description: You can specify the path of the folder containing the Dockerfile and necessary build files
 
         secrets:
             acr_registry:
@@ -35,6 +39,8 @@ jobs:
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   uses: actions/checkout@v3
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Get TAG from inputs
                 run: echo "TAG=${{ inputs.tag_name }}" >> $GITHUB_ENV

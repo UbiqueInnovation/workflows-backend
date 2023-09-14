@@ -7,6 +7,10 @@ on:
                 required: true
                 type: string
                 description: tag or branch name
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
             app_name:
                 required: true
                 type: string
@@ -124,6 +128,7 @@ jobs:
                 uses: actions/checkout@v3
                 with:
                     ref: ${{ inputs.ref_name }}
+                    lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Git Status
                 run: git status

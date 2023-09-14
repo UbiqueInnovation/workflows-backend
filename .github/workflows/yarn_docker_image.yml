@@ -11,6 +11,10 @@ on:
                 default: "18"
                 type: string
                 required: false
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
             yarn_version:
                 default: "1.22.19"
                 type: string
@@ -85,6 +89,8 @@ jobs:
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   uses: actions/checkout@v3
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Install yarn without node
                 if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}

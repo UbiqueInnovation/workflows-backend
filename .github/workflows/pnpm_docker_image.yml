@@ -11,6 +11,10 @@ on:
                 required: false
                 type: string
                 description: tag for base image
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
             node_version:
                 default: "18"
                 type: string
@@ -94,6 +98,8 @@ jobs:
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   uses: actions/checkout@v3
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
 
             -   uses: pnpm/action-setup@v2
                 with:
