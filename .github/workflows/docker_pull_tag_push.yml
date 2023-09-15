@@ -80,7 +80,7 @@ jobs:
                     password: ${{ secrets.push_container_registry_password }}
 
             -   name: Set up Docker Buildx
-                uses: docker/setup-buildx-action@v2
+                uses: docker/setup-buildx-action@v3
 
             -   name: Pull docker image
                 run: docker pull ${{ env.PULL_IMAGE }}

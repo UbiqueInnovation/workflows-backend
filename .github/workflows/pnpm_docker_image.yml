@@ -97,7 +97,7 @@ jobs:
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
 
@@ -113,7 +113,7 @@ jobs:
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   name: Set up Docker Buildx
-                uses: docker/setup-buildx-action@v2
+                uses: docker/setup-buildx-action@v3
 
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
@@ -160,11 +160,11 @@ jobs:
                     password: ${{ secrets.acr_password }}
 
             -   name: Set up Docker Buildx
-                uses: docker/setup-buildx-action@v2
+                uses: docker/setup-buildx-action@v3
 
             -   name: Docker Metadata
                 id: docker_meta
-                uses: docker/metadata-action@v4
+                uses: docker/metadata-action@v5
                 with:
                     # list of Docker images to use as base name for tags
                     images: |
@@ -179,7 +179,7 @@ jobs:
                         type=raw,value=latest,enable={{is_default_branch}}
 
             -   name: Docker build and push
-                uses: docker/build-push-action@v4
+                uses: docker/build-push-action@v5
                 with:
                     tags: ${{ steps.docker_meta.outputs.tags }}
                     labels: ${{ steps.docker_meta.outputs.labels }}

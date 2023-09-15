@@ -21,7 +21,7 @@ jobs:
         container:
             image: jetbrains/intellij-http-client:latest
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
 
