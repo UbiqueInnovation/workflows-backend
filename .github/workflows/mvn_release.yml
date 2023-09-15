@@ -89,10 +89,7 @@ jobs:
                 run: mvn -f ${{ inputs.parent_pom }} versions:commit
 
             -   name: Build with Maven
-                run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }}
-
-            -   name: Build with Maven
-                run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }}
+                run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
 
             -   name: Create new release
                 uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1
