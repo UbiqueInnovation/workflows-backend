@@ -1,4 +1,4 @@
-name: Runs Maven Install
+name: Runs Maven Install and releases to GitHub
 on:
     workflow_call:
 
