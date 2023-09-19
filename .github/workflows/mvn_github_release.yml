@@ -12,7 +12,7 @@ on:
                 required: false
                 default: false
                 type: boolean
-                description: Checkout with lfs, efault false
+                description: Checkout with lfs, default false
             parent_pom:
                 required: true
                 type: string
