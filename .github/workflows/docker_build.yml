@@ -24,6 +24,11 @@ on:
                 default: "."
                 type: string
                 description: You can specify the path of the folder containing the Dockerfile and necessary build files
+            build_args:
+                required: false
+                default: ""
+                type: string
+                description: You can specify build arguments for the Docker build
 
         secrets:
             acr_registry:
@@ -80,3 +85,4 @@ jobs:
                     context: ${{ inputs.context }}
                     cache-from: type=gha
                     cache-to: type=gha,mode=max
+                    build-args: ${{ inputs.build_args }}
