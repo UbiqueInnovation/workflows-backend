@@ -20,6 +20,7 @@ on:
             mvn_root_directory:
                 required: false
                 type: string
+                description: Set this if your maven project has no submodules. Defaults to ${app_directory}/..
             java_version:
                 default: '17'
                 type: string
