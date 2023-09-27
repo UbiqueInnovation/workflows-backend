@@ -105,9 +105,10 @@ on:
                 required: false
             eks_kubecontex:
                 required: false
-            eks_role_to_assume:
+            aws_access_key:
                 required: false
-                description: required if k8s_type is eks                             
+            aws_secret_key:
+                required: false                          
 
 
 permissions:
@@ -159,7 +160,8 @@ jobs:
                 if: ${{ inputs.k8s_type == 'eks' }}
                 uses: aws-actions/configure-aws-credentials@v4
                 with:
-                    role-to-assume: ${{ secrets.eks_role_to_assume }}
+                    aws-access-key-id: ${{ secrets.aws_access_key }}
+                    aws-secret-access-key: ${{ secrets.aws_secret_key }}
                     aws-region: ${{ inputs.eks_region }}
 
             -   name: Set up kubelogin for non-interactive login
