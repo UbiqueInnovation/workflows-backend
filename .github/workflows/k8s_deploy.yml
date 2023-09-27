@@ -86,7 +86,7 @@ on:
             eks_region:
                 required: false
                 type: string
-                description: required if input k8s_type is eks        
+                description: required if input k8s_type is eks                    
 
         secrets:
             acr_registry:
@@ -103,13 +103,12 @@ on:
                 required: false
             az_subscription_id:
                 required: false
+            eks_kubecontex:
+                required: false
             eks_role_to_assume:
                 required: false
-                description: required if k8s_type is eks
-            aws_access_key:
-                required: false
-            aws_secret_key:
-                required: false
+                description: required if k8s_type is eks                             
+
 
 permissions:
     id-token: write
@@ -156,8 +155,14 @@ jobs:
                 with:
                     creds: '${{ secrets.az_service_principal }}'
 
+            -   name: Configure AWS credentials
+                if: ${{ inputs.k8s_type == 'eks' }}
+                uses: aws-actions/configure-aws-credentials@v4
+                with:
+                    role-to-assume: ${{ secrets.eks_role_to_assume }}
+                    aws-region: ${{ inputs.eks_region }}
+
             -   name: Set up kubelogin for non-interactive login
-                if: ${{ inputs.k8s_type == 'aks' }}
                 uses: azure/use-kubelogin@v1
                 with:
                     kubelogin-version: 'v0.0.28'
@@ -171,24 +176,12 @@ jobs:
                     admin: 'false'
                     use-kubelogin: 'true'
 
-            # TODO: make login to aws with oidc and assume role and setup kubecontext
-            -   name: Configure AWS credentials
+            -   name: Set EKS context
                 if: ${{ inputs.k8s_type == 'eks' }}
-                uses: aws-actions/configure-aws-credentials@v2
+                uses: azure/k8s-set-context@v3
                 with:
-                    aws-access-key-id: ${{ secrets.aws_access_key }}
-                    aws-secret-access-key: ${{ secrets.aws_secret_key }}
-                    aws-region: ${{ inputs.eks_region }}
-
-            -   name: Set EKS context 1
-                if: ${{ inputs.k8s_type == 'eks' }}            
-                run: |
-                    aws eks update-kubeconfig --name met --region ${{ inputs.eks_region }} --role-arn ${{ secrets.eks_role_to_assume }}
-                    kubectl config use-context arn:aws:eks:eu-central-2:852349318571:cluster/met
-                    EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-                    echo "KUBECONFIG<<$EOF" >> "$GITHUB_ENV"
-                    kubectl config view >> "$GITHUB_ENV"
-                    echo "$EOF" >> "$GITHUB_ENV"
+                  method: kubeconfig
+                  kubeconfig: ${{ secrets.eks_kubecontex }}
 
             -   name: Create namespace (if it doesn't exist)
                 run: |
@@ -198,15 +191,6 @@ jobs:
                 if: ${{ inputs.with_configmap }}
                 run: |
                     kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_prefix && inputs.config_map_prefix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
-
-
-            -   name: Set EKS context 2
-                if: ${{ inputs.k8s_type == 'eks' }}
-                uses: azure/k8s-set-context@v3
-                with:
-                    method: kubeconfig
-                    kubeconfig: ${{ env.KUBECONFIG }}
-                    context: arn:aws:eks:eu-central-2:852349318571:cluster/met
 
             -   name: Create image pull secret for ACR
                 uses: azure/k8s-create-secret@v4
