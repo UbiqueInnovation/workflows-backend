@@ -52,15 +52,6 @@ jobs:
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
 
-            -   name: Get TAG from inputs
-                run: echo "TAG=${{ inputs.tag_name }}" >> $GITHUB_ENV
-
-            -   name: Replace `/` by `-` in TAG
-                run: echo "TAG=${TAG/\//-}" >> $GITHUB_ENV
-
-            -   name: Strip leading `v` from TAG
-                run: echo "TAG=${TAG##v}" >> $GITHUB_ENV
-
             -   uses: azure/docker-login@v1
                 with:
                     login-server: ${{ secrets.acr_registry }}
@@ -79,15 +70,17 @@ jobs:
                         ${{ secrets.acr_registry }}/${{ inputs.image_name }}
                     # generate Docker tags based on the following events/attributes
                     tags: |
-                        type=semver,pattern={{raw}},value=${{ inputs.tag_name }}
-
-            -   name: Set tags
-                run: echo "TAGS=${{ steps.docker_meta.outputs.tags }}" >> $GITHUB_ENV
+                        # set the tag from the raw git tag if inputs.use_semver is enabled
+                        type=semver,pattern={{raw}},value=${{ inputs.tag_name }},enable=${{ inputs.use_semver }}
+                        # raw inputs.tag_name tags iff !inputs.use_semver
+                        type=raw,value=${{ inputs.tag_name }},enable=${{ ! inputs.use_semver }}
+                        # set latest tag for default branch
+                        type=raw,value=latest,enable={{is_default_branch}}
 
             -   name: Docker build and push
                 uses: docker/build-push-action@v5
                 with:
-                    tags: ${{ inputs.use_semver && steps.docker_meta.outputs.tags || inputs.tag_name }}
+                    tags: ${{ steps.docker_meta.outputs.tags }}
                     labels: ${{ steps.docker_meta.outputs.labels }}
                     push: true
                     context: ${{ inputs.context }}
