@@ -103,7 +103,7 @@ on:
                 required: false
             az_subscription_id:
                 required: false
-            eks_kubecontex:
+            eks_kubecontext:
                 required: false
             aws_access_key:
                 required: false
@@ -183,7 +183,7 @@ jobs:
                 uses: azure/k8s-set-context@v3
                 with:
                   method: kubeconfig
-                  kubeconfig: ${{ secrets.eks_kubecontex }}
+                  kubeconfig: ${{ secrets.eks_kubecontext }}
 
             -   name: Create namespace (if it doesn't exist)
                 run: |
