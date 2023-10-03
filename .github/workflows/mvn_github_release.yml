@@ -1,28 +1,36 @@
-name: Deploy Maven Package
+name: Runs Maven Install and releases to GitHub
 on:
     workflow_call:
 
         inputs:
-            parent_pom:
-                required: true
+            ref_name:
+                required: false
+                default: ''
                 type: string
                 description: tag or branch name, used for mvn versions:set
-            ref_name:
-                type: string
-                required: true
-            java_version:
-                default: '17'
-                type: string
-                required: false
             checkout_lfs:
                 required: false
                 default: false
                 type: boolean
+                description: Checkout with lfs, default false
+            parent_pom:
+                required: true
+                type: string
+            java_version:
+                default: '17'
+                type: string
+                required: false
             use_mvn_central:
                 default: false
                 type: boolean
                 required: false
                 description: If false, use artifactory_* input secrets
+            release_option_prerelease:
+                type: boolean
+                default: false
+            release_option_files:
+                type: string
+                description: files for the artifact, e.g. 'eth-ws/target/eth-ws.war'
 
         secrets:
             artifactory_user:
@@ -33,9 +41,11 @@ on:
                 required: false
             artifactory_repo:
                 required: false
+            repo_token:
+                required: true
 
 jobs:
-    deploy:
+    build:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v4
@@ -53,7 +63,6 @@ jobs:
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-m2-
 
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}
@@ -81,5 +90,12 @@ jobs:
             -   name: Commit versions
                 run: mvn -f ${{ inputs.parent_pom }} versions:commit
 
-            -   name: Deploy package
-                run: mvn -f ${{ inputs.parent_pom }} deploy -DskipTests
+            -   name: Build with Maven
+                run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
+
+            -   name: Create new release
+                uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1
+                with:
+                    repo_token: ${{ secrets.repo_token }}
+                    prerelease: ${{ inputs.release_option_prerelease }}
+                    files: ${{ inputs.release_option_files }}

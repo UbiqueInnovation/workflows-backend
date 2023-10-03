@@ -7,6 +7,10 @@ on:
                 required: true
                 type: string
                 description: tag or branch name
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
             app_name:
                 required: true
                 type: string
@@ -16,6 +20,7 @@ on:
             mvn_root_directory:
                 required: false
                 type: string
+                description: Set this if your maven project has no submodules. Defaults to ${app_directory}/..
             java_version:
                 default: '17'
                 type: string
@@ -59,13 +64,33 @@ on:
                 description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
             runs_on:
                 required: false
-                default: ubuntu-latest
+                default: '["ubuntu-latest"]'
                 type: string
-                description: Set to 'self-hosted' if needed.
+                description: Set to '["self-hosted", "linux"]' if needed.
             ecr_region:
                 required: false
                 type: string
                 description: required if input container_registry_type is 'amazon-ecr'
+            self_hosted_cache_endpoint:
+                required: false
+                default: 'truenas.local.lan'
+                type: string
+                description: only applicable if runs_on self_hosted
+            self_hosted_cache_port:
+                required: false
+                default: 9000
+                type: number
+                description: only applicable if runs_on self_hosted
+            self_hosted_cache_bucket:
+                required: false
+                default: github-actions-cache
+                type: string
+                description: only applicable if runs_on self_hosted
+            self_hosted_cache_region:
+                default: local
+                required: false
+                type: string
+                description: only applicable if runs_on self_hosted
 
         secrets:
             artifactory_user:
@@ -102,6 +127,12 @@ on:
             ecr_role_to_assume:
                 required: false
                 description: required if input container_registry_type is 'amazon-ecr'
+            self_hosted_cache_access_key:
+                required: false
+                description: required if runs_on self_hosted
+            self_hosted_cache_secret_key:
+                required: false
+                description: required if runs_on self_hosted
 
 jobs:
     create-docker-image:
@@ -109,15 +140,13 @@ jobs:
             id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2
             contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2, but only if actions/checkout is used
         name: Create Docker Image
-        runs-on: ${{ inputs.runs_on }}
+        runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   name: Checkout code
-                uses: actions/checkout@v3
+                uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.ref_name }}
-
-            -   name: Set up Docker Buildx
-                uses: docker/setup-buildx-action@v2
+                    lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Git Status
                 run: git status
@@ -136,12 +165,35 @@ jobs:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'graalvm'
 
+            -   name: Cache Maven packages on self-hosted MinIO
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
+                uses: tespkg/actions-cache@adf4e5e57e916ad83e63cc047ce271ef0843a24c
+                with:
+                    endpoint: ${{ inputs.self_hosted_cache_endpoint }}
+                    port: ${{ inputs.self_hosted_cache_port }}
+                    insecure: true
+                    accessKey: ${{ secrets.self_hosted_cache_access_key }}
+                    secretKey: ${{ secrets.self_hosted_cache_secret_key }}
+                    bucket: ${{ inputs.self_hosted_cache_bucket }}
+                    region: ${{ inputs.self_hosted_cache_region }}
+                    use-fallback: true
+                    path: ~/.m2/repository
+                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: ${{ runner.os }}-m2-
+
             -   name: Cache Maven packages
+                if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted' }}
                 uses: actions/cache@v3
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2-
+
+            -   name: Set up Maven
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
+                uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f
+                with:
+                    maven-version: 3.9.3
 
             -   uses: actions/setup-python@v4
                 if: ${{ inputs.run_poeditor }}
@@ -177,7 +229,7 @@ jobs:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
 
-            -   name: Get TAG_NAME from ref_name
+            -   name: Set TAG_NAME from ref_name
                 run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
             -   name: Replace `/` by `-` in TAG_NAME

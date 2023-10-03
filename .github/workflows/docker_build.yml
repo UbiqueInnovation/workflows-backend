@@ -1,0 +1,82 @@
+name: Build and Push Docker Image
+on:
+    workflow_call:
+        inputs:
+            runs_on:
+                required: false
+                default: '["ubuntu-latest"]'
+                type: string
+                description: Set to '["self-hosted", "linux", "stable"]' if needed.
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
+            image_name:
+                required: true
+                type: string
+                description: name of the image to build
+            tag_name:
+                required: true
+                type: string
+                description: name of the tag to build
+            context:
+                required: false
+                default: "."
+                type: string
+                description: You can specify the path of the folder containing the Dockerfile and necessary build files
+
+        secrets:
+            acr_registry:
+                required: true
+            acr_username:
+                required: true
+            acr_password:
+                required: true
+
+jobs:
+    build:
+        name: Build Project
+        runs-on: ${{ fromJson(inputs.runs_on) }}
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
+
+            -   name: Get TAG from inputs
+                run: echo "TAG=${{ inputs.tag_name }}" >> $GITHUB_ENV
+
+            -   name: Replace `/` by `-` in TAG
+                run: echo "TAG=${TAG/\//-}" >> $GITHUB_ENV
+
+            -   name: Strip leading `v` from TAG
+                run: echo "TAG=${TAG##v}" >> $GITHUB_ENV
+
+            -   uses: azure/docker-login@v1
+                with:
+                    login-server: ${{ secrets.acr_registry }}
+                    username: ${{ secrets.acr_username }}
+                    password: ${{ secrets.acr_password }}
+
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v3
+
+            -   name: Docker Metadata
+                id: docker_meta
+                uses: docker/metadata-action@v5
+                with:
+                    # list of Docker images to use as base name for tags
+                    images: |
+                        ${{ secrets.acr_registry }}/${{ inputs.image_name }}
+                    # generate Docker tags based on the following events/attributes
+                    tags: |
+                        type=semver,pattern={{raw}},value=${{ inputs.tag_name }}
+
+            -   name: Docker build and push
+                uses: docker/build-push-action@v5
+                with:
+                    tags: ${{ steps.docker_meta.outputs.tags }}
+                    labels: ${{ steps.docker_meta.outputs.labels }}
+                    push: true
+                    context: ${{ inputs.context }}
+                    cache-from: type=gha
+                    cache-to: type=gha,mode=max

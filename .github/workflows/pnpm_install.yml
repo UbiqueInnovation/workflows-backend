@@ -11,6 +11,10 @@ on:
                 default: '18'
                 type: string
                 required: false
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
             cache_dependency_path:
                 default: 'pnpm-lock.yaml'
                 type: string
@@ -50,9 +54,11 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.ref_name }}
+                    lfs: ${{ inputs.checkout_lfs }}
+
             -   uses: pnpm/action-setup@v2
                 with:
                     version: 8
@@ -89,19 +95,24 @@ jobs:
             -   name: Install dependencies
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm install
+
             -   name: Build for Environment
                 if: ${{ inputs.release_env }}
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm build:${{ inputs.release_env }}
+
             -   name: set artifact dir from input
                 if: ${{ inputs.artifact_dir }}
                 run: |
                     echo "ARTIFACT_DIR='${{ inputs.artifact_dir }}'" >> $GITHUB_ENV
+
             -   name: set artifact dir as default
                 if: ${{ ! inputs.artifact_dir }}
                 run: |
                     echo "ARTIFACT_DIR=${{ inputs.app_directory }}/${{ inputs.build_dir }}/" >> $GITHUB_ENV
-            -   uses: actions/upload-artifact@v3
+
+            -   name: Upload artifact
+                uses: actions/upload-artifact@v3
                 with:
                     name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
                     path: ${{ env.ARTIFACT_DIR }}

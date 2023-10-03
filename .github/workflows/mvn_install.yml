@@ -8,6 +8,11 @@ on:
                 default: ''
                 type: string
                 description: tag or branch name, used for mvn versions:set
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
+                description: Checkout with lfs, default false
             parent_pom:
                 required: true
                 type: string
@@ -20,6 +25,11 @@ on:
                 type: boolean
                 required: false
                 description: If false, use artifactory_* input secrets
+            skip_tests:
+                default: false
+                type: boolean
+                required: false
+                description: Set to true to enable '-DskipTests' temporarily during debugging. DO NOT SET PERMANENTLY
 
         secrets:
             artifactory_user:
@@ -35,7 +45,9 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Set up JDK
                 uses: actions/setup-java@v3
@@ -60,7 +72,7 @@ jobs:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
 
-            -   name: Get version from ref_name
+            -   name: Set VERSION from ref_name
                 run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
             -   name: Replace `/` by `-` in VERSION
@@ -76,4 +88,4 @@ jobs:
                 run: mvn -f ${{ inputs.parent_pom }} versions:commit
 
             -   name: Build with Maven
-                run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }}
+                run: mvn --batch-mode --update-snapshots install -DskipTests=${{ inputs.skip_tests }} -f ${{ inputs.parent_pom }}

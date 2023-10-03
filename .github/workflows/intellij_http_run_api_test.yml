@@ -10,6 +10,10 @@ on:
                 required: true
                 type: string
                 description: directory containing env.json file and *.http files
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
 
 jobs:
     api-tests:
@@ -17,7 +21,10 @@ jobs:
         container:
             image: jetbrains/intellij-http-client:latest
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
+
             -   name: Run Api Tests
                 run: java -cp "/intellij-http-client/*" com.intellij.httpClient.cli.HttpClientMain -e ${{ inputs.environment_to_test}} -v ${{ inputs.test_directory}}/http-client.env.json --report ${{ inputs.test_directory}}/*.http
     
