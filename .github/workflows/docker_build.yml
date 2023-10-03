@@ -24,17 +24,34 @@ on:
                 default: "."
                 type: string
                 description: You can specify the path of the folder containing the Dockerfile and necessary build files
+            container_registry_type:
+                required: false
+                default: 'azure-cr'
+                type: string
+                description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
+            ecr_region:
+                required: false
+                type: string
+                description: required if input container_registry_type is 'amazon-ecr'                                
 
         secrets:
             acr_registry:
                 required: true
             acr_username:
-                required: true
+                required: false
+                description: required if input container_registry_type is 'azure-cr'
             acr_password:
-                required: true
+                required: false
+                description: required if input container_registry_type is 'azure-cr'
+            ecr_role_to_assume:
+                required: false
+                description: required if input container_registry_type is 'amazon-ecr'                
 
 jobs:
     build:
+        permissions:
+            id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2
+            contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2, but only if actions/checkout is used
         name: Build Project
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
@@ -51,11 +68,24 @@ jobs:
             -   name: Strip leading `v` from TAG
                 run: echo "TAG=${TAG##v}" >> $GITHUB_ENV
 
-            -   uses: azure/docker-login@v1
+            -   name: Login to Azure CR
+                if: ${{ inputs.container_registry_type == 'azure-cr' }}
+                uses: azure/docker-login@v1
                 with:
                     login-server: ${{ secrets.acr_registry }}
                     username: ${{ secrets.acr_username }}
                     password: ${{ secrets.acr_password }}
+
+            -   name: Configure AWS credentials
+                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                uses: aws-actions/configure-aws-credentials@v2
+                with:
+                    role-to-assume: ${{ secrets.ecr_role_to_assume }}
+                    aws-region: ${{ inputs.ecr_region }}
+
+            -   name: Login to Amazon ECR
+                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                uses: aws-actions/amazon-ecr-login@v1                    
 
             -   name: Set up Docker Buildx
                 uses: docker/setup-buildx-action@v3
