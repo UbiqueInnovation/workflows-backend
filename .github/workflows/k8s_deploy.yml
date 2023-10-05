@@ -123,7 +123,9 @@ on:
             aws_access_key:
                 required: false
             aws_secret_key:
-                required: false                          
+                required: false
+            ecr_role_to_assume:
+                required: false                      
 
 
 permissions:
