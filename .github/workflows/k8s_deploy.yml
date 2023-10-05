@@ -160,6 +160,22 @@ jobs:
             -   name: Image to deploy
                 run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
+                # do this, before we setup the eks login, otherwise it gets confused
+            -   name: Configure AWS credentials for ECR Pull Secret
+                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                uses: aws-actions/configure-aws-credentials@v2
+                with:
+                    role-to-assume: ${{ secrets.ecr_role_to_assume }}
+                    aws-region: ${{ inputs.ecr_region }}
+
+            -   name: Login to Amazon ECR
+                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                uses: aws-actions/amazon-ecr-login@v1
+
+            -   name: GET ECR Login
+                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                run: echo "ECR_PASSWORD=$(aws ecr get-login-password)" >> $GITHUB_ENV
+
             -   name: Azure Login with OIDC flow
                 if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'oidc' }}
                 uses: azure/login@v1
@@ -222,21 +238,6 @@ jobs:
                     secret-name: ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
 
-            -   name: Configure AWS credentials
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v2
-                with:
-                    role-to-assume: ${{ secrets.ecr_role_to_assume }}
-                    aws-region: ${{ inputs.ecr_region }}
-
-            -   name: Login to Amazon ECR
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/amazon-ecr-login@v1
-
-            -   name: GET ECR Login
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                run: echo "ECR_PASSWORD=$(aws ecr get-login-password)" >> $GITHUB_ENV
-
             -   name: Create image pull secret for ECR
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}            
                 uses: azure/k8s-create-secret@v4
@@ -246,7 +247,6 @@ jobs:
                     container-registry-password: ${{ env.ECR_PASSWORD }}
                     secret-name: ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
-
 
             -   name: Check serviceaccount.yaml existence
                 id: check_serviceaccount_file
