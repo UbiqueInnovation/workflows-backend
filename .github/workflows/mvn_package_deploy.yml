@@ -11,7 +11,7 @@ on:
                 type: string
                 required: true
             java_version:
-                default: '17'
+                default: '21'
                 type: string
                 required: false
             checkout_lfs:
