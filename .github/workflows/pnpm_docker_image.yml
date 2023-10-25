@@ -77,6 +77,11 @@ on:
                 default: 'Dockerfile'
                 type: string
                 description: Name of the Dockerfile, defaults to 'Dockerfile'
+            docker_build_args:
+                required: false
+                type: string
+                default: ''
+                description: docker build args in the form 'KEY1=value1,KEY2=value2'
 
         secrets:
             acr_registry:
@@ -181,7 +186,7 @@ jobs:
                     tags: ${{ steps.docker_meta.outputs.tags }}
                     labels: ${{ steps.docker_meta.outputs.labels }}
                     file: docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
-                    build-args: build_tag=${{ inputs.build_tag }}
+                    build-args: build_tag=${{ inputs.build_tag }},${{ inputs.docker_build_args }}
                     push: true
                     context: docker/${{ inputs.app_name }}
                     cache-from: type=gha
