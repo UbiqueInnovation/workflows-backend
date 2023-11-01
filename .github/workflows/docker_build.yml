@@ -24,6 +24,16 @@ on:
                 default: "."
                 type: string
                 description: You can specify the path of the folder containing the Dockerfile and necessary build files
+            build_args:
+                required: false
+                default: ""
+                type: string
+                description: You can specify build arguments for the Docker build
+            use_semver:
+                required: false
+                default: true
+                type: boolean
+                description: Whether to automatically convert the Tag to a semver format or keep it as is in tag_name
             container_registry_type:
                 required: false
                 default: 'azure-cr'
@@ -32,7 +42,7 @@ on:
             ecr_region:
                 required: false
                 type: string
-                description: required if input container_registry_type is 'amazon-ecr'                                
+                description: required if input container_registry_type is 'amazon-ecr'
 
         secrets:
             acr_registry:
@@ -45,7 +55,7 @@ on:
                 description: required if input container_registry_type is 'azure-cr'
             ecr_role_to_assume:
                 required: false
-                description: required if input container_registry_type is 'amazon-ecr'                
+                description: required if input container_registry_type is 'amazon-ecr'
 
 jobs:
     build:
@@ -58,15 +68,6 @@ jobs:
             -   uses: actions/checkout@v4
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
-
-            -   name: Get TAG from inputs
-                run: echo "TAG=${{ inputs.tag_name }}" >> $GITHUB_ENV
-
-            -   name: Replace `/` by `-` in TAG
-                run: echo "TAG=${TAG/\//-}" >> $GITHUB_ENV
-
-            -   name: Strip leading `v` from TAG
-                run: echo "TAG=${TAG##v}" >> $GITHUB_ENV
 
             -   name: Login to Azure CR
                 if: ${{ inputs.container_registry_type == 'azure-cr' }}
@@ -85,7 +86,7 @@ jobs:
 
             -   name: Login to Amazon ECR
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/amazon-ecr-login@v1                    
+                uses: aws-actions/amazon-ecr-login@v1
 
             -   name: Set up Docker Buildx
                 uses: docker/setup-buildx-action@v3
@@ -99,7 +100,12 @@ jobs:
                         ${{ secrets.acr_registry }}/${{ inputs.image_name }}
                     # generate Docker tags based on the following events/attributes
                     tags: |
-                        type=semver,pattern={{raw}},value=${{ inputs.tag_name }}
+                        # set the tag from the raw git tag if inputs.use_semver is enabled
+                        type=semver,pattern={{raw}},value=${{ inputs.tag_name }},enable=${{ inputs.use_semver }}
+                        # raw inputs.tag_name tags iff !inputs.use_semver
+                        type=raw,value=${{ inputs.tag_name }},enable=${{ ! inputs.use_semver }}
+                        # set latest tag for default branch
+                        type=raw,value=latest,enable={{is_default_branch}}
 
             -   name: Docker build and push
                 uses: docker/build-push-action@v5
@@ -110,3 +116,4 @@ jobs:
                     context: ${{ inputs.context }}
                     cache-from: type=gha
                     cache-to: type=gha,mode=max
+                    build-args: ${{ inputs.build_args }}

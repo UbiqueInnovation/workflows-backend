@@ -22,7 +22,7 @@ on:
                 type: string
                 description: Set this if your maven project has no submodules. Defaults to ${app_directory}/..
             java_version:
-                default: '17'
+                default: '21'
                 type: string
                 required: false
             jib_container_volumes:
@@ -176,10 +176,10 @@ jobs:
                     secretKey: ${{ secrets.self_hosted_cache_secret_key }}
                     bucket: ${{ inputs.self_hosted_cache_bucket }}
                     region: ${{ inputs.self_hosted_cache_region }}
-                    use-fallback: true
+                    use-fallback: false
                     path: ~/.m2/repository
-                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-m2-
+                    key: ${{ runner.os }}-${{ inputs.app_name }}-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: ${{ runner.os }}-${{ inputs.app_name }}-m2-
 
             -   name: Cache Maven packages
                 if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted' }}
