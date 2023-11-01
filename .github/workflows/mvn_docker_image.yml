@@ -137,8 +137,8 @@ on:
 jobs:
     create-docker-image:
         permissions:
-            id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2
-            contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v2, but only if actions/checkout is used
+            id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4
+            contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
@@ -295,7 +295,7 @@ jobs:
 
             -   name: Configure AWS credentials
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v2
+                uses: aws-actions/configure-aws-credentials@v4
                 with:
                     role-to-assume: ${{ secrets.ecr_role_to_assume }}
                     aws-region: ${{ inputs.ecr_region }}

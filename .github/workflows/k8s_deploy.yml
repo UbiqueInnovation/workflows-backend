@@ -163,7 +163,7 @@ jobs:
                 # do this, before we setup the eks login, otherwise it gets confused
             -   name: Configure AWS credentials for ECR Pull Secret
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v2
+                uses: aws-actions/configure-aws-credentials@v4
                 with:
                     role-to-assume: ${{ secrets.ecr_role_to_assume }}
                     aws-region: ${{ inputs.ecr_region }}
