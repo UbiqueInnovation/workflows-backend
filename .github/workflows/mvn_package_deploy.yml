@@ -63,7 +63,7 @@ jobs:
             -   name: install apt packages '${{ inputs.install_apt_packages }}'
                 if: ${{ inputs.install_apt_packages }}
                 run: |
-                    apt install ${{ inputs.install_apt_packages }}
+                    sudo apt install ${{ inputs.install_apt_packages }}
 
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}
