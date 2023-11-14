@@ -23,6 +23,11 @@ on:
                 type: boolean
                 required: false
                 description: If false, use artifactory_* input secrets
+            install_apt_packages:
+                required: false
+                type: string
+                default: ''
+                description: space-separated list of apt packages to install before build
 
         secrets:
             artifactory_user:
@@ -54,6 +59,11 @@ jobs:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2-
+
+            -   name: install apt packages '${{ inputs.install_apt_packages }}'
+                if: ${{ inputs.install_apt_packages }}
+                run: |
+                    apt install ${{ inputs.install_apt_packages }}
 
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}
