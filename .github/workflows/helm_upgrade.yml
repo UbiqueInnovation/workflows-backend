@@ -47,6 +47,8 @@ on:
                 required: false
             az_subscription_id:
                 required: false
+            workflow_pat_github:
+                required: true
 
 permissions:
     id-token: write
@@ -64,6 +66,7 @@ jobs:
                 with:
                     repository: ${{ inputs.chart }}
                     ref: ${{ inputs.chart_version }}
+                    token: ${{ secrets.workflow_pat_github }}
                     path: './chart'
 
             -   name: Azure Login with OIDC flow
