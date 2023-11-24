@@ -39,12 +39,6 @@ on:
                 description: set to 'service_principal' to login with service principal flow. secrets 'az_client/tenant/subscription_id' required for oidc flow and 'az_service_principal' for service principal flow
 
         secrets:
-            acr_registry:
-                required: true
-            acr_username:
-                required: true
-            acr_password:
-                required: true
             az_service_principal:
                 required: false
             az_client_id:
