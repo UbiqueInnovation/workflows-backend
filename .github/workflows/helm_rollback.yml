@@ -8,7 +8,7 @@ on:
                 description: the name of the release e.g. ubauth-ubique
             revision:
                 required: false
-                type: number
+                type: string
                 description: the revision to roll back to, if omitted, the previous one
             namespace:
                 required: true
