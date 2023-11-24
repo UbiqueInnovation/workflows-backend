@@ -1,0 +1,84 @@
+name: Deploy on Kubernetes Cluster
+on:
+    workflow_call:
+        inputs:
+            release:
+                required: true
+                type: string
+                description: the name of the release e.g. ubauth-ubique
+            revision:
+                required: false
+                type: number
+                description: the revision to roll back to, if omitted, the previous one
+            namespace:
+                required: true
+                type: string
+                description: e.g. ubique, swisstopo, schweizmobil
+            az_login_flow:
+                type: string
+                default: 'oidc'
+                required: false
+                description: set to 'service_principal' to login with service principal flow. secrets 'az_client/tenant/subscription_id' required for oidc flow and 'az_service_principal' for service principal flow
+            cluster:
+                default: 'ub-kub-dev'
+                type: string
+                required: false
+                description: 'name of the cluster (default: ub-kub-dev)'
+            cluster_resource_group:
+                default: 'ub-schweiz-cluster'
+                type: string
+                required: false
+                description: 'resource group of the cluster (default: ub-schweiz-cluster)'
+
+        secrets:
+            az_service_principal:
+                required: false
+            az_client_id:
+                required: false
+            az_tenant_id:
+                required: false
+            az_subscription_id:
+                required: false
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Azure Login with OIDC flow
+                if: ${{ inputs.az_login_flow == 'oidc' }}
+                uses: azure/login@v1
+                with:
+                    client-id: ${{ secrets.az_client_id }}
+                    tenant-id: ${{ secrets.az_tenant_id }}
+                    subscription-id: ${{ secrets.az_subscription_id }}
+
+            -   name: Azure Login with service principal
+                if: ${{ inputs.az_login_flow == 'service_principal' }}
+                uses: azure/login@v1
+                with:
+                    creds: '${{ secrets.az_service_principal }}'
+
+            -   name: Set up kubelogin for non-interactive login
+                uses: azure/use-kubelogin@v1
+                with:
+                    kubelogin-version: 'v0.0.28'
+
+            -   name: Set AKS context
+                uses: azure/aks-set-context@v3
+                with:
+                    cluster-name: ${{ inputs.cluster }}
+                    resource-group: ${{ inputs.cluster_resource_group }}
+                    admin: 'false'
+                    use-kubelogin: 'true'
+
+            -   name: Azure setup helm
+                uses: azure/setup-helm@v3
+                with:
+                    version: 'v3.10.1'
+
+            -   name: Rollback to a previous release
+                run: helm rollback --namespace ${{ inputs.namespace }} ${{ inputs.release }} ${{ inputs.revision }}
