@@ -37,6 +37,16 @@ on:
                 default: 'oidc'
                 required: false
                 description: set to 'service_principal' to login with service principal flow. secrets 'az_client/tenant/subscription_id' required for oidc flow and 'az_service_principal' for service principal flow
+            cluster:
+                default: 'ub-kub-dev'
+                type: string
+                required: false
+                description: 'name of the cluster (default: ub-kub-dev)'
+            cluster_resource_group:
+                default: 'ub-schweiz-cluster'
+                type: string
+                required: false
+                description: 'resource group of the cluster (default: ub-schweiz-cluster)'
 
         secrets:
             az_service_principal:
