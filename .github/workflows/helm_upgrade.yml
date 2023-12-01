@@ -10,6 +10,10 @@ on:
                 required: true
                 type: string
                 description: the name of the release e.g. ubauth-ubique
+            command:
+                type: string
+                description: which command to run with helm, mostly `install` or `upgrade`
+                default: upgrade
             values_file_path:
                 required: true
                 type: string
@@ -112,18 +116,5 @@ jobs:
                     version: 'v3.10.1'
 
             -   name: Upgrade release
-                run: helm upgrade --namespace ${{ inputs.namespace }} -f ${{ inputs.values_file_path }} ${{ inputs.release }} ./chart
+                run: helm ${{ inputs.command }} --namespace ${{ inputs.namespace }} -f ${{ inputs.values_file_path }} ${{ inputs.release }} ./chart
 
-#            -   uses: azure/k8s-bake@v2.4
-#                with:
-#                    renderEngine: 'helm'
-#                    helmChart: ${{ inputs.chart }}
-#                    overrideFiles: ${{ inputs.values_file_path }}
-#                    helm-version: 'v3.10.1'
-#
-#            -   uses: Azure/k8s-deploy@v4
-#                with:
-#                    manifests: ${{ steps.bake.outputs.manifestsBundle }}
-#                    namespace: ${{ inputs.namespace }}
-#                    imagepullsecrets: |
-#                        ${{ inputs.pull_secret_name }}
