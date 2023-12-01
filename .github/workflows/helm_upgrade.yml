@@ -51,6 +51,10 @@ on:
                 type: string
                 required: false
                 description: 'resource group of the cluster (default: ub-schweiz-cluster)'
+            flags:
+                description: Optional flags for helm command
+                type: string
+                required: false
 
         secrets:
             az_service_principal:
@@ -116,5 +120,5 @@ jobs:
                     version: 'v3.10.1'
 
             -   name: Upgrade release
-                run: helm ${{ inputs.command }} --namespace ${{ inputs.namespace }} -f ${{ inputs.values_file_path }} ${{ inputs.release }} ./chart
+                run: helm ${{ inputs.command }} --namespace ${{ inputs.namespace }} -f ${{ inputs.values_file_path }} ${{ inputs.release }} ./chart ${{ inputs.flags }}
 
