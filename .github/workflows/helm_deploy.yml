@@ -10,7 +10,7 @@ on:
                 required: true
                 type: string
                 description: the name of the release e.g. ubauth-ubique
-            command:
+            helm_command:
                 type: string
                 description: which command to run with helm, mostly `install` or `upgrade`
                 default: upgrade
@@ -115,5 +115,5 @@ jobs:
                     version: 'v3.10.1'
 
             -   name: Upgrade release
-                run: helm ${{ inputs.command }} --namespace ${{ inputs.namespace }} -f ${{ inputs.values_file_path }} ${{ inputs.release }} ./chart ${{ inputs.flags }}
+                run: helm ${{ inputs.helm_command }} --namespace ${{ inputs.namespace }} -f ${{ inputs.values_file_path }} ${{ inputs.release }} ./chart ${{ inputs.flags }}
 
