@@ -1,11 +1,11 @@
-name: Deploy on Kubernetes Cluster
+name: Install or Upgrade Helm Chart on Kubernetes Cluster
 on:
     workflow_call:
         inputs:
             ref_name:
                 required: true
                 type: string
-                description: tag or branch name
+                description: tag or branch name to get values.yml file from
             release:
                 required: true
                 type: string
@@ -21,17 +21,12 @@ on:
             chart:
                 required: true
                 type: string
-                description: chart repository
+                description: url of the chart repository
             chart_version:
                 required: false
                 type: string
-                description: chart version (default main)
+                description: chart version or branch (default main)
                 default: 'main'
-            pull_secret_name:
-                default: 'ub-acr-secret'
-                type: string
-                required: false
-                description: 'image pull secret to use (default: ub-acr-secret)'
             namespace:
                 required: true
                 type: string
@@ -52,7 +47,7 @@ on:
                 required: false
                 description: 'resource group of the cluster (default: ub-schweiz-cluster)'
             flags:
-                description: Optional flags for helm command
+                description: Optional flags for helm command (e.g. --dry-run --debug)
                 type: string
                 required: false
 
