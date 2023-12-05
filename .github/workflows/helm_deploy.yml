@@ -22,6 +22,11 @@ on:
                 required: true
                 type: string
                 description: url of the chart repository
+            chart_type:
+                required: false
+                type: string
+                description: type of chart eg. `repo`, `oci` or `tgz`
+                default: 'tgz'
             chart_version:
                 required: false
                 type: string
@@ -60,7 +65,7 @@ on:
                 required: false
             az_subscription_id:
                 required: false
-            workflow_pat_github:
+            workflow_personal_access_token_github:
                 required: true
 
 permissions:
@@ -76,10 +81,11 @@ jobs:
                     ref: ${{ inputs.ref_name }}
 
             -   uses: actions/checkout@v4
+                if: ${{ inputs.chart_type == 'repo' }}
                 with:
                     repository: ${{ inputs.chart }}
                     ref: ${{ inputs.chart_version }}
-                    token: ${{ secrets.workflow_pat_github }}
+                    token: ${{ secrets.workflow_personal_access_token_github }}
                     path: './chart'
 
             -   name: Azure Login with OIDC flow
@@ -114,6 +120,33 @@ jobs:
                 with:
                     version: 'v3.10.1'
 
-            -   name: Upgrade release
-                run: helm ${{ inputs.helm_command }} --namespace ${{ inputs.namespace }} -f ${{ inputs.values_file_path }} ${{ inputs.release }} ./chart ${{ inputs.flags }}
+            -   name: Initialize Command
+                run: echo "COMMAND=${{ inputs.helm_command }} --namespace ${{ inputs.namespace }}" >> $GITHUB_ENV
+
+            -   name: Add values file
+                run: echo "COMMAND=${{ env.COMMAND }} -f ${{ inputs.values_file_path }}" >> $GITHUB_ENV
+
+            -   name: Add chart release
+                run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.release }}" >> $GITHUB_ENV
+
+            -   name: Add chart if it's a repo
+                if: ${{ inputs.chart_type == 'repo' }}
+                run: echo "COMMAND=${{ env.COMMAND }} ./chart" >> $GITHUB_ENV
+
+            -   name: Add chart if it's a tgz url
+                if: ${{ inputs.chart_type == 'tgz' }}
+                run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.chart }}" >> $GITHUB_ENV
+
+            -   name: Add chart if it's a oci url
+                if: ${{ inputs.chart_type == 'oci' }}
+                run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.chart }} --version ${{ inputs.chart_version }}" >> $GITHUB_ENV
+
+            -   name: Add flags
+                run: echo "COMMAND=${{ env.COMMAND }} ${{ input.flags }}" >> $GITHUB_ENV
+
+            -   name: Print Command used
+                run: echo "The command that will execute is ${{ env.COMMAND }}"
+
+            -   name: Execute helm command
+                run: helm ${{ env.COMMAND }}
 
