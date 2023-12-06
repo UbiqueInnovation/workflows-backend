@@ -113,7 +113,7 @@ jobs:
                     cache: "pnpm"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
-            -   uses: actions/setup-python@v4
+            -   uses: actions/setup-python@v5
                 if: ${{ inputs.run_poeditor }}
                 with:
                     python-version: "3.x"
