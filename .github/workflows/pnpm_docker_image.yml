@@ -12,7 +12,7 @@ on:
                 default: false
                 type: boolean
             node_version:
-                default: "18"
+                default: "20"
                 type: string
                 required: false
             pnpm_version:

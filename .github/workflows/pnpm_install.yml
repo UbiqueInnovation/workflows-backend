@@ -8,7 +8,7 @@ on:
                 type: string
                 description: tag or branch name for checkout
             node_version:
-                default: '18'
+                default: '20'
                 type: string
                 required: false
             checkout_lfs:
