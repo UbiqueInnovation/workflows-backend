@@ -18,6 +18,11 @@ on:
                 required: false
                 type: string
                 description: cache control header value (e.g. max-age=3600)
+            lfs:
+                required: false
+                default: false
+                type: boolean
+                description: Checkout with lfs, default false
 
         secrets:
             aws_access_key_id:
@@ -34,6 +39,10 @@ jobs:
     upload:
         runs-on: ubuntu-latest
         steps:
+            - name: Checking out repository
+              uses: actions/checkout@v4
+              with:
+                lfs: ${{ inputs.lfs }}
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
