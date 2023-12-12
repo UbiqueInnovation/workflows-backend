@@ -6,10 +6,6 @@ on:
                 required: true
                 type: string
                 description: AWS region (e.g. eu-central-1)
-            aws_bucket:
-                required: true
-                type: string
-                description: AWS bucket name
             src_dir:
                 required: true
                 type: string
@@ -30,6 +26,9 @@ on:
             aws_secret_access_key:
                 required: true
                 description: AWS secret access key
+            aws_bucket:
+                required: true
+                description: AWS bucket
 
 jobs:
     upload:
@@ -47,4 +46,4 @@ jobs:
                     echo "ADDITIONAL_ARGS=${{ env.ADDITIONAL_ARGS }} --cache-control '${{ inputs.cache_control }}'" >> $GITHUB_ENV
             - name: Upload to S3
               run: |
-                  aws s3 cp ${{ inputs.src_dir }} s3://${{ inputs.aws_bucket }}/{{ inputs.dest_dir }} --recursive ${{ env.ADDITIONAL_ARGS }}
+                  aws s3 cp ${{ inputs.src_dir }} s3://${{ secrets.aws_bucket }}/{{ inputs.dest_dir }} --recursive ${{ env.ADDITIONAL_ARGS }}
