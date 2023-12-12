@@ -2,7 +2,7 @@ name: Upload To S3 Storage
 on:
     workflow_call:
         inputs:
-            aws-region:
+            aws_region:
                 required: true
                 type: string
                 description: AWS region (e.g. eu-central-1)
@@ -39,7 +39,7 @@ jobs:
               with:
                   aws-access-key-id: ${{ secrets.aws_access_key_id }}
                   aws-secret-access-key: ${{ secrets.aws_secret_access_key}}
-                  aws-region: ${{ inputs.aws-region }}
+                  aws-region: ${{ inputs.aws_region }}
             - name: set Cache-Control argument
               if: ${{ inputs.cache_control }}
               run: |
