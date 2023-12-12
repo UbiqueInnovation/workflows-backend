@@ -46,4 +46,4 @@ jobs:
                     echo "ADDITIONAL_ARGS=${{ env.ADDITIONAL_ARGS }} --cache-control '${{ inputs.cache_control }}'" >> $GITHUB_ENV
             - name: Upload to S3
               run: |
-                  aws s3 cp ${{ inputs.src_dir }} s3://${{ secrets.aws_bucket }}/{{ inputs.dest_dir }} --recursive ${{ env.ADDITIONAL_ARGS }}
+                  aws s3 cp ${{ inputs.src_dir }} s3://${{ secrets.aws_bucket }}/${{ inputs.dest_dir }} --recursive ${{ env.ADDITIONAL_ARGS }}
