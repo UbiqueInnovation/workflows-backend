@@ -1,0 +1,58 @@
+name: Upload To S3 Storage
+on:
+    workflow_call:
+        inputs:
+            aws_region:
+                required: true
+                type: string
+                description: AWS region (e.g. eu-central-1)
+            src_dir:
+                required: true
+                type: string
+                description: source directory to upload
+            dest_dir:
+                required: true
+                type: string
+                description: destination directory
+            cache_control:
+                required: false
+                type: string
+                description: cache control header value (e.g. max-age=3600)
+            lfs:
+                required: false
+                default: false
+                type: boolean
+                description: Checkout with lfs, default false
+
+        secrets:
+            aws_access_key_id:
+                required: true
+                description: AWS access key ID
+            aws_secret_access_key:
+                required: true
+                description: AWS secret access key
+            aws_bucket:
+                required: true
+                description: AWS bucket
+
+jobs:
+    upload:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checking out repository
+              uses: actions/checkout@v4
+              with:
+                lfs: ${{ inputs.lfs }}
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.aws_access_key_id }}
+                  aws-secret-access-key: ${{ secrets.aws_secret_access_key}}
+                  aws-region: ${{ inputs.aws_region }}
+            - name: set Cache-Control argument
+              if: ${{ inputs.cache_control }}
+              run: |
+                    echo "ADDITIONAL_ARGS=${{ env.ADDITIONAL_ARGS }} --cache-control '${{ inputs.cache_control }}'" >> $GITHUB_ENV
+            - name: Upload to S3
+              run: |
+                  aws s3 cp ${{ inputs.src_dir }} s3://${{ secrets.aws_bucket }}/${{ inputs.dest_dir }} --recursive ${{ env.ADDITIONAL_ARGS }}
