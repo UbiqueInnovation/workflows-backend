@@ -59,6 +59,10 @@ on:
                 required: false
                 default: false
                 type: boolean
+            run_build:
+                required: false
+                default: true
+                type: boolean
             dirs_for_docker_build:
                 required: true
                 type: string
@@ -135,12 +139,14 @@ jobs:
                 if: ${{ inputs.run_poeditor }}
                 run: |
                     python ${{ inputs.app_directory }}/getTranslations.py ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
-
+                
             -   name: Install using pnpm
+                if: ${{ inputs.run_build }}
                 run: |
                     cd ${{ inputs.root_directory || inputs.app_directory }} && pnpm install
 
             -   name: Build using pnpm
+                if: ${{ inputs.run_build }}
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
 
