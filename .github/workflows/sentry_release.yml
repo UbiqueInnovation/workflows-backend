@@ -39,7 +39,7 @@ jobs:
                     lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Create Sentry release
-                uses: getsentry/action-release@7d9c3a86a287efcbedca1328c56e15f2f15d5f80
+                uses: getsentry/action-release@c1b57ce473178fd036cf1133b163b6324c0064a8
                 env:
                     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
                     SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
