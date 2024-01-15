@@ -101,6 +101,11 @@ on:
                 required: false
                 type: string
                 description: required if rinput registry_type is amazon-ecr
+            job_timeout:
+                required: false
+                type: number
+                default: 360
+                description: timeout-seconds for the job, after which it will be killed
 
 
         secrets:
@@ -135,6 +140,7 @@ permissions:
 jobs:
     deploy:
         runs-on: ubuntu-latest
+        timeout-minutes: ${{ inputs.job_timeout }}
         steps:
             -   uses: actions/checkout@v4
                 with:
