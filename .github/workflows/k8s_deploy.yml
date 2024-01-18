@@ -87,7 +87,7 @@ on:
                 required: false
                 default: 'aks'
                 type: string
-                description: "the type of k8s. Supports 'aks', 'eks'"
+                description: "the type of k8s. Supports 'aks', 'eks', 'kubeconfig'. Use 'kubeconfig' to log in to any cluster by passing your full kubeconfig as a string to secrets.kubeconfig"
             eks_region:
                 required: false
                 type: string
@@ -100,7 +100,7 @@ on:
             ecr_region:
                 required: false
                 type: string
-                description: required if rinput registry_type is amazon-ecr
+                description: required if input 'registry_type' is 'amazon-ecr'
             job_timeout:
                 required: false
                 type: number
@@ -130,7 +130,9 @@ on:
             aws_secret_key:
                 required: false
             ecr_role_to_assume:
-                required: false                      
+                required: false
+            kubeconfig:
+                required: false
 
 
 permissions:
@@ -166,7 +168,7 @@ jobs:
             -   name: Image to deploy
                 run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
-                # do this, before we setup the eks login, otherwise it gets confused
+                # do this, before we set up the eks login, otherwise it gets confused
             -   name: Configure AWS credentials for ECR Pull Secret
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
                 uses: aws-actions/configure-aws-credentials@v4
@@ -222,8 +224,15 @@ jobs:
                 if: ${{ inputs.k8s_type == 'eks' }}
                 uses: azure/k8s-set-context@v3
                 with:
-                  method: kubeconfig
-                  kubeconfig: ${{ secrets.eks_kubecontext }}
+                    method: kubeconfig
+                    kubeconfig: ${{ secrets.eks_kubecontext }}
+
+            -   name: Set K8s context from kubeconfig
+                if: ${{ inputs.k8s_type == 'kubeconfig' }}
+                uses: azure/k8s-set-context@v3
+                with:
+                    method: kubeconfig
+                    kubeconfig: ${{ secrets.kubeconfig }}
 
             -   name: Create namespace (if it doesn't exist)
                 run: |
