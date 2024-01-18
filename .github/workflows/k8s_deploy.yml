@@ -123,8 +123,6 @@ on:
                 required: false
             az_subscription_id:
                 required: false
-            eks_kubecontext:
-                required: false
             aws_access_key:
                 required: false
             aws_secret_key:
@@ -220,15 +218,8 @@ jobs:
                     admin: 'false'
                     use-kubelogin: 'true'
 
-            -   name: Set EKS context
-                if: ${{ inputs.k8s_type == 'eks' }}
-                uses: azure/k8s-set-context@v3
-                with:
-                    method: kubeconfig
-                    kubeconfig: ${{ secrets.eks_kubecontext }}
-
             -   name: Set K8s context from kubeconfig
-                if: ${{ inputs.k8s_type == 'kubeconfig' }}
+                if: ${{ inputs.k8s_type == 'eks' || inputs.k8s_type == 'kubeconfig' }}
                 uses: azure/k8s-set-context@v3
                 with:
                     method: kubeconfig
