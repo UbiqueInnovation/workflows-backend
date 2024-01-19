@@ -142,6 +142,13 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: ${{ inputs.job_timeout }}
         steps:
+            -   name: Check input.ref_name is set
+                if: ${{ ! inputs.ref_name }}
+                uses: actions/github-script@v3
+                with:
+                    script: |
+                        core.setFailed('Input ref_name must be set')
+
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.ref_name }}
@@ -235,7 +242,7 @@ jobs:
                     kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_prefix && inputs.config_map_prefix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
             -   name: Create image pull secret for ACR
-                if: ${{ inputs.container_registry_type == 'azure-cr' }}            
+                if: ${{ inputs.container_registry_type == 'azure-cr' }}
                 uses: azure/k8s-create-secret@v4
                 with:
                     container-registry-url: ${{ secrets.acr_registry }}
@@ -245,7 +252,7 @@ jobs:
                     namespace: ${{ inputs.namespace }}
 
             -   name: Create image pull secret for ECR
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}            
+                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
                 uses: azure/k8s-create-secret@v4
                 with:
                     container-registry-url: ${{ secrets.acr_registry }}
