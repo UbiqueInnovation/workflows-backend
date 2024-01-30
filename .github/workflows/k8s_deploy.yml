@@ -313,7 +313,7 @@ jobs:
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.ingress-namespace }}
+                    namespace: ${{ inputs.ingress_namespace }}
 
             -   name: Check deployment.yaml existence
                 id: check_deployment_file
