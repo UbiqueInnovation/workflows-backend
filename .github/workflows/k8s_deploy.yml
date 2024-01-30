@@ -106,6 +106,11 @@ on:
                 type: number
                 default: 360
                 description: timeout-seconds for the job, after which it will be killed
+            ingress_namespace:
+                required: false
+                type: string
+                default: ingress-basic
+                description: the ingress.yaml is applied in this namespace. default to 'ingress-basic'
 
 
         secrets:
@@ -308,7 +313,7 @@ jobs:
                         ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
-                    namespace: ingress-basic
+                    namespace: ${{ inputs.ingress-namespace }}
 
             -   name: Check deployment.yaml existence
                 id: check_deployment_file
