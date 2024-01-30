@@ -340,19 +340,3 @@ jobs:
                     imagepullsecrets: |
                         ${{ inputs.pull_secret_name }}
                     namespace: ${{ inputs.namespace }}
-
-            -   name: Check ingress.yaml existence
-                id: check_ingress_file
-                uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
-                with:
-                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
-
-            -   name: Apply Ingress config
-                uses: azure/k8s-deploy@v4
-                if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
-                with:
-                    manifests: |
-                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml
-                    imagepullsecrets: |
-                        ${{ inputs.pull_secret_name }}
-                    namespace: ingress-basic
