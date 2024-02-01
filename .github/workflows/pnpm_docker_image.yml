@@ -133,8 +133,12 @@ jobs:
                 run: |
                     cd ${{ inputs.root_directory || inputs.app_directory }} &&
                     pnpm config --location=project set registry ${{ secrets.npm_registry_url }} &&
-                    pnpm config --location=project set '//${{ inputs.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}" &&
-                    cp .npmrc docker/${{ inputs.app_name }}/ 
+                    pnpm config --location=project set '//${{ inputs.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}"
+
+            -   name: Copy .npmrc to docker directory
+                if: ${{ inputs.use_custom_registry }}
+                run: |
+                    cp ${{ inputs.root_directory || inputs.app_directory }}/.npmrc docker/${{ inputs.app_name }}/ 
 
             -   uses: actions/setup-python@v5
                 if: ${{ inputs.run_poeditor }}
