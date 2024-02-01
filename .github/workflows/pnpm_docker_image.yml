@@ -132,7 +132,7 @@ jobs:
                 if: ${{ inputs.use_custom_registry }}
                 run: |
                     cd ${{ inputs.root_directory || inputs.app_directory }} &&
-                    pnpm config --location=project set registry ${{ secrets.npm_registry_url }} &&
+                    pnpm config --location=project set registry https://${{ secrets.npm_registry_url }} &&
                     pnpm config --location=project set '//${{ secrets.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}"
 
             -   name: Copy .npmrc to docker directory
