@@ -118,12 +118,10 @@ jobs:
                     submodules: 'recursive'
 
             -   uses: pnpm/action-setup@v2
-                if: ${{ inputs.run_build }}
                 with:
                     version: ${{ inputs.pnpm_version }}
 
             -   uses: actions/setup-node@v4
-                if: ${{ inputs.run_build }}
                 with:
                     node-version: "${{ inputs.node_version }}"
                     check-latest: true
