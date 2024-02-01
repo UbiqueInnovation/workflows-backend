@@ -131,8 +131,9 @@ jobs:
             -   name: Set custom NPM registry
                 if: ${{ inputs.use_custom_registry }}
                 run: |
-                    pnpm config set registry ${{ secrets.npm_registry_url }} &&
-                    pnpm config set '//${{ inputs.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}"
+                    cd ${{ inputs.root_directory || inputs.app_directory }} &&
+                    pnpm config --location=project set registry ${{ secrets.npm_registry_url }} &&
+                    pnpm config --location=project set '//${{ inputs.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}"
 
 
             -   uses: actions/setup-python@v5
