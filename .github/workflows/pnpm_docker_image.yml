@@ -82,9 +82,10 @@ on:
                 type: string
                 default: ''
                 description: docker build args in the form 'KEY1=value1,KEY2=value2'
-            npm_registry_url:
-                type: string
-                description: custom npm registry, uses default 'https://registry.npmjs.org' if not set. Set secret npm_registry_authtoken accordingly.
+            use_custom_registry:
+                type: boolean
+                default: false
+                description: Use custom npm registry, uses default 'https://registry.npmjs.org' if not set. Set secrets npm_registry_url and npm_registry_authtoken accordingly.
 
         secrets:
             acr_registry:
@@ -99,9 +100,12 @@ on:
             poeditor_project_id:
                 required: false
                 description: necessary if input.run_poeditor is true
+            npm_registry_url:
+                required: false
+                description: necessary if input.use_custom_registry is true
             npm_registry_authtoken:
                 required: false
-                description: NODE_AUTH_TOKEN if input npm_registry_url is set
+                description: necessary if input.use_custom_registry is true
 
 jobs:
     create-docker-image:
@@ -127,9 +131,9 @@ jobs:
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   name: Set custom NPM registry
-                if: ${{ inputs.npm_registry_url }}
+                if: ${{ inputs.use_custom_registry }}
                 run: |
-                    pnpm config set registry ${{ inputs.npm_registry_url }} &&
+                    pnpm config set registry ${{ secrets.npm_registry_url }} &&
                     pnpm config set '//${{ inputs.npm_registry_url }:_authToken' "${{ secrets.npm_registry_authtoken }}"
 
 
