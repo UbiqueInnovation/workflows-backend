@@ -58,7 +58,6 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
-                    submodules: 'recursive'
 
             -   uses: pnpm/action-setup@v2
                 with:
