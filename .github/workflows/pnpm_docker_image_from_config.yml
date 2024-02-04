@@ -212,6 +212,7 @@ jobs:
                         type=semver,pattern={{raw}},enable=${{ ! inputs.tag_add_commithash }}
                         # dynamically set the branch name and sha as a custom tag if tag_add_commithash is enabled
                         type=raw,value={{branch}}-{{sha}},enable=${{ inputs.tag_add_commithash }}
+                        type=semver,pattern={{version}},value=${{ inputs.pnpm_ref }}
                         # set latest tag for default branch
                         type=raw,value=latest,enable={{is_default_branch}}
 
