@@ -131,9 +131,9 @@ jobs:
                     ref: ${{ inputs.config_ref }}
             -   name: copy config
                 run: |
-                    ls config_repo
-                    cp config_repo/.env.dev ${{ inputs.app_directory }}/
-                    cp config_repo/.env.prod ${{ inputs.app_directory }}/
+                    ls
+                    cp config_repo/.env.dev ${{ inputs.app_directory }}/.env.dev
+                    cp config_repo/.env.prod ${{ inputs.app_directory }}/.env.prod
             -   uses: pnpm/action-setup@v2
                 if: ${{ inputs.run_build }}
                 with:
