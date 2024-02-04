@@ -120,17 +120,18 @@ jobs:
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: 'recursive'
-                    path: config_repo
-                    ref: ${{ inputs.config_ref }}
+                    repository: ${{ inputs.pnpm_repository }}
+                    token: ${{ secrets.token }}
+                    ref: ${{ inputs.pnpm_ref }}
             -   uses: actions/checkout@v4
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: 'recursive'
-                    repository: ${{ inputs.pnpm_repository }}
-                    token: ${{ secrets.token }}
-                    ref: ${{ inputs.pnpm_ref }}
+                    path: config_repo
+                    ref: ${{ inputs.config_ref }}
             -   name: copy config
                 run: |
+                    ls config_repo
                     cp config_repo/.env.dev ${{ inputs.app_directory }}/
                     cp config_repo/.env.prod ${{ inputs.app_directory }}/
             -   uses: pnpm/action-setup@v2
