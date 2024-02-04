@@ -26,7 +26,7 @@ on:
                 required: false
                 type: string
                 description: type of chart eg. `repo`, `oci` or `tgz`
-                default: 'tgz'
+                default: 'repo'
             chart_version:
                 required: false
                 type: string
