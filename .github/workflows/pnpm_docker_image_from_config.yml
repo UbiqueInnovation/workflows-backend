@@ -86,6 +86,14 @@ on:
                 required: true
                 type: string
                 description: Remote repository containing pnpm repo
+            pnpm_ref:
+                required: true
+                type: string
+                description: Remote repository ref to checkout
+            config_ref:
+                required: true
+                type: string
+                description: Config ref to checkout
         secrets:
             acr_registry:
                 required: true
@@ -113,12 +121,14 @@ jobs:
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: 'recursive'
                     path: config_repo
+                    ref: ${{ inputs.config_ref }}
             -   uses: actions/checkout@v4
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: 'recursive'
                     repository: ${{ inputs.pnpm_repository }}
                     token: ${{ secrets.token }}
+                    ref: ${{ inputs.pnpm_ref }}
             -   name: copy config
                 run: |
                     cp config_repo/.env.dev ${{ inputs.app_directory }}/
