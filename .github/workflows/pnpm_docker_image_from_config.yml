@@ -179,11 +179,12 @@ jobs:
                 if: ${{ inputs.run_build }}
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
-            -   name: Make directory
-                run: |
-                    mkdir -p docker/${{ inputs.app_name }}/bin/
             -   name: Tar Build dir to docker
                 run: |
+                    ls
+                    ls docker/ || true
+                    ls ../docker || true
+                    pwd
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }} ${{ inputs.dirs_for_docker_build }}
 
             -   name: Set IMAGE_NAME
