@@ -142,7 +142,7 @@ jobs:
                 run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.chart }} --version ${{ inputs.chart_version }}" >> $GITHUB_ENV
 
             -   name: Add flags
-                run: echo "COMMAND=${{ env.COMMAND }} ${{ input.flags }}" >> $GITHUB_ENV
+                run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.flags }}" >> $GITHUB_ENV
 
             -   name: Print Command used
                 run: echo "The command that will execute is ${{ env.COMMAND }}"
