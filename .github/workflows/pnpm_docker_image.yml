@@ -19,6 +19,10 @@ on:
                 default: "8"
                 type: string
                 required: false
+            cache_node:
+                default: "pnpm"
+                type: string
+                required: false
             cache_dependency_path:
                 default: "pnpm-lock.yaml"
                 type: string
@@ -82,6 +86,10 @@ on:
                 type: string
                 default: ''
                 description: docker build args in the form 'KEY1=value1,KEY2=value2'
+            use_custom_registry:
+                type: boolean
+                default: false
+                description: Use custom npm registry, uses default 'https://registry.npmjs.org' if not set. Set secrets npm_registry_url and npm_registry_authtoken accordingly.
 
         secrets:
             acr_registry:
@@ -96,6 +104,12 @@ on:
             poeditor_project_id:
                 required: false
                 description: necessary if input.run_poeditor is true
+            npm_registry_url:
+                required: false
+                description: necessary if input.use_custom_registry is true
+            npm_registry_authtoken:
+                required: false
+                description: necessary if input.use_custom_registry is true
 
 jobs:
     create-docker-image:
@@ -105,20 +119,29 @@ jobs:
             -   uses: actions/checkout@v4
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
-                    submodules: 'recursive'
 
             -   uses: pnpm/action-setup@v2
-                if: ${{ inputs.run_build }}
                 with:
                     version: ${{ inputs.pnpm_version }}
 
             -   uses: actions/setup-node@v4
-                if: ${{ inputs.run_build }}
                 with:
                     node-version: "${{ inputs.node_version }}"
                     check-latest: true
-                    cache: "pnpm"
+                    cache: "${{inputs.cache_node}}"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
+
+            -   name: Set custom NPM registry
+                if: ${{ inputs.use_custom_registry }}
+                run: |
+                    cd ${{ inputs.root_directory || inputs.app_directory }} &&
+                    pnpm config --location=project set registry https://${{ secrets.npm_registry_url }} &&
+                    pnpm config --location=project set '//${{ secrets.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}"
+
+            -   name: Copy .npmrc to docker directory
+                if: ${{ inputs.use_custom_registry }}
+                run: |
+                    cp ${{ inputs.root_directory || inputs.app_directory }}/.npmrc docker/${{ inputs.app_name }}/ 
 
             -   uses: actions/setup-python@v5
                 if: ${{ inputs.run_poeditor }}
@@ -142,7 +165,7 @@ jobs:
                 if: ${{ inputs.run_poeditor }}
                 run: |
                     python ${{ inputs.app_directory }}/getTranslations.py ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
-                
+
             -   name: Install using pnpm
                 if: ${{ inputs.run_build }}
                 run: |
