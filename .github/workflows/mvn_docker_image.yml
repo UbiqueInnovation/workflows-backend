@@ -172,7 +172,7 @@ jobs:
 
             -   name: Cache Maven packages on self-hosted MinIO
                 if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-                uses: tespkg/actions-cache@f21e566f9cd2a232948b820b5dc9875c95ef60cb
+                uses: tespkg/actions-cache@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
                 with:
                     endpoint: ${{ inputs.self_hosted_cache_endpoint }}
                     port: ${{ inputs.self_hosted_cache_port }}
@@ -201,7 +201,7 @@ jobs:
 
             -   name: Set up Maven
                 if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-                uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f
+                uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1
                 with:
                     maven-version: 3.9.3
 
@@ -230,11 +230,11 @@ jobs:
 
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@7c60eb95b2d5ec18f2e0e29f34c9ed69475e7a96
+                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
 
             -   name: Create custom artifactory settings.xml
                 if: ${{ ! inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@7c60eb95b2d5ec18f2e0e29f34c9ed69475e7a96
+                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
