@@ -54,6 +54,11 @@ on:
                 required: false
                 default: false
                 type: boolean
+            poeditor_get_translations_filename:
+                required: false
+                default: getTranslations.py
+                type: string
+                description: name of the getTranslations script. Defaults to getTranslations.py.
             dirs_for_docker_build:
                 required: true
                 type: string
@@ -130,10 +135,10 @@ jobs:
                 run: |
                     python -m pip install -r requirements.txt
 
-            -   name: Run getTranslations.py
+            -   name: Run ${{ inputs.poeditor_get_translations_filename }}
                 if: ${{ inputs.run_poeditor }}
                 run: |
-                    python ${{ inputs.app_directory }}/getTranslations.py ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
+                    python ${{ inputs.app_directory }}/${{ inputs.poeditor_get_translations_filename }} ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
 
             -   name: Install using yarn
                 run: |
