@@ -248,7 +248,7 @@ jobs:
 
             -   name: Create image pull secret for ACR
                 if: ${{ inputs.container_registry_type == 'azure-cr' }}
-                uses: azure/k8s-create-secret@v4
+                uses: azure/k8s-create-secret@v5
                 with:
                     container-registry-url: ${{ secrets.acr_registry }}
                     container-registry-username: ${{ secrets.acr_username }}
@@ -258,7 +258,7 @@ jobs:
 
             -   name: Create image pull secret for ECR
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: azure/k8s-create-secret@v4
+                uses: azure/k8s-create-secret@v5
                 with:
                     container-registry-url: ${{ secrets.acr_registry }}
                     container-registry-username: AWS
@@ -273,7 +273,7 @@ jobs:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
 
             -   name: Apply Service Account config
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{  steps.check_serviceaccount_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
@@ -290,7 +290,7 @@ jobs:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
 
             -   name: Apply Service config
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{  steps.check_service_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
@@ -306,7 +306,7 @@ jobs:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
             -   name: Apply Ingress config
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
@@ -322,7 +322,7 @@ jobs:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
 
             -   name: Apply Deployment config
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
                 with:
                     manifests: |
@@ -334,7 +334,7 @@ jobs:
                     namespace: ${{ inputs.namespace }}
 
             -   name: Apply Deployment config with additional image
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && inputs.additional_image_name }}
                 with:
                     manifests: |
