@@ -26,7 +26,7 @@ jobs:
                     name: ${{ inputs.artifact_to_upload }}
                     path: upload
 
-            -   uses: bacongobbler/azure-blob-storage-upload@c5a43db86fb5486c0bbe0a1aeb01a0c1f42068a3
+            -   uses: bacongobbler/azure-blob-storage-upload@5cc58d730c467e25047070080f4f749654fe73ec
                 with:
                     source_dir: upload
                     container_name: ${{ inputs.container_name }}
