@@ -1,7 +1,6 @@
 name: Pull Docker Image, augment it and push to different repository
 on:
     workflow_call:
-
         inputs:
             pull_image_name:
                 required: false
@@ -58,6 +57,10 @@ on:
 
 jobs:
     pull_tag_push_image:
+        permissions:
+            id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4
+            contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
+        name: Build Project
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
             -   name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry is not set)
