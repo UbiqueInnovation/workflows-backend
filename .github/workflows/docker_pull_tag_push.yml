@@ -89,21 +89,21 @@ jobs:
 
             -   name: Login to Docker repository using username and password
                 uses: azure/docker-login@v1
-                if: ${{ inputs.container_registry_type == 'username-password' }}
+                if: ${{ inputs.push_container_registry_type == 'username-password' }}
                 with:
                     login-server: ${{ secrets.push_container_registry }}
                     username: ${{ secrets.push_container_registry_username }}
                     password: ${{ secrets.push_container_registry_password }}
 
             -   name: Configure AWS credentials
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                if: ${{ inputs.push_container_registry_type == 'amazon-ecr' }}
                 uses: aws-actions/configure-aws-credentials@v4
                 with:
                     role-to-assume: ${{ secrets.ecr_role_to_assume }}
                     aws-region: ${{ inputs.ecr_region }}
 
             -   name: Login to Amazon ECR
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+                if: ${{ inputs.push_container_registry_type == 'amazon-ecr' }}
                 uses: aws-actions/amazon-ecr-login@v2
 
             -   name: Set up Docker Buildx
