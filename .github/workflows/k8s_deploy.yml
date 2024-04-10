@@ -117,9 +117,11 @@ on:
             acr_registry:
                 required: true
             acr_username:
-                required: true
+                required: false
+                description: required if input container_registry_type is 'azure-cr'
             acr_password:
-                required: true
+                required: false
+                description: required if input container_registry_type is 'azure-cr'
             az_service_principal:
                 required: false
             az_client_id:
@@ -134,6 +136,7 @@ on:
                 required: false
             ecr_role_to_assume:
                 required: false
+                description: required if input container_registry_type is 'amazon-ecr'
             kubeconfig:
                 required: false
 
