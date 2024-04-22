@@ -21,7 +21,7 @@ on:
             chart:
                 required: true
                 type: string
-                description: url of the chart repository
+                description: url of the chart repository or file
             chart_type:
                 required: false
                 type: string
@@ -66,7 +66,13 @@ on:
             az_subscription_id:
                 required: false
             workflow_personal_access_token_github:
-                required: true
+                required: false
+            oci_registry_url:
+                required: false
+            oci_registry_username:
+                required: false
+            oci_registry_password:
+                required: false
 
 permissions:
     id-token: write
@@ -120,6 +126,10 @@ jobs:
                 with:
                     version: 'v3.10.1'
 
+            -   name: Helm registry login
+                if: ${{ inputs.chart_type == 'oci' }}
+                run: echo "${{ secrets.oci_registry_password }}" | helm registry login ${{ secrets.oci_registry_url }} --username ${{ secrets.oci_registry_username }} --password-stdin
+
             -   name: Initialize Command
                 run: echo "COMMAND=${{ inputs.helm_command }} --namespace ${{ inputs.namespace }}" >> $GITHUB_ENV
 
@@ -133,7 +143,7 @@ jobs:
                 if: ${{ inputs.chart_type == 'repo' }}
                 run: echo "COMMAND=${{ env.COMMAND }} ./chart" >> $GITHUB_ENV
 
-            -   name: Add chart if it's a tgz url
+            -   name: Add chart if it's a tgz file
                 if: ${{ inputs.chart_type == 'tgz' }}
                 run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.chart }}" >> $GITHUB_ENV
 
@@ -143,9 +153,6 @@ jobs:
 
             -   name: Add flags
                 run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.flags }}" >> $GITHUB_ENV
-
-            -   name: Print Command used
-                run: echo "The command that will execute is ${{ env.COMMAND }}"
 
             -   name: Execute helm command
                 run: helm ${{ env.COMMAND }}
