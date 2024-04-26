@@ -225,5 +225,3 @@ jobs:
                     build-args: ${{ inputs.docker_build_args }}
                     push: true
                     context: docker/${{ inputs.app_name }}
-                    cache-from: type=gha
-                    cache-to: type=gha,mode=max
