@@ -132,8 +132,7 @@ jobs:
             -   name: copy config
                 run: |
                     ls
-                    cp config_repo/.env.dev ${{ inputs.app_directory }}/.env.dev
-                    cp config_repo/.env.prod ${{ inputs.app_directory }}/.env.prod
+                    cp config_repo/.env.${{ inputs.release_env }} ${{ inputs.app_directory }}/.env.${{ inputs.release_env }}
             -   uses: pnpm/action-setup@v2
                 if: ${{ inputs.run_build }}
                 with:
