@@ -1,0 +1,40 @@
+name: Runs Maven Install and releases to GitHub
+on:
+    workflow_call:
+        inputs:
+            ref_name:
+                required: false
+                default: ''
+                type: string
+                description: tag or branch name, used for mvn versions:set
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
+                description: Checkout with lfs, default false
+            release_option_prerelease:
+                type: boolean
+                default: false
+            release_option_files:
+                type: string
+                description: files for the artifact, e.g. 'eth-ws/target/eth-ws.war'
+
+        secrets:
+            repo_token:
+                required: true
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ inputs.ref_name }}
+                    lfs: ${{ inputs.checkout_lfs }}
+
+            -   name: Create new release
+                uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1
+                with:
+                    repo_token: ${{ secrets.repo_token }}
+                    prerelease: ${{ inputs.release_option_prerelease }}
+                    files: ${{ inputs.release_option_files }}
