@@ -94,8 +94,8 @@ jobs:
                 run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
 
             -   name: Create new release
-                uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1
+                uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87
                 with:
-                    repo_token: ${{ secrets.repo_token }}
+                    token: ${{ secrets.repo_token }}
                     prerelease: ${{ inputs.release_option_prerelease }}
                     files: ${{ inputs.release_option_files }}
