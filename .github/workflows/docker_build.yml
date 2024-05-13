@@ -43,6 +43,11 @@ on:
                 required: false
                 type: string
                 description: required if input container_registry_type is 'amazon-ecr'
+            architectures:
+                required: false
+                default: 'linux/amd64'
+                type: string
+                description: "Architecture(s) to use, e.g.: `linux/amd64,linux/arm64`"
 
         secrets:
             acr_registry:
@@ -88,6 +93,9 @@ jobs:
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
                 uses: aws-actions/amazon-ecr-login@v2
 
+            -   name: Set up QEMU
+                uses: docker/setup-qemu-action@v3
+
             -   name: Set up Docker Buildx
                 uses: docker/setup-buildx-action@v3
 
@@ -98,6 +106,7 @@ jobs:
                     # list of Docker images to use as base name for tags
                     images: |
                         ${{ secrets.acr_registry }}/${{ inputs.image_name }}
+                    platforms: ${{ inputs.architectures }}
                     # generate Docker tags based on the following events/attributes
                     tags: |
                         # set the tag from the raw git tag if inputs.use_semver is enabled
