@@ -151,9 +151,6 @@ jobs:
                 if: ${{ inputs.chart_type == 'oci' }}
                 run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.chart }} --version ${{ inputs.chart_version }}" >> $GITHUB_ENV
 
-            -   name: Add flags
-                run: echo "COMMAND=${{ env.COMMAND }} ${{ inputs.flags }}" >> $GITHUB_ENV
-
             -   name: Execute helm command
-                run: helm ${{ env.COMMAND }}
+                run: helm ${{ env.COMMAND }} ${{ inputs.flags }}
 
