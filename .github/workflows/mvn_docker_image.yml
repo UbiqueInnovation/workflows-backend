@@ -302,7 +302,7 @@ jobs:
 
             -   name: Login to Azure CR
                 if: ${{ inputs.container_registry_type == 'azure-cr' }}
-                uses: azure/docker-login@v1
+                uses: azure/docker-login@v2
                 with:
                     login-server: ${{ secrets.acr_registry }}
                     username: ${{ secrets.acr_username }}
