@@ -41,15 +41,26 @@ on:
                 default: getTranslations.py
                 type: string
                 description: name of the getTranslations script. Defaults to getTranslations.py.
+            use_custom_registry:
+                type: boolean
+                default: false
+                description: Use custom npm registry, uses default 'https://registry.npmjs.org' if not set. Set secrets npm_registry_url and npm_registry_authtoken accordingly.
             artifact_dir:
                 required: false
                 default: ""
                 description: glob pattern for all artifact dirs
                 type: string
-            use_custom_registry:
-                type: boolean
-                default: false
-                description: Use custom npm registry, uses default 'https://registry.npmjs.org' if not set. Set secrets npm_registry_url and npm_registry_authtoken accordingly.
+            artifact_name:
+                required: false
+                default: "artifact"
+                description: What to call artifact to store (only needed if artifact_dir) is set. Defaults to "artifact".
+                type: string
+            artifact_retention_days:
+                required: false
+                default: 5
+                description: retention period of uploaded artifacts
+                type: number
+          
 
         secrets:
             poeditor_api_key:
@@ -122,3 +133,11 @@ jobs:
                 if: ${{ inputs.release_env }}
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm build:${{ inputs.release_env }}
+
+            -   name: Upload Build Artifact
+                if: ${{ inputs.artifact_path }}
+                uses: actions/upload-artifact@v4
+                with:
+                  name: ${{ inputs.artifact_name }}
+                  path: ${{ inputs.artifact_dir }}
+
