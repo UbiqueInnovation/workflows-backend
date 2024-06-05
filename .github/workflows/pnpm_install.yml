@@ -135,9 +135,10 @@ jobs:
                     cd ${{ inputs.app_directory }} && pnpm build:${{ inputs.release_env }}
 
             -   name: Upload Build Artifact
-                if: ${{ inputs.artifact_path }}
+                if: ${{ inputs.artifact_dir }}
                 uses: actions/upload-artifact@v4
                 with:
                   name: ${{ inputs.artifact_name }}
                   path: ${{ inputs.artifact_dir }}
+                  retention-days: ${{ inputs.artifact_retention_days }}
 
