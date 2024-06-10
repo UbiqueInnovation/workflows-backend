@@ -247,8 +247,8 @@ jobs:
             -   name: Set TAG_NAME from ref_name
                 run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
-            -   name: Replace all `/` by `-` in TAG_NAME
-                run: echo "TAG_NAME=${TAG_NAME//\//-}" >> $GITHUB_ENV
+            -   name: Replace all characters in `\/:"<>|?*` by `-` in TAG_NAME
+                run: echo "TAG_NAME=$(echo "TAG_NAME" | sed 's/[\/:"<>|?*]/-/g')" >> $GITHUB_ENV
 
             -   name: Append commit hash (first 8 characters) to TAG_NAME
                 if: ${{ inputs.tag_add_commithash }}
