@@ -43,7 +43,7 @@ jobs:
             -   name: Strip leading `v` from VERSION
                 id: strip_leading_v
                 run: echo "TAG_NAME=${TAG_NAME##v}" >> $GITHUB_OUTPUT
-                with:
+                env:
                     TAG_NAME=${{ inputs.ref_name }}
 
             -   name: Extract the release notes from the CHANGELOG.md file (skip for prerelease) (Release Body Option A)
