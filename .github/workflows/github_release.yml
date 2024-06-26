@@ -32,9 +32,24 @@ jobs:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
 
+            -   uses: taiki-e/install-action@3b0d937160738a7a458c7b13f8b05f08f3f72d80
+                with:
+                    tool: parse-changelog@0.6.8
+
+            -   name: Strip leading `v` from VERSION
+                id: strip_leading_v
+                run: echo "ref_name=${${{ inputs.ref_name }}##v}" >> $GITHUB_OUTPUT
+
+            -   name: Extract the release notes from the CHANGELOG.md file (skip for prerelease)
+                if: ${{ ! contains(inputs.ref_name, '-') }}
+                id: parse_changelog
+                run: echo "release_body=$(parse-changelog CHANGELOG.md $REF_NAME)" >> $GITHUB_OUTPUT
+
             -   name: Create new release
                 uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87
                 with:
+                    tag_name: ${{ steps.strip_leading_v.outputs.ref_name }}
+                    body: ${{ contains(inputs.ref_name, '-') && 'Prerelease' || steps.parse_changelog.outputs.release_body }}
                     token: ${{ secrets.repo_token }}
                     prerelease: ${{ inputs.release_option_prerelease }}
                     files: ${{ inputs.release_option_files }}
