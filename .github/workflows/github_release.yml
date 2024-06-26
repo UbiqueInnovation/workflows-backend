@@ -42,7 +42,7 @@ jobs:
 
             -   name: Strip leading `v` from VERSION
                 id: strip_leading_v
-                run: echo "TAG_NAME=${TAG_NAME##v}" >> $GITHUB_OUTPUT
+                run: echo "TAG_NAME=${TAG_NAME##v}" >> $GITHUB_ENV
                 env:
                     TAG_NAME: ${{ inputs.ref_name }}
 
