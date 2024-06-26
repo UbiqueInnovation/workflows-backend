@@ -54,10 +54,10 @@ jobs:
                 if: ${{ ! contains(inputs.ref_name, '-') && ! inputs.changelog_file }}
                 run: echo "RELEASE_BODY=Release" >> $GITHUB_ENV
 
-            -   name: Set the release body for prerelease (Release Body Option C)
+            -   name: Leave the release body empty for prerelease (Release Body Option C)
                 if: ${{ contains(inputs.ref_name, '-') }}
                 id: set_release_body
-                run: echo "RELEASE_BODY=Prerelease" >> $GITHUB_ENV
+                run: echo "RELEASE_BODY=" >> $GITHUB_ENV
 
             -   name: Create new release
                 uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87
