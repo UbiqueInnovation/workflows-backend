@@ -50,13 +50,8 @@ jobs:
                 if: ${{ ! contains(inputs.ref_name, '-') && inputs.changelog_file }}
                 run: echo "RELEASE_BODY=$(parse-changelog ${{ inputs.changelog_file }} ${{ env.TAG_NAME }})" >> $GITHUB_ENV
 
-            -   name: Set the release body for release (Release Body Option B)
-                if: ${{ ! contains(inputs.ref_name, '-') && ! inputs.changelog_file }}
-                run: echo "RELEASE_BODY=Release" >> $GITHUB_ENV
-
-            -   name: Leave the release body empty for prerelease (Release Body Option C)
-                if: ${{ contains(inputs.ref_name, '-') }}
-                id: set_release_body
+            -   name: Leave the release body empty for prerelease or if no no changelog file exists
+                if: ${{ contains(inputs.ref_name, '-') || ! inputs.changelog_file }}
                 run: echo "RELEASE_BODY=" >> $GITHUB_ENV
 
             -   name: Create new release
