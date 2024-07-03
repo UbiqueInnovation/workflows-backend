@@ -55,8 +55,8 @@ jobs:
                 with:
                     fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
                     lfs: ${{ inputs.checkout_lfs }}
-            -   name: Set up JDK
 
+            -   name: Set up JDK
                 uses: actions/setup-java@v4
                 with:
                     java-version: ${{ inputs.java_version }}

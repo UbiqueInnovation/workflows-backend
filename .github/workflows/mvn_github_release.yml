@@ -1,7 +1,6 @@
 name: Runs Maven Install and releases to GitHub
 on:
     workflow_call:
-
         inputs:
             ref_name:
                 required: false

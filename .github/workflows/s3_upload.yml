@@ -39,20 +39,22 @@ jobs:
     upload:
         runs-on: ubuntu-latest
         steps:
-            - name: Checking out repository
-              uses: actions/checkout@v4
-              with:
-                lfs: ${{ inputs.lfs }}
-            - name: Configure AWS credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-                  aws-access-key-id: ${{ secrets.aws_access_key_id }}
-                  aws-secret-access-key: ${{ secrets.aws_secret_access_key}}
-                  aws-region: ${{ inputs.aws_region }}
-            - name: set Cache-Control argument
-              if: ${{ inputs.cache_control }}
-              run: |
+            -   uses: actions/checkout@v4
+                with:
+                    lfs: ${{ inputs.lfs }}
+
+            -   name: Configure AWS credentials
+                uses: aws-actions/configure-aws-credentials@v4
+                with:
+                    aws-access-key-id: ${{ secrets.aws_access_key_id }}
+                    aws-secret-access-key: ${{ secrets.aws_secret_access_key}}
+                    aws-region: ${{ inputs.aws_region }}
+
+            -   name: set Cache-Control argument
+                if: ${{ inputs.cache_control }}
+                run: |
                     echo "ADDITIONAL_ARGS=${{ env.ADDITIONAL_ARGS }} --cache-control '${{ inputs.cache_control }}'" >> $GITHUB_ENV
-            - name: Upload to S3
-              run: |
-                  aws s3 cp ${{ inputs.src_dir }} s3://${{ secrets.aws_bucket }}/${{ inputs.dest_dir }} --recursive ${{ env.ADDITIONAL_ARGS }}
+
+            -   name: Upload to S3
+                run: |
+                    aws s3 cp ${{ inputs.src_dir }} s3://${{ secrets.aws_bucket }}/${{ inputs.dest_dir }} --recursive ${{ env.ADDITIONAL_ARGS }}

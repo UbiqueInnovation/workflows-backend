@@ -152,8 +152,7 @@ jobs:
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
-            -   name: Checkout code
-                uses: actions/checkout@v4
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}

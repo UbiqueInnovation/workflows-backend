@@ -36,12 +36,12 @@ jobs:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
 
-            -   uses: taiki-e/install-action@3b0d937160738a7a458c7b13f8b05f08f3f72d80
+            -   name: Install parse-changelog
+                uses: taiki-e/install-action@3b0d937160738a7a458c7b13f8b05f08f3f72d80
                 with:
                     tool: parse-changelog@0.6.8
 
             -   name: Strip leading `v` from VERSION
-                id: strip_leading_v
                 run: echo "TAG_NAME=${TAG_NAME##v}" >> $GITHUB_ENV
                 env:
                     TAG_NAME: ${{ inputs.ref_name }}
