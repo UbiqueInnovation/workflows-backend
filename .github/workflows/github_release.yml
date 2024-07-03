@@ -37,7 +37,7 @@ jobs:
                     lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Install parse-changelog
-                uses: taiki-e/install-action@3b0d937160738a7a458c7b13f8b05f08f3f72d80
+                uses: taiki-e/install-action@048abf9a2afde655a94eafc83ae02548a812afa5
                 with:
                     tool: parse-changelog@0.6.8
 
@@ -61,7 +61,7 @@ jobs:
                 run: echo "RELEASE_BODY=" >> $GITHUB_ENV
 
             -   name: Create new release
-                uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87
+                uses: softprops/action-gh-release@288696be3916479e99fa944c72825e9b3e192be4
                 with:
                     tag_name: ${{ env.TAG_NAME }}
                     body: ${{ env.RELEASE_BODY }}
