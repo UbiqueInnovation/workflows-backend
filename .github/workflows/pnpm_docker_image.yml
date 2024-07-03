@@ -123,6 +123,7 @@ jobs:
         steps:
             -   uses: actions/checkout@v4
                 with:
+                    ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
 
             -   uses: pnpm/action-setup@v2
