@@ -125,7 +125,7 @@ jobs:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
 
-            -   uses: pnpm/action-setup@v2
+            -   uses: pnpm/action-setup@v4
                 with:
                     version: ${{ inputs.pnpm_version }}
 
