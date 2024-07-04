@@ -3,8 +3,7 @@ on:
     workflow_call:
         inputs:
             ref_name:
-                required: false
-                default: ''
+                required: true
                 type: string
                 description: tag or branch name for checkout
             node_version:
