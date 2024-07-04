@@ -1,7 +1,6 @@
 name: Sentry Release
 on:
     workflow_call:
-
         inputs:
             ref_name:
                 required: true

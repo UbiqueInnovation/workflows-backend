@@ -1,7 +1,6 @@
 name: Run Sonar Cloud Analysis with Maven Verify
 on:
     workflow_call:
-
         inputs:
             parent_pom:
                 required: true

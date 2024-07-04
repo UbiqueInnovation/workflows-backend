@@ -1,7 +1,6 @@
 name: Build with maven and Push to Docker Registry
 on:
     workflow_call:
-
         inputs:
             ref_name:
                 required: true

@@ -1,7 +1,6 @@
 name: Build and Push Docker Images on release/
 on:
     workflow_call:
-
         inputs:
             ref_name:
                 required: true

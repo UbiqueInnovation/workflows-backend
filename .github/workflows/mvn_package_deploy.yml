@@ -1,7 +1,6 @@
 name: Deploy Maven Package
 on:
     workflow_call:
-
         inputs:
             parent_pom:
                 required: true
