@@ -5,17 +5,25 @@ on:
             ref_name:
                 required: true
                 type: string
-                description: tag or branch name for checkout
-            node_version:
-                default: '20'
-                type: string
-                required: false
+                description: tag or branch name
             checkout_lfs:
                 required: false
                 default: false
                 type: boolean
+            node_version:
+                default: "20"
+                type: string
+                required: false
+            pnpm_version:
+                default: "8"
+                type: string
+                required: false
+            cache_node:
+                default: "pnpm"
+                type: string
+                required: false
             cache_dependency_path:
-                default: 'pnpm-lock.yaml'
+                default: "pnpm-lock.yaml"
                 type: string
                 required: false
                 description: path to e.g. pnpm-lock.yaml from ${app_directory}/
@@ -86,13 +94,14 @@ jobs:
 
             -   uses: pnpm/action-setup@v4
                 with:
-                    version: 8
+                    version: ${{ inputs.pnpm_version }}
+
             -   uses: actions/setup-node@v4
                 with:
-                    node-version: '${{ inputs.node_version }}'
+                    node-version: "${{ inputs.node_version }}"
                     check-latest: true
-                    cache: 'pnpm'
-                    cache-dependency-path: '${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}'
+                    cache: "${{ inputs.cache_node }}"
+                    cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   name: Set custom NPM registry
                 if: ${{ inputs.use_custom_registry }}

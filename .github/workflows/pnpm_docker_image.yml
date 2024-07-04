@@ -1,4 +1,4 @@
-name: Build and Push Docker Images on release/
+name: Build and Push Docker Images on release
 on:
     workflow_call:
         inputs:
@@ -133,7 +133,7 @@ jobs:
                 with:
                     node-version: "${{ inputs.node_version }}"
                     check-latest: true
-                    cache: "${{inputs.cache_node}}"
+                    cache: "${{ inputs.cache_node }}"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
             -   name: Set custom NPM registry
