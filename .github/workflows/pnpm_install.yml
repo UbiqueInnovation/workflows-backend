@@ -67,7 +67,7 @@ on:
                 default: 5
                 description: retention period of uploaded artifacts
                 type: number
-          
+
 
         secrets:
             poeditor_api_key:
@@ -146,9 +146,7 @@ jobs:
                 if: ${{ inputs.artifact_dir }}
                 uses: actions/upload-artifact@v4
                 with:
-                  name: ${{ inputs.artifact_name }}
-                  path: ${{ inputs.artifact_dir }}
-                  retention-days: ${{ inputs.artifact_retention_days }}
-                  if-no-files-found: error
-
-
+                    name: ${{ inputs.artifact_name }}
+                    path: ${{ inputs.artifact_dir }}
+                    retention-days: ${{ inputs.artifact_retention_days }}
+                    if-no-files-found: error
