@@ -153,7 +153,7 @@ on:
             sentry_org:
                 required: false
                 description: required if create_sentry_release is true
-            sentry_project:
+            sentry_projects:
                 required: false
                 description: required if create_sentry_release is true
 
@@ -369,8 +369,8 @@ jobs:
                 env:
                     SENTRY_AUTH_TOKEN: ${{ secrets.sentry_auth_token }}
                     SENTRY_ORG: ${{ secrets.sentry_org }}
-                    SENTRY_PROJECT: ${{ secrets.sentry_project }}
                 with:
                     version: ${{ env.VERSION }}
                     ignore_missing: true
                     ignore_empty: true
+                    projects: ${{ secrets.sentry_projects }}
