@@ -102,7 +102,7 @@ on:
                 description: only applicable if runs_on self_hosted
             create_sentry_release:
                 required: false
-                default: true
+                default: false
                 type: boolean
                 description: if enabled, a sentry release is created
 
@@ -367,9 +367,9 @@ jobs:
                 uses: getsentry/action-release@ccab2088f17098afc92fc485a69b8371b393c476
                 if: ${{ inputs.create_sentry_release }}
                 env:
-                    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                    SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-                    SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+                    SENTRY_AUTH_TOKEN: ${{ secrets.sentry_auth_token }}
+                    SENTRY_ORG: ${{ secrets.sentry_org }}
+                    SENTRY_PROJECT: ${{ secrets.sentry_project }}
                 with:
                     version: ${{ env.VERSION }}
                     ignore_missing: true

@@ -40,9 +40,9 @@ jobs:
             -   name: Create Sentry release
                 uses: getsentry/action-release@ccab2088f17098afc92fc485a69b8371b393c476
                 env:
-                    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                    SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-                    SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+                    SENTRY_AUTH_TOKEN: ${{ secrets.sentry_auth_token }}
+                    SENTRY_ORG: ${{ secrets.sentry_org }}
+                    SENTRY_PROJECT: ${{ secrets.sentry_project }}
                 with:
                     environment: ${{ inputs.target }}
                     version: ${{ inputs.ref_name }}
