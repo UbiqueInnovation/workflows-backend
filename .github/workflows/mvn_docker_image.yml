@@ -100,6 +100,11 @@ on:
                 required: false
                 type: string
                 description: only applicable if runs_on self_hosted
+            create_sentry_release:
+                required: false
+                default: true
+                type: boolean
+                description: if enabled, a sentry release is created
 
         secrets:
             artifactory_user:
@@ -142,6 +147,15 @@ on:
             self_hosted_cache_secret_key:
                 required: false
                 description: required if runs_on self_hosted
+            sentry_auth_token:
+                required: false
+                description: required if create_sentry_release is true
+            sentry_org:
+                required: false
+                description: required if create_sentry_release is true
+            sentry_project:
+                required: false
+                description: required if create_sentry_release is true
 
 jobs:
     create-docker-image:
@@ -349,3 +363,14 @@ jobs:
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.VERSION }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
                     -Djib.container.entrypoint='sh,-c,java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
 
+            -   name: Create Sentry release
+                uses: getsentry/action-release@ccab2088f17098afc92fc485a69b8371b393c476
+                if: ${{ inputs.create_sentry_release }}
+                env:
+                    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                    SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+                    SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+                with:
+                    version: ${{ env.VERSION }}
+                    ignore_missing: true
+                    ignore_empty: true
