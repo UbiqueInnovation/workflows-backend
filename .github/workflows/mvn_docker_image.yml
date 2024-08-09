@@ -87,7 +87,7 @@ on:
                 description: only applicable if runs_on self_hosted
             self_hosted_cache_port:
                 required: false
-                default: 9000
+                default: 9001
                 type: number
                 description: only applicable if runs_on self_hosted
             self_hosted_cache_bucket:
