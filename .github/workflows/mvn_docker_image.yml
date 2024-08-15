@@ -325,6 +325,10 @@ jobs:
                     -Dconfig.directory=/config \
                     -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
                     -Djib.from.image=${{ env.DOCKER_IMAGE }} \
+                    -Djib.from.platforms.platform.architecture=amd64 \
+                    -Djib.from.platforms.platform.os=linux \
+                    -Djib.from.platforms.platform.architecture=arm64 \
+                    -Djib.from.platforms.platform.os=linux \
                     -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
