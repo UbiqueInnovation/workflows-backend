@@ -90,7 +90,7 @@ jobs:
                 run: mvn -f ${{ inputs.parent_pom }} versions:commit
 
             -   name: Build with Maven
-                run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
+                run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ inputs.parent_pom }}
 
             -   name: Create new release
                 uses: softprops/action-gh-release@288696be3916479e99fa944c72825e9b3e192be4
