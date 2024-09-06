@@ -1,11 +1,9 @@
 name: Runs Maven Install and releases to GitHub
 on:
     workflow_call:
-
         inputs:
             ref_name:
-                required: false
-                default: ''
+                required: true
                 type: string
                 description: tag or branch name, used for mvn versions:set
             checkout_lfs:
@@ -50,6 +48,7 @@ jobs:
         steps:
             -   uses: actions/checkout@v4
                 with:
+                    ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Set up JDK
@@ -66,11 +65,11 @@ jobs:
 
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@7c60eb95b2d5ec18f2e0e29f34c9ed69475e7a96
+                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
 
             -   name: Create custom artifactory settings.xml
                 if: ${{ ! inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@7c60eb95b2d5ec18f2e0e29f34c9ed69475e7a96
+                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
@@ -78,8 +77,8 @@ jobs:
             -   name: Set VERSION from ref_name
                 run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
-            -   name: Replace `/` by `-` in VERSION
-                run: echo "VERSION=${VERSION/\//-}" >> $GITHUB_ENV
+            -   name: Replace all characters in `\/:"<>|?*` by `-` in VERSION
+                run: echo "VERSION=$(echo "$VERSION" | sed 's/[\/:"<>|?*]/-/g')" >> $GITHUB_ENV
 
             -   name: Strip leading `v` from VERSION
                 run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
@@ -94,8 +93,8 @@ jobs:
                 run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
 
             -   name: Create new release
-                uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1
+                uses: softprops/action-gh-release@e5aff6f50fb1cde6005b4a5d0ac851e076e3bd7a
                 with:
-                    repo_token: ${{ secrets.repo_token }}
+                    token: ${{ secrets.repo_token }}
                     prerelease: ${{ inputs.release_option_prerelease }}
                     files: ${{ inputs.release_option_files }}

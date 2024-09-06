@@ -1,11 +1,9 @@
 name: Runs Yarn Install
 on:
     workflow_call:
-
         inputs:
             ref_name:
-                required: false
-                default: ''
+                required: true
                 type: string
                 description: tag or branch name for checkout
             node_version:
@@ -43,6 +41,21 @@ on:
                 default: '["ubuntu-latest"]'
                 type: string
                 description: Set to '["self-hosted", "linux"]' if needed.
+            artifact_dir:
+                required: false
+                default: ""
+                description: glob pattern for all artifact dirs
+                type: string
+            artifact_name:
+                required: false
+                default: "artifact"
+                description: What to call artifact to store (only needed if artifact_dir) is set. Defaults to "artifact".
+                type: string
+            artifact_retention_days:
+                required: false
+                default: 5
+                description: retention period of uploaded artifacts
+                type: number
 
 jobs:
     build:
@@ -79,8 +92,11 @@ jobs:
                 run: |
                     cd ${{ inputs.app_directory }} && CI=${{ inputs.yarn_ci_flag }} REACT_APP_VERSION_STRING=${{ inputs.ref_name }} yarn build:${{ inputs.release_env }}
 
-            -   uses: actions/upload-artifact@v4
-                if: ${{ inputs.release_env }}
+            -   name: Upload Build Artifact
+                if: ${{ inputs.artifact_dir }}
+                uses: actions/upload-artifact@v4
                 with:
-                    name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
-                    path: ${{ inputs.app_directory }}/${{ inputs.build_dir }}/
+                    name: ${{ inputs.artifact_name }}
+                    path: ${{ inputs.artifact_dir }}
+                    retention-days: ${{ inputs.artifact_retention_days }}
+                    if-no-files-found: error

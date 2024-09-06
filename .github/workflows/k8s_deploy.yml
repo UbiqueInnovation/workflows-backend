@@ -1,7 +1,6 @@
 name: Deploy on Kubernetes Cluster
 on:
     workflow_call:
-
         inputs:
             ref_name:
                 required: true
@@ -117,9 +116,11 @@ on:
             acr_registry:
                 required: true
             acr_username:
-                required: true
+                required: false
+                description: required if input container_registry_type is 'azure-cr'
             acr_password:
-                required: true
+                required: false
+                description: required if input container_registry_type is 'azure-cr'
             az_service_principal:
                 required: false
             az_client_id:
@@ -134,6 +135,7 @@ on:
                 required: false
             ecr_role_to_assume:
                 required: false
+                description: required if input container_registry_type is 'amazon-ecr'
             kubeconfig:
                 required: false
 
@@ -169,7 +171,7 @@ jobs:
 
             -   name: Set TAG_NAME with commit hash
                 if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=${{ env.TAG_NAME }}-${GITHUB_SHA::8}" >> $GITHUB_ENV
+                run: echo "TAG_NAME=${{ env.TAG_NAME }}-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
             -   name: Set TAG_NAME
                 if: ${{ ! inputs.tag_add_commithash }}
@@ -196,7 +198,7 @@ jobs:
 
             -   name: Azure Login with OIDC flow
                 if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'oidc' }}
-                uses: azure/login@v1
+                uses: azure/login@v2
                 with:
                     client-id: ${{ secrets.az_client_id }}
                     tenant-id: ${{ secrets.az_tenant_id }}
@@ -204,7 +206,7 @@ jobs:
 
             -   name: Azure Login with service principal
                 if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'service_principal' }}
-                uses: azure/login@v1
+                uses: azure/login@v2
                 with:
                     creds: '${{ secrets.az_service_principal }}'
 
@@ -223,7 +225,7 @@ jobs:
 
             -   name: Set AKS context
                 if: ${{ inputs.k8s_type == 'aks' }}
-                uses: azure/aks-set-context@v3
+                uses: azure/aks-set-context@v4
                 with:
                     cluster-name: ${{ inputs.cluster }}
                     resource-group: ${{ inputs.cluster_resource_group }}
@@ -232,7 +234,7 @@ jobs:
 
             -   name: Set K8s context from kubeconfig
                 if: ${{ inputs.k8s_type == 'eks' || inputs.k8s_type == 'kubeconfig' }}
-                uses: azure/k8s-set-context@v3
+                uses: azure/k8s-set-context@v4
                 with:
                     method: kubeconfig
                     kubeconfig: ${{ secrets.kubeconfig }}
@@ -248,7 +250,7 @@ jobs:
 
             -   name: Create image pull secret for ACR
                 if: ${{ inputs.container_registry_type == 'azure-cr' }}
-                uses: azure/k8s-create-secret@v4
+                uses: azure/k8s-create-secret@v5
                 with:
                     container-registry-url: ${{ secrets.acr_registry }}
                     container-registry-username: ${{ secrets.acr_username }}
@@ -258,7 +260,7 @@ jobs:
 
             -   name: Create image pull secret for ECR
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: azure/k8s-create-secret@v4
+                uses: azure/k8s-create-secret@v5
                 with:
                     container-registry-url: ${{ secrets.acr_registry }}
                     container-registry-username: AWS
@@ -273,7 +275,7 @@ jobs:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
 
             -   name: Apply Service Account config
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{  steps.check_serviceaccount_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
@@ -290,7 +292,7 @@ jobs:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
 
             -   name: Apply Service config
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{  steps.check_service_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
@@ -301,12 +303,12 @@ jobs:
 
             -   name: Check ingress.yaml existence
                 id: check_ingress_file
-                uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
+                uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
                 with:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
             -   name: Apply Ingress config
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
                 with:
                     manifests: |
@@ -322,7 +324,7 @@ jobs:
                     files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
 
             -   name: Apply Deployment config
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
                 with:
                     manifests: |
@@ -334,7 +336,7 @@ jobs:
                     namespace: ${{ inputs.namespace }}
 
             -   name: Apply Deployment config with additional image
-                uses: azure/k8s-deploy@v4
+                uses: azure/k8s-deploy@v5
                 if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && inputs.additional_image_name }}
                 with:
                     manifests: |

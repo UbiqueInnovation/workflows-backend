@@ -67,11 +67,12 @@ jobs:
         steps:
             -   uses: actions/checkout@v4
                 with:
+                    ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Login to Azure CR
                 if: ${{ inputs.container_registry_type == 'azure-cr' }}
-                uses: azure/docker-login@v1
+                uses: azure/docker-login@v2
                 with:
                     login-server: ${{ secrets.acr_registry }}
                     username: ${{ secrets.acr_username }}
@@ -108,7 +109,7 @@ jobs:
                         type=raw,value=latest,enable={{is_default_branch}}
 
             -   name: Docker build and push
-                uses: docker/build-push-action@v5
+                uses: docker/build-push-action@v6
                 with:
                     tags: ${{ steps.docker_meta.outputs.tags }}
                     labels: ${{ steps.docker_meta.outputs.labels }}

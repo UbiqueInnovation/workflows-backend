@@ -1,13 +1,11 @@
 name: Runs Maven Install
 on:
     workflow_call:
-
         inputs:
             ref_name:
-                required: false
-                default: ''
+                required: true
                 type: string
-                description: tag or branch name, used for mvn versions:set
+                description: tag or branch name to checkout
             checkout_lfs:
                 required: false
                 default: false
@@ -52,6 +50,7 @@ jobs:
         steps:
             -   uses: actions/checkout@v4
                 with:
+                    ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
 
             -   name: Set up JDK
@@ -73,29 +72,14 @@ jobs:
 
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@7c60eb95b2d5ec18f2e0e29f34c9ed69475e7a96
+                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
 
             -   name: Create custom artifactory settings.xml
                 if: ${{ ! inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@7c60eb95b2d5ec18f2e0e29f34c9ed69475e7a96
+                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
-
-            -   name: Set VERSION from ref_name
-                run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
-
-            -   name: Replace `/` by `-` in VERSION
-                run: echo "VERSION=${VERSION/\//-}" >> $GITHUB_ENV
-
-            -   name: Strip leading `v` from VERSION
-                run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
-
-            -   name: Set versions
-                run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=$VERSION
-
-            -   name: Commit versions
-                run: mvn -f ${{ inputs.parent_pom }} versions:commit
 
             -   name: Build with Maven
                 run: mvn --batch-mode --update-snapshots install -DskipTests=${{ inputs.skip_tests }} -f ${{ inputs.parent_pom }}

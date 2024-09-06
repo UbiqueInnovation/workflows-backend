@@ -1,0 +1,69 @@
+name: Runs Maven Install and releases to GitHub
+on:
+    workflow_call:
+        inputs:
+            ref_name:
+                required: true
+                type: string
+                description: tag or branch name, used for mvn versions:set
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
+                description: Checkout with lfs, default false
+            release_option_prerelease:
+                type: boolean
+                default: false
+            release_option_files:
+                type: string
+                description: files for the artifact, e.g. 'eth-ws/target/eth-ws.war'
+            changelog_file:
+                type: string
+                required: false
+                description: Path to changelog file in format parsable by https://github.com/taiki-e/parse-changelog
+
+        secrets:
+            repo_token:
+                required: true
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ inputs.ref_name }}
+                    lfs: ${{ inputs.checkout_lfs }}
+
+            -   name: Install parse-changelog
+                uses: taiki-e/install-action@0593da407881e996340c22f60617ba9d95f2b995
+                with:
+                    tool: parse-changelog@0.6.8
+
+            -   name: Strip leading `v` from VERSION
+                run: echo "TAG_NAME=${TAG_NAME##v}" >> $GITHUB_ENV
+                env:
+                    TAG_NAME: ${{ inputs.ref_name }}
+
+            -   name: Extract the release notes from the CHANGELOG.md file (skip for prerelease)
+                if: ${{ ! contains(inputs.ref_name, '-') && inputs.changelog_file }}
+                # illegal syntax to pass a multiline string into $GITHUB_ENV see https://blog.okaryo.io/en/20240520-multiple-line-string-to-github-env
+                run: |
+                    {
+                      echo 'RELEASE_BODY<<EOF'
+                      echo "$(parse-changelog ${{ inputs.changelog_file }} ${{ env.TAG_NAME }})"
+                      echo 'EOF'
+                    } >> $GITHUB_ENV
+
+            -   name: Leave the release body empty for prerelease or if no no changelog file exists
+                if: ${{ contains(inputs.ref_name, '-') || ! inputs.changelog_file }}
+                run: echo "RELEASE_BODY=" >> $GITHUB_ENV
+
+            -   name: Create new release
+                uses: softprops/action-gh-release@e5aff6f50fb1cde6005b4a5d0ac851e076e3bd7a
+                with:
+                    tag_name: ${{ env.TAG_NAME }}
+                    body: ${{ env.RELEASE_BODY }}
+                    token: ${{ secrets.repo_token }}
+                    prerelease: ${{ inputs.release_option_prerelease }}
+                    files: ${{ inputs.release_option_files }}

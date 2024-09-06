@@ -1,7 +1,6 @@
 name: Run Sonar Cloud Analysis with Maven Verify
 on:
     workflow_call:
-
         inputs:
             parent_pom:
                 required: true
@@ -54,9 +53,10 @@ jobs:
             -   uses: actions/checkout@v4
                 with:
                     fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+                    ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
-            -   name: Set up JDK
 
+            -   name: Set up JDK
                 uses: actions/setup-java@v4
                 with:
                     java-version: ${{ inputs.java_version }}
@@ -76,11 +76,11 @@ jobs:
 
             -   name: Create maven central settings.xml
                 if: ${{ inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@7c60eb95b2d5ec18f2e0e29f34c9ed69475e7a96
+                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
 
             -   name: Create custom artifactory settings.xml
                 if: ${{ ! inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@7c60eb95b2d5ec18f2e0e29f34c9ed69475e7a96
+                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
                 with:
                     servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
