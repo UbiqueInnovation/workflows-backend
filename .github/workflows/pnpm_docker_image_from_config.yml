@@ -1,7 +1,6 @@
-name: Build and Push Docker Images on release/
+name: Build and Push Docker Images on release
 on:
     workflow_call:
-
         inputs:
             ref_name:
                 required: true
@@ -17,6 +16,10 @@ on:
                 required: false
             pnpm_version:
                 default: "8"
+                type: string
+                required: false
+            cache_node:
+                default: "pnpm"
                 type: string
                 required: false
             cache_dependency_path:
@@ -59,6 +62,11 @@ on:
                 required: false
                 default: false
                 type: boolean
+            poeditor_get_translations_filename:
+                required: false
+                default: getTranslations.py
+                type: string
+                description: name of the getTranslations script. Defaults to getTranslations.py.
             run_build:
                 required: false
                 default: true
@@ -82,6 +90,10 @@ on:
                 type: string
                 default: ''
                 description: docker build args in the form 'KEY1=value1,KEY2=value2'
+            use_custom_registry:
+                type: boolean
+                default: false
+                description: Use custom npm registry, uses default 'https://registry.npmjs.org' if not set. Set secrets npm_registry_url and npm_registry_authtoken accordingly.
             pnpm_repository:
                 required: true
                 type: string
@@ -107,6 +119,12 @@ on:
             poeditor_project_id:
                 required: false
                 description: necessary if input.run_poeditor is true
+            npm_registry_url:
+                required: false
+                description: necessary if input.use_custom_registry is true
+            npm_registry_authtoken:
+                required: false
+                description: necessary if input.use_custom_registry is true
             token:
                 required: true
                 description: Access token to access foreign repos
@@ -116,24 +134,29 @@ jobs:
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
-            -   uses: actions/checkout@v4
+            -   name: Checkout Repo with pnpm app
+                uses: actions/checkout@v4
                 with:
+                    ref: ${{ inputs.pnpm_ref }}
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: 'recursive'
                     repository: ${{ inputs.pnpm_repository }}
                     token: ${{ secrets.token }}
-                    ref: ${{ inputs.pnpm_ref }}
-            -   uses: actions/checkout@v4
+
+            -   name: Checkout this repo (with the config)
+                uses: actions/checkout@v4
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: 'recursive'
                     path: config_repo
                     ref: ${{ inputs.config_ref }}
-            -   name: copy config
+
+            -   name: Copy config
                 run: |
                     ls
                     cp config_repo/.env.${{ inputs.release_env }} ${{ inputs.app_directory }}/.env.${{ inputs.release_env }}
-            -   uses: pnpm/action-setup@v2
+
+            -   uses: pnpm/action-setup@v4
                 if: ${{ inputs.run_build }}
                 with:
                     version: ${{ inputs.pnpm_version }}
@@ -143,8 +166,20 @@ jobs:
                 with:
                     node-version: "${{ inputs.node_version }}"
                     check-latest: true
-                    cache: "pnpm"
+                    cache: "${{ inputs.cache_node }}"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
+
+            -   name: Set custom NPM registry
+                if: ${{ inputs.use_custom_registry }}
+                run: |
+                    cd ${{ inputs.root_directory || inputs.app_directory }} &&
+                    pnpm config --location=project set registry https://${{ secrets.npm_registry_url }} &&
+                    pnpm config --location=project set '//${{ secrets.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}"
+
+            -   name: Copy .npmrc to docker directory
+                if: ${{ inputs.use_custom_registry }}
+                run: |
+                    cp ${{ inputs.root_directory || inputs.app_directory }}/.npmrc docker/${{ inputs.app_name }}/ 
 
             -   uses: actions/setup-python@v5
                 if: ${{ inputs.run_poeditor }}
@@ -164,11 +199,11 @@ jobs:
                 run: |
                     python -m pip install -r requirements.txt
 
-            -   name: Run getTranslations.py
+            -   name: Run ${{ inputs.poeditor_get_translations_filename }}
                 if: ${{ inputs.run_poeditor }}
                 run: |
-                    python ${{ inputs.app_directory }}/getTranslations.py ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
-                
+                    python ${{ inputs.app_directory }}/${{ inputs.poeditor_get_translations_filename }} ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
+
             -   name: Install using pnpm
                 if: ${{ inputs.run_build }}
                 run: |
@@ -178,6 +213,7 @@ jobs:
                 if: ${{ inputs.run_build }}
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
+
             -   name: Tar Build dir to docker
                 run: |
                     ls
@@ -189,7 +225,7 @@ jobs:
             -   name: Set IMAGE_NAME
                 run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}-${{ inputs.release_env }}" >> $GITHUB_ENV
 
-            -   uses: azure/docker-login@v1
+            -   uses: azure/docker-login@v2
                 with:
                     login-server: ${{ secrets.acr_registry }}
                     username: ${{ secrets.acr_username }}
@@ -216,7 +252,7 @@ jobs:
                         type=raw,value=latest,enable={{is_default_branch}}
 
             -   name: Docker build and push
-                uses: docker/build-push-action@v5
+                uses: docker/build-push-action@v6
                 with:
                     tags: ${{ steps.docker_meta.outputs.tags }}
                     labels: ${{ steps.docker_meta.outputs.labels }}
@@ -224,3 +260,5 @@ jobs:
                     build-args: ${{ inputs.docker_build_args }}
                     push: true
                     context: docker/${{ inputs.app_name }}
+                    cache-from: type=gha
+                    cache-to: type=gha,mode=max
