@@ -1,11 +1,11 @@
-name: Build and Push Docker Images on release
+name: Build and Push Docker Images from repo with config files
 on:
     workflow_call:
         inputs:
             ref_name:
                 required: true
                 type: string
-                description: tag or branch name
+                description: tag or branch name of this repository, ie the one with the config
             checkout_lfs:
                 required: false
                 default: false
@@ -102,10 +102,6 @@ on:
                 required: true
                 type: string
                 description: Remote repository ref to checkout
-            config_ref:
-                required: true
-                type: string
-                description: Config ref to checkout
         secrets:
             acr_registry:
                 required: true
@@ -149,11 +145,10 @@ jobs:
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: 'recursive'
                     path: config_repo
-                    ref: ${{ inputs.config_ref }}
+                    ref: ${{ inputs.ref_name }}
 
             -   name: Copy config
                 run: |
-                    ls
                     cp config_repo/.env.${{ inputs.release_env }} ${{ inputs.app_directory }}/.env.${{ inputs.release_env }}
 
             -   uses: pnpm/action-setup@v4
@@ -216,10 +211,6 @@ jobs:
 
             -   name: Tar Build dir to docker
                 run: |
-                    ls
-                    ls docker/ || true
-                    ls ../docker || true
-                    pwd
                     tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }} ${{ inputs.dirs_for_docker_build }}
 
             -   name: Set IMAGE_NAME
