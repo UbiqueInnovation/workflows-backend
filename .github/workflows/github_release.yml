@@ -62,7 +62,7 @@ jobs:
             -   name: Create new release
                 uses: softprops/action-gh-release@e5aff6f50fb1cde6005b4a5d0ac851e076e3bd7a
                 with:
-                    tag_name: ${{ env.TAG_NAME }}
+                    name: ${{ env.TAG_NAME }}
                     body: ${{ env.RELEASE_BODY }}
                     token: ${{ secrets.repo_token }}
                     prerelease: ${{ inputs.release_option_prerelease }}
