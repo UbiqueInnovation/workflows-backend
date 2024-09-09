@@ -98,7 +98,7 @@ on:
                 required: true
                 type: string
                 description: Remote repository containing pnpm repo
-            pnpm_ref:
+            pnpm_repository_ref:
                 required: true
                 type: string
                 description: Remote repository ref to checkout
@@ -121,7 +121,7 @@ on:
             npm_registry_authtoken:
                 required: false
                 description: necessary if input.use_custom_registry is true
-            token:
+            pnpm_repository_token:
                 required: true
                 description: Access token to access foreign repos
 
@@ -133,11 +133,11 @@ jobs:
             -   name: Checkout Repo with pnpm app
                 uses: actions/checkout@v4
                 with:
-                    ref: ${{ inputs.pnpm_ref }}
+                    ref: ${{ inputs.pnpm_repository_ref }}
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: 'recursive'
                     repository: ${{ inputs.pnpm_repository }}
-                    token: ${{ secrets.token }}
+                    token: ${{ secrets.pnpm_repository_token }}
 
             -   name: Checkout this repo (with the config)
                 uses: actions/checkout@v4
