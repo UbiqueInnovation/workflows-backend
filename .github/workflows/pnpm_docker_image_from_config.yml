@@ -251,5 +251,6 @@ jobs:
                     build-args: ${{ inputs.docker_build_args }}
                     push: true
                     context: docker/${{ inputs.app_name }}
-                    cache-from: type=gha
-                    cache-to: type=gha,mode=max
+                    # Disabled caching, because gh actions run infinitely. Leaving this here for clarity
+                    # cache-from: type=gha
+                    # cache-to: type=gha,mode=max
