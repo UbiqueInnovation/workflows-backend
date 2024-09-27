@@ -11,6 +11,11 @@ on:
                 default: false
                 type: boolean
                 description: Checkout with lfs, default false
+            checkout_submodules:
+                required: false
+                default: false
+                type: string
+                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
             parent_pom:
                 required: true
                 type: string
@@ -50,6 +55,7 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
+                    submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Set up JDK
                 uses: actions/setup-java@v4

@@ -30,6 +30,11 @@ on:
                 required: false
                 default: false
                 type: boolean
+            checkout_submodules:
+                required: false
+                default: false
+                type: string
+                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
             image_name_postfix:
                 required: false
                 default: ''
@@ -160,6 +165,7 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
+                    submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Set TAG_NAME from inputs.ref_name
                 if: ${{ ! inputs.image_tag_to_deploy }}
