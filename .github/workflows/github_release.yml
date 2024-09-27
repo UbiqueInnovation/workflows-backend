@@ -11,6 +11,11 @@ on:
                 default: false
                 type: boolean
                 description: Checkout with lfs, default false
+            checkout_submodules:
+                required: false
+                default: false
+                type: string
+                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
             release_option_prerelease:
                 type: boolean
                 default: false
@@ -34,6 +39,7 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
+                    submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Install parse-changelog
                 uses: taiki-e/install-action@1ca3b4160c6a2cdcc0aac72672797ea09e341aac
