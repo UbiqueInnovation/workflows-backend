@@ -66,6 +66,9 @@ on:
             ecr_role_to_assume:
                 required: false
                 description: required if input container_registry_type is 'amazon-ecr'
+            repository_access_token:
+                required: false
+                description: Access token needed to checkout submodules
 
 jobs:
     build:
@@ -80,6 +83,7 @@ jobs:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: ${{ inputs.checkout_submodules }}
+                    token: ${{ secrets.repository_access_token }}
 
             -   name: Login to Azure CR
                 if: ${{ inputs.container_registry_type == 'azure-cr' }}
