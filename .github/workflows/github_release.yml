@@ -11,6 +11,11 @@ on:
                 default: false
                 type: boolean
                 description: Checkout with lfs, default false
+            checkout_submodules:
+                required: false
+                default: false
+                type: string
+                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
             release_option_prerelease:
                 type: boolean
                 default: false
@@ -34,9 +39,10 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
+                    submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Install parse-changelog
-                uses: taiki-e/install-action@1ca3b4160c6a2cdcc0aac72672797ea09e341aac
+                uses: taiki-e/install-action@005f9c234df66b748f0b5f22b26ef83172082762
                 with:
                     tool: parse-changelog@0.6.8
 
@@ -60,7 +66,7 @@ jobs:
                 run: echo "RELEASE_BODY=" >> $GITHUB_ENV
 
             -   name: Create new release
-                uses: softprops/action-gh-release@3362207ba10174a31da6ce64d9c9ea4bbee307f0
+                uses: softprops/action-gh-release@c7857c88c0b69847af67785971a0b5633c6d22cf
                 with:
                     name: ${{ env.TAG_NAME }}
                     body: ${{ env.RELEASE_BODY }}

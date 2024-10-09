@@ -11,6 +11,11 @@ on:
                 default: false
                 type: boolean
                 description: Checkout with lfs, default false
+            checkout_submodules:
+                required: false
+                default: false
+                type: string
+                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
             parent_pom:
                 required: true
                 type: string
@@ -50,6 +55,7 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
+                    submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Set up JDK
                 uses: actions/setup-java@v4
@@ -93,7 +99,7 @@ jobs:
                 run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
 
             -   name: Create new release
-                uses: softprops/action-gh-release@3362207ba10174a31da6ce64d9c9ea4bbee307f0
+                uses: softprops/action-gh-release@c7857c88c0b69847af67785971a0b5633c6d22cf
                 with:
                     name: ${{ env.VERSION }}
                     token: ${{ secrets.repo_token }}

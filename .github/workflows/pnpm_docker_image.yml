@@ -10,6 +10,11 @@ on:
                 required: false
                 default: false
                 type: boolean
+            checkout_submodules:
+                required: false
+                default: false
+                type: string
+                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
             node_version:
                 default: "20"
                 type: string
@@ -124,6 +129,7 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
+                    submodules: ${{ inputs.checkout_submodules }}
 
             -   uses: pnpm/action-setup@v4
                 with:

@@ -18,6 +18,11 @@ on:
                 required: false
                 default: false
                 type: boolean
+            checkout_submodules:
+                required: false
+                default: false
+                type: string
+                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
             finalize:
                 required: false
                 default: true
@@ -40,6 +45,7 @@ jobs:
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
+                    submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Set VERSION from ref_name
                 run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
