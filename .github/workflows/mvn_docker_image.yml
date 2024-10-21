@@ -185,7 +185,7 @@ jobs:
 
             -   name: Cache Maven packages on self-hosted MinIO
                 if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-                uses: tespkg/actions-cache@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
+                uses: tespkg/restore@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
                 with:
                     endpoint: ${{ inputs.self_hosted_cache_endpoint }}
                     port: ${{ inputs.self_hosted_cache_port }}
@@ -196,8 +196,7 @@ jobs:
                     region: ${{ inputs.self_hosted_cache_region }}
                     use-fallback: false
                     path: ~/.m2/repository
-                    key: ${{ runner.os }}-${{ inputs.app_name }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-${{ inputs.app_name }}-m2-
+                    key: ${{ runner.os }}-${{ inputs.app_name }}-m2
 
             -   name: Cache Maven packages
                 if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted' }}
