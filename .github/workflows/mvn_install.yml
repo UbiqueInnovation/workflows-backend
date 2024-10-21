@@ -96,7 +96,7 @@ jobs:
                     distribution: 'temurin'
             -   name: Restore Maven packages from self-hosted MinIO
                 if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' && inputs.write_cache == false }}
-                uses: tespkg/restore@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
+                uses: tespkg/actions-cache/restore@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
                 with:
                     endpoint: ${{ inputs.self_hosted_cache_endpoint }}
                     port: ${{ inputs.self_hosted_cache_port }}
@@ -138,7 +138,7 @@ jobs:
             
             -   name: Update Maven package cache on self-hosted MinIO
                 if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' && inputs.write_cache == true }}
-                uses: tespkg/save@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
+                uses: tespkg/actions-cache/save@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
                 with:
                     endpoint: ${{ inputs.self_hosted_cache_endpoint }}
                     port: ${{ inputs.self_hosted_cache_port }}
