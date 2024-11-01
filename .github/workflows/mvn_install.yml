@@ -38,7 +38,32 @@ on:
                 type: boolean
                 required: false
                 description: Set to true to enable '-DskipTests' temporarily during debugging. DO NOT SET PERMANENTLY
-
+            self_hosted_cache_endpoint:
+                required: false
+                default: 'truenas.local.lan'
+                type: string
+                description: only applicable if runs_on self_hosted
+            self_hosted_cache_port:
+                required: false
+                default: 9001
+                type: number
+                description: only applicable if runs_on self_hosted
+            self_hosted_cache_bucket:
+                required: false
+                default: github-actions-cache
+                type: string
+                description: only applicable if runs_on self_hosted
+            self_hosted_cache_region:
+                default: local
+                required: false
+                type: string
+                description: only applicable if runs_on self_hosted
+            write_cache:
+                default: false
+                type: boolean
+                required: false
+                description: Whether the build should update the build cache. This build will not use the existing cache to get a clean base for subsequent builds.
+    
         secrets:
             artifactory_user:
                 required: false
@@ -48,7 +73,12 @@ on:
                 required: false
             artifactory_repo:
                 required: false
-
+            self_hosted_cache_access_key:
+                required: false
+                description: required if runs_on self_hosted
+            self_hosted_cache_secret_key:
+                required: false
+                description: required if runs_on self_hosted
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -64,12 +94,28 @@ jobs:
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'temurin'
+            -   name: Restore Maven packages from self-hosted MinIO
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' && inputs.write_cache == 'false' }}
+                uses: tespkg/actions-cache/restore@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
+                with:
+                    endpoint: ${{ inputs.self_hosted_cache_endpoint }}
+                    port: ${{ inputs.self_hosted_cache_port }}
+                    insecure: true
+                    accessKey: ${{ secrets.self_hosted_cache_access_key }}
+                    secretKey: ${{ secrets.self_hosted_cache_secret_key }}
+                    bucket: ${{ inputs.self_hosted_cache_bucket }}
+                    region: ${{ inputs.self_hosted_cache_region }}
+                    use-fallback: false
+                    path: ~/.m2/repository
+                    key: ${{ runner.os }}-${{ inputs.app_name }}-m2
 
             -   name: Cache Maven packages
+                if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted' }}
                 uses: actions/cache@v4
                 with:
                     path: ~/.m2/repository
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: ${{ runner.os }}-m2-
 
             -   name: install apt packages '${{ inputs.install_apt_packages }}'
                 if: ${{ inputs.install_apt_packages }}
@@ -89,3 +135,18 @@ jobs:
 
             -   name: Build with Maven
                 run: mvn --batch-mode --update-snapshots install -DskipTests=${{ inputs.skip_tests }} -f ${{ inputs.parent_pom }}
+            
+            -   name: Update Maven package cache on self-hosted MinIO
+                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' && inputs.write_cache == 'true' }}
+                uses: tespkg/actions-cache/save@cba095d7af782a955b8f4fa13396fbf0ab62bd4b
+                with:
+                    endpoint: ${{ inputs.self_hosted_cache_endpoint }}
+                    port: ${{ inputs.self_hosted_cache_port }}
+                    insecure: true
+                    accessKey: ${{ secrets.self_hosted_cache_access_key }}
+                    secretKey: ${{ secrets.self_hosted_cache_secret_key }}
+                    bucket: ${{ inputs.self_hosted_cache_bucket }}
+                    region: ${{ inputs.self_hosted_cache_region }}
+                    use-fallback: false
+                    path: ~/.m2/repository
+                    key: ${{ runner.os }}-${{ inputs.app_name }}-m2
