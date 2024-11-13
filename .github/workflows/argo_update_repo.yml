@@ -1,0 +1,86 @@
+name: Upload Manifests to Argo Repo
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        required: true
+        type: string
+        description: name of the app
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name
+      namespace:
+        required: true
+        type: string
+        description: e.g. ubique, swisstopo, schweizmobil
+      app_directory:
+        required: true
+        type: string
+        description: e.g. ub-pushservice/ub-pushserver, swisstopo-backend/swisstopo-ws, schweizmobil-backend/schweizmobil-ws
+      target:
+        required: true
+        type: string
+        description: dev|int|prod|etc.
+      argo_repo:
+        required: true
+        type: string
+        description: Argo CD Repo to upload manifests to
+
+    secrets:
+      personal_access_token:
+        required: true
+        description: Personal Access Token which can write to the Argo CD Repo
+
+jobs:
+  upload-manifests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+
+      - name: Replace Placeholder with Tag Name
+        run: |
+          sed -i 's/PLACEHOLDER/${{ inputs.ref_name }}/g' ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
+
+      - name: Create ConfigMap YAML
+        uses: UbiqueInnovation/action-systems-k8s-create-configmap@main
+        with:
+          configmap_name: ${{ inputs.app_name}}-${{ inputs.target }}-config
+          config_folder: ${{ inputs.app_directory }}/conf/${{ inputs.target }}
+          destination_file: ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/configmap.yaml
+          namespace: ${{ inputs.namespace }}
+
+      - name: Checkout Argo Repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.argo_repo }}
+          token: ${{ secrets.personal_access_token }}
+          path: argo-repo
+
+      - name: Replace Manifests
+        run: |
+          mkdir -p argo-repo/${{ inputs.namespace }}/${{ inputs.app_name }}/${{ inputs.target }}
+          rm -rf argo-repo/${{ inputs.namespace }}/${{ inputs.app_name }}/${{ inputs.target }}/*
+          cp -R ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/* argo-repo/${{ inputs.namespace }}/${{ inputs.app_name }}/${{ inputs.target }}/
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push changes
+        env:
+          GITHUB_RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          cd argo-repo
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "There are changes to commit and push."
+            git add .
+            git commit -m "Change by $GITHUB_RUN_URL"
+            git push origin main
+          else
+            echo "No changes to commit and push."
+          fi
