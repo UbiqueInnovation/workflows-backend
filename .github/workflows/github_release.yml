@@ -42,7 +42,7 @@ jobs:
                     submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Install parse-changelog
-                uses: taiki-e/install-action@684122deb17127bf60d1d99224e12e8fc0012210
+                uses: taiki-e/install-action@ef1f08ff7e5a9451af03151a0e3dc0785d5c9673
                 with:
                     tool: parse-changelog@0.6.8
 
@@ -66,7 +66,7 @@ jobs:
                 run: echo "RELEASE_BODY=" >> $GITHUB_ENV
 
             -   name: Create new release
-                uses: softprops/action-gh-release@e7a8f85e1c67a31e6ed99a94b41bd0b71bbee6b8
+                uses: softprops/action-gh-release@92bc83c4214f780e84c7d2a85464a2ca05ebc2f0
                 with:
                     name: ${{ env.TAG_NAME }}
                     body: ${{ env.RELEASE_BODY }}
