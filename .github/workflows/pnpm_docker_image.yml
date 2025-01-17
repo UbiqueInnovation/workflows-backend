@@ -12,11 +12,11 @@ on:
                 default: false
                 type: boolean
             node_version:
-                default: "18"
+                default: "20"
                 type: string
                 required: false
             pnpm_version:
-                default: "8"
+                default: "10"
                 type: string
                 required: false
             cache_dependency_path:
@@ -102,7 +102,7 @@ jobs:
                 with:
                     lfs: ${{ inputs.checkout_lfs }}
 
-            -   uses: pnpm/action-setup@v2
+            -   uses: pnpm/action-setup@v4
                 with:
                     version: ${{ inputs.pnpm_version }}
 

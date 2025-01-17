@@ -8,7 +8,11 @@ on:
                 type: string
                 description: tag or branch name for checkout
             node_version:
-                default: '18'
+                default: '20'
+                type: string
+                required: false
+            pnpm_version:
+                default: '10'
                 type: string
                 required: false
             checkout_lfs:
@@ -59,9 +63,9 @@ jobs:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
 
-            -   uses: pnpm/action-setup@v2
+            -   uses: pnpm/action-setup@v4
                 with:
-                    version: 8
+                    version: ${{ inputs.pnpm_version }}
             -   uses: actions/setup-node@v4
                 with:
                     node-version: '${{ inputs.node_version }}'
