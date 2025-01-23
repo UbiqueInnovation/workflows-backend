@@ -116,7 +116,7 @@ jobs:
                     echo "ARTIFACT_DIR=${{ inputs.app_directory }}/${{ inputs.build_dir }}/" >> $GITHUB_ENV
 
             -   name: Upload artifact
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 with:
                     name: ${{ inputs.ref_name }}-${{ inputs.release_env }}
                     path: ${{ env.ARTIFACT_DIR }}
