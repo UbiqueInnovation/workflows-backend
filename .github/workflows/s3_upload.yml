@@ -23,6 +23,11 @@ on:
                 default: false
                 type: boolean
                 description: Checkout with lfs, default false
+            public:
+                required: false
+                default: false
+                type: boolean
+                description: ACL for public read. (Set to true, for files that should be public accessible)
 
         secrets:
             aws_access_key_id:
@@ -49,6 +54,11 @@ jobs:
                     aws-access-key-id: ${{ secrets.aws_access_key_id }}
                     aws-secret-access-key: ${{ secrets.aws_secret_access_key}}
                     aws-region: ${{ inputs.aws_region }}
+
+            -   name: set Public Read argument
+                if: ${{ inputs.public }}
+                run: |
+                    echo "ADDITIONAL_ARGS=${{ env.ADDITIONAL_ARGS }} --acl public-read" >> $GITHUB_ENV
 
             -   name: set Cache-Control argument
                 if: ${{ inputs.cache_control }}
