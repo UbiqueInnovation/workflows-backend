@@ -6,7 +6,7 @@ on:
                 required: false
                 default: '["ubuntu-latest"]'
                 type: string
-                description: Set to '["self-hosted", "linux", "stable"]' if needed.
+                description: Set to '["k8s-runner"]' if needed to run on self-hosted runners.
             checkout_lfs:
                 required: false
                 default: false

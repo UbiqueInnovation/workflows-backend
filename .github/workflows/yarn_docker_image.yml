@@ -71,7 +71,7 @@ on:
                 required: false
                 default: '["ubuntu-latest"]'
                 type: string
-                description: Set to '["self-hosted", "linux"]' if needed.
+                description: Set to '["k8s-runner"]' if needed to run on self-hosted runners.
             dockerfile_name:
                 required: false
                 default: 'Dockerfile'
@@ -109,7 +109,7 @@ jobs:
                     submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Install yarn without node
-                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
+                if: ${{ fromJson(inputs.runs_on)[0] == 'k8s-runner' }}
                 run: |
                     curl -fsSL --create-dirs -o $HOME/bin/yarn \
                     https://github.com/yarnpkg/yarn/releases/download/v${{ inputs.yarn_version }}/yarn-${{ inputs.yarn_version }}.js

@@ -84,7 +84,7 @@ on:
                 required: false
                 default: '["ubuntu-latest"]'
                 type: string
-                description: Set to '["self-hosted", "linux"]' if needed.
+                description: Set to '["k8s-runner"]' if needed to run on self-hosted runners.
             dockerfile_name:
                 required: false
                 default: 'Dockerfile'
