@@ -165,7 +165,7 @@ jobs:
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
         container:
-            image: ${{ container_image }}
+            image: ${{ fromJson(inputs.container_image) }}
         steps:
             -   uses: actions/checkout@v4
                 with:
