@@ -109,6 +109,11 @@ on:
                 required: false
                 type: string
                 description: only applicable if runs_on self_hosted
+            container_image:
+              default: ubuntu:latest
+              required: false
+              type: string
+              description: container image to run on
 
         secrets:
             artifactory_user:
@@ -159,6 +164,8 @@ jobs:
             contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
+        container:
+            image: ${{ container_image }}
         steps:
             -   uses: actions/checkout@v4
                 with:
