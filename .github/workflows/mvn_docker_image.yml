@@ -175,9 +175,6 @@ jobs:
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: ${{ inputs.checkout_submodules }}
 
-            -   name: Git Status
-                run: git status
-
             -   name: Set up JDK
                 if: ${{ ! inputs.native_image }}
                 uses: actions/setup-java@v4
