@@ -113,7 +113,7 @@ on:
                 default: "maven:3.9-eclipse-temurin-17"
                 required: false
                 type: string
-                description: container image to run on
+                description: "container image to run on"
 
         secrets:
             artifactory_user:
@@ -167,6 +167,8 @@ jobs:
         container:
             image: ${{ inputs.container_image }}
         steps:
+            -   run: |
+                    echo "Container Image: ${{ inputs.container_image }}"
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.ref_name }}
