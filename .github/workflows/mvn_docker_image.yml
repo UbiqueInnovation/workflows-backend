@@ -110,7 +110,7 @@ on:
                 type: string
                 description: only applicable if runs_on self_hosted
             container_image:
-                default: maven:3.9-eclipse-temurin-${{ inputs.java_version }}
+                default: eclipse-temurin-${{ inputs.java_version }}
                 required: false
                 type: string
                 description: container image to run on
