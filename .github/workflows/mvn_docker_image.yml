@@ -113,7 +113,7 @@ on:
                 default: "maven:3.9-eclipse-temurin-17"
                 required: false
                 type: string
-                description: "container image to run on"
+                description: container image to run on
 
         secrets:
             artifactory_user:
@@ -167,8 +167,6 @@ jobs:
         container:
             image: ${{ inputs.container_image }}
         steps:
-            -   run: |
-                    echo "Container Image: ${{ inputs.container_image }}"
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.ref_name }}
@@ -219,7 +217,6 @@ jobs:
                     sudo apt install ${{ inputs.install_apt_packages }}
 
             -   name: Set up Maven
-                if: ${{ fromJson(inputs.runs_on)[0] == 'k8s-runner' }}
                 uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1
                 with:
                     maven-version: 3.9.3
