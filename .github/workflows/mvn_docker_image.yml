@@ -167,9 +167,6 @@ jobs:
         container:
             image: ${{ inputs.container_image }}
         steps:
-            -   name: check app_directory
-                run: |
-                    echo "app directory: ${{ inputs.app_directory }}"
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.ref_name }}
@@ -189,6 +186,18 @@ jobs:
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'graalvm'
+
+            - name: Check Working Directory
+              run: pwd && ls -R
+
+            - name: Verify pom.xml
+              run: |
+                if [ -f "pom.xml" ]; then
+                  echo "Found pom.xml"
+                else
+                  echo "pom.xml NOT found"
+                  exit 1
+                fi
 
             -   name: Cache Maven packages on self-hosted MinIO
                 if: ${{ fromJson(inputs.runs_on)[0] == 'k8s-runner' }}
