@@ -167,6 +167,9 @@ jobs:
         container:
             image: ${{ inputs.container_image }}
         steps:
+            -   name: check app_directory
+                run: |
+                    echo "app directory: ${{ inputs.app_directory }}"
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.ref_name }}
