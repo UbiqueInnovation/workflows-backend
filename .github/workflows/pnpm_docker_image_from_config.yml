@@ -40,6 +40,10 @@ on:
                 default: ""
                 type: string
                 description: "Creates image name in the form ${app_name}${image_name_postfix}-${release_env}"
+            image_tag:
+                required: false
+                type: string
+                description: "Optional custom image tag"
             tag_add_commithash:
                 required: false
                 default: false
@@ -241,6 +245,7 @@ jobs:
                         type=raw,pattern={{version}},value=${{ inputs.ref_name }}
                         # set latest tag for default branch
                         type=raw,value=latest,enable={{is_default_branch}}
+                        type=raw,enable=${{ inputs.image_tag && 'true' || 'false' }},value=${{ inputs.image_tag }}
 
             -   name: Docker build and push
                 uses: docker/build-push-action@v6
