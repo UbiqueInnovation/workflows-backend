@@ -346,7 +346,7 @@ jobs:
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
-                    -Djib.container.user=ubuntu \
+                    -Djib.container.user=1000 \
                     -Djib.container.workingDirectory=/home/ubuntu \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
@@ -364,7 +364,7 @@ jobs:
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
-                    -Djib.container.user=ubuntu \
+                    -Djib.container.user=1000 \
                     -Djib.container.workingDirectory=/home/ubuntu \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
