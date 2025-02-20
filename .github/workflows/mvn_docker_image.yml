@@ -346,9 +346,11 @@ jobs:
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
+                    -Djib.container.user=ubuntu \
+                    -Djib.container.workingDirectory=/home/ubuntu \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
-                    -Djib.container.entrypoint='sh,-c,java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
+                    -Djib.container.entrypoint='sh,-c,exec java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
 
             -   name: Build and push native docker image
                 if: ${{ inputs.native_image }}
@@ -362,6 +364,8 @@ jobs:
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
+                    -Djib.container.user=ubuntu \
+                    -Djib.container.workingDirectory=/home/ubuntu \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
-                    -Djib.container.entrypoint='sh,-c,java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
+                    -Djib.container.entrypoint='sh,-c,exec java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
