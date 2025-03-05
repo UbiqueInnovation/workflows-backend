@@ -86,7 +86,9 @@ on:
                 description: necessary if input.use_custom_registry is true
             npm_registry_authtoken:
                 required: false
-                description: necessary if input.use_custom_registry is true
+                description: necessary if input.use_custom_registry is tru
+            sentry_auth_token:
+                required: false
 
 jobs:
     build:
@@ -147,6 +149,8 @@ jobs:
                 if: ${{ inputs.release_env }}
                 run: |
                     cd ${{ inputs.app_directory }} && pnpm build:${{ inputs.release_env }}
+                env:
+                    SENTRY_AUTH_TOKEN: ${{ secrets.sentry_auth_token }}
 
             -   name: Upload Build Artifact
                 if: ${{ inputs.artifact_dir }}
