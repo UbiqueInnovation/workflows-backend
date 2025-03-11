@@ -86,7 +86,7 @@ on:
                 description: necessary if input.use_custom_registry is true
             npm_registry_authtoken:
                 required: false
-                description: necessary if input.use_custom_registry is tru
+                description: necessary if input.use_custom_registry is true
             sentry_auth_token:
                 required: false
 
