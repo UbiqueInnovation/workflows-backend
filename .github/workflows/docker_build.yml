@@ -48,6 +48,11 @@ on:
                 required: false
                 type: string
                 description: required if input container_registry_type is 'amazon-ecr'
+            use_cache:
+                required: false
+                default: true
+                type: boolean
+                description: Whether to use GitHub Actions cache for Docker builds
 
         secrets:
             acr_registry:
@@ -121,6 +126,6 @@ jobs:
                     labels: ${{ steps.docker_meta.outputs.labels }}
                     push: true
                     context: ${{ inputs.context }}
-                    cache-from: type=gha
-                    cache-to: type=gha,mode=max
+                    cache-from: ${{ inputs.use_cache && 'type=gha' || '' }}
+                    cache-to: ${{ inputs.use_cache && 'type=gha,mode=max' || '' }}
                     build-args: ${{ inputs.build_args }}
