@@ -31,6 +31,11 @@ on:
       release_option_prerelease:
         type: boolean
         default: false
+      runs_on:
+        required: false
+        default: '["ubuntu-latest"]'
+        type: string
+        description: Set to '["self-hosted", "linux", "stable"]' if needed.
       release_option_files:
         type: string
         description: files for the artifact, e.g. 'eth-ws/target/eth-ws.war'
@@ -49,7 +54,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJson(inputs.runs_on) }}
     steps:
       - uses: actions/checkout@v5
         with:
