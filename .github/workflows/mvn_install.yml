@@ -33,6 +33,11 @@ on:
         type: string
         default: ''
         description: space-separated list of apt packages to install before build
+      runs_on:
+        required: false
+        default: '["ubuntu-latest"]'
+        type: string
+        description: Set to '["self-hosted", "linux", "stable"]' if needed.
       skip_tests:
         default: false
         type: boolean
@@ -51,7 +56,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJson(inputs.runs_on) }}
     steps:
       - uses: actions/checkout@v5
         with:

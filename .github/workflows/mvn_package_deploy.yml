@@ -27,6 +27,11 @@ on:
         type: boolean
         required: false
         description: If false, use artifactory_* input secrets
+      runs_on:
+        required: false
+        default: '["ubuntu-latest"]'
+        type: string
+        description: Set to '["self-hosted", "linux", "stable"]' if needed.
       install_apt_packages:
         required: false
         type: string
@@ -45,7 +50,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJson(inputs.runs_on) }}
     steps:
       - uses: actions/checkout@v5
         with:
