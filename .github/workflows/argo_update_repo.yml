@@ -72,7 +72,7 @@ jobs:
             configmap_name=${{ inputs.app_name }}-${{ inputs.target }}-config
 
             configmap_hash=$(shasum "$configmap_file" | cut -d' ' -f1)
-            yq --yaml-roundtrip --in-place ".spec.template.metadata.annotations.\"checksum/$configmap_name\" = \"$configmap_hash\"" "$deployment_file"
+            yq --inplace ".spec.template.metadata.annotations.\"checksum/$configmap_name\" = \"$configmap_hash\"" "$deployment_file"
 
       - name: Checkout Argo Repo
         uses: actions/checkout@v4
