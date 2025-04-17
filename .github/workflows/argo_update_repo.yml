@@ -63,6 +63,17 @@ jobs:
           destination_file: ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/configmap.yaml
           namespace: ${{ inputs.namespace }}
 
+      - name: Insert ConfigMap hash in in Deployement as annotation "checksum/{{ inputs.app_name }}-${{ inputs.target }}-config"
+        if: steps.check_config.outputs.exists == 'true'
+        run: |
+            set -xeou pipefail
+            configmap_file=${{ inputs.app_directory }}/manifests/${{ inputs.target }}/configmap.yaml
+            deployment_file=${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
+            configmap_name=${{ inputs.app_name }}-${{ inputs.target }}-config
+
+            configmap_hash=$(shasum "$configmap_file" | cut -d' ' -f1)
+            yq --yaml-roundtrip --in-place ".spec.template.metadata.annotations.\"checksum/$configmap_name\" = \"$configmap_hash\"" "$deployment_file"
+
       - name: Checkout Argo Repo
         uses: actions/checkout@v4
         with:
