@@ -42,6 +42,11 @@ on:
                 type: string
                 required: false
                 description: custom docker image for docker build.
+            jib_non_root:
+                type: boolean
+                required: false
+                default: false # disabled by default to avoid breaking old things. The default for new builds should be true.
+                description: "If true, set the container user to a non-root user and set working directory to /home/ubuntu."
             tag_add_commithash:
                 required: false
                 default: false
@@ -337,6 +342,15 @@ jobs:
             -   name: Build and push docker image
                 if: ${{ ! inputs.native_image }}
                 run: |
+                    set -x;
+                    djib_user_flags=();
+                    if [[ "${{ inputs.jib_non_root }}" == "true" ]]; then
+                      djib_user_flags=(
+                        -Djib.container.user=1000
+                        -Djib.container.workingDirectory=/home/ubuntu
+                      )
+                    fi
+
                     mvn --batch-mode compile jib:build \
                     -f ${{ inputs.app_directory }}/pom.xml \
                     -Dconfig.directory=/config \
@@ -346,8 +360,7 @@ jobs:
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
-                    -Djib.container.user=1000 \
-                    -Djib.container.workingDirectory=/home/ubuntu \
+                    "${djib_user_flags[@]}" \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
                     -Djib.container.entrypoint='sh,-c,exec java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
@@ -355,6 +368,15 @@ jobs:
             -   name: Build and push native docker image
                 if: ${{ inputs.native_image }}
                 run: |
+                    set -x;
+                    djib_user_flags=();
+                    if [[ "${{ inputs.jib_non_root }}" == "true" ]]; then
+                      djib_user_flags=(
+                        -Djib.container.user=1000
+                        -Djib.container.workingDirectory=/home/ubuntu
+                      )
+                    fi
+
                     mvn --batch-mode package jib:build -Pnative \
                     -f ${{ inputs.app_directory }}/pom.xml \
                     -Dconfig.deploy.env=${{ inputs.target_env }} -Dconfig.directory=/config \
@@ -364,8 +386,7 @@ jobs:
                     -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
                     -Djib.to.auth.username=${{ secrets.acr_username }} \
                     -Djib.to.auth.password=${{ secrets.acr_password }} \
-                    -Djib.container.user=1000 \
-                    -Djib.container.workingDirectory=/home/ubuntu \
+                    "${djib_user_flags[@]}" \
                     -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
                     -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
                     -Djib.container.entrypoint='sh,-c,exec java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
