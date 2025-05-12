@@ -77,13 +77,23 @@ jobs:
             contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
         name: Build Project
         runs-on: ${{ fromJson(inputs.runs_on) }}
+        env:
+            repository_access_token: ${{ secrets.repository_access_token }}
         steps:
             -   uses: actions/checkout@v4
+                if: ${{ env.repository_access_token != '' }}
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: ${{ inputs.checkout_submodules }}
-                    token: ${{ secrets.repository_access_token || '' }}
+                    token: ${{ env.repository_access_token }}
+
+            -   uses: actions/checkout@v4
+                if: ${{ env.repository_access_token == '' }}
+                with:
+                    ref: ${{ inputs.ref_name }}
+                    lfs: ${{ inputs.checkout_lfs }}
+                    submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Login to Azure CR
                 if: ${{ inputs.container_registry_type == 'azure-cr' }}
