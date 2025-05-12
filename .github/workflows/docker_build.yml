@@ -83,7 +83,7 @@ jobs:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
                     submodules: ${{ inputs.checkout_submodules }}
-                    token: ${{ secrets.repository_access_token || github.token }}
+                    token: ${{ secrets.repository_access_token || '' }}
 
             -   name: Login to Azure CR
                 if: ${{ inputs.container_registry_type == 'azure-cr' }}
