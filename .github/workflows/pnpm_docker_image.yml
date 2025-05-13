@@ -72,6 +72,11 @@ on:
                 default: getTranslations.py
                 type: string
                 description: name of the getTranslations script. Defaults to getTranslations.py.
+            pull_translations_via_messages_pull:
+                required: false
+                default: false
+                type: boolean
+                description: To get the translations via running pnpm messages:pull (will be run with the poeditor env vars).
             run_build:
                 required: false
                 default: true
@@ -183,6 +188,11 @@ jobs:
                 if: ${{ inputs.run_build }}
                 run: |
                     cd ${{ inputs.root_directory || inputs.app_directory }} && pnpm install
+
+            -   name: Pull translations via pnpm messages:pull
+                if: ${{ inputs.pull_translations_via_messages_pull }}
+                run: |
+                    cd ${{ inputs.app_directory }} && POEDITOR_PROJECT_ID=${{ secrets.poeditor_project_id}} POEDITOR_API_TOKEN=${{ secrets.poeditor_api_key}} pnpm messages:pull
 
             -   name: Build using pnpm
                 if: ${{ inputs.run_build }}
