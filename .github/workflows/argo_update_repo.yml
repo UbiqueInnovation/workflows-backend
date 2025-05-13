@@ -45,13 +45,36 @@ jobs:
         run: |
           sed -i 's/PLACEHOLDER/${{ inputs.ref_name }}/g' ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
 
+      - name: Check if config folder exists and is not empty
+        id: check_config
+        run: |
+          if [ -d "${{ inputs.app_directory }}/conf/${{ inputs.target }}" ] && [ "$(ls -A ${{ inputs.app_directory }}/conf/${{ inputs.target }} 2>/dev/null)" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create ConfigMap YAML
+        if: steps.check_config.outputs.exists == 'true'
         uses: UbiqueInnovation/action-systems-k8s-create-configmap@main
         with:
-          configmap_name: ${{ inputs.app_name}}-${{ inputs.target }}-config
+          configmap_name: ${{ inputs.app_name }}-${{ inputs.target }}-config
           config_folder: ${{ inputs.app_directory }}/conf/${{ inputs.target }}
           destination_file: ${{ inputs.app_directory }}/manifests/${{ inputs.target }}/configmap.yaml
           namespace: ${{ inputs.namespace }}
+
+      - name: Insert ConfigMap hash in in Deployement as annotation "checksum/{{ inputs.app_name }}-${{ inputs.target }}-config"
+        if: steps.check_config.outputs.exists == 'true'
+        run: |
+            set -xeou pipefail
+            configmap_file=${{ inputs.app_directory }}/manifests/${{ inputs.target }}/configmap.yaml
+            deployment_file=${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
+            configmap_name=${{ inputs.app_name }}-${{ inputs.target }}-config
+
+            configmap_hash=$(shasum "$configmap_file" | cut -d' ' -f1)
+            # Add hash (only) to Deployments referencing this ConfigMap
+            yq --inplace "select(.kind == \"Deployment\" and .spec.template.spec.volumes[].configMap.name == \"$configmap_name\") \
+                          |= .spec.template.metadata.annotations.\"checksum/$configmap_name\" = \"$configmap_hash\"" "$deployment_file"
 
       - name: Checkout Argo Repo
         uses: actions/checkout@v4
