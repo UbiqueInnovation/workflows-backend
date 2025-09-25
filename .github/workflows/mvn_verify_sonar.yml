@@ -20,7 +20,7 @@ on:
                 type: string
                 description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
             java_version:
-                default: '21'
+                default: '25'
                 type: string
                 required: false
             use_mvn_central:
