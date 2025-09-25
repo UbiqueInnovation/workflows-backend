@@ -81,20 +81,20 @@ jobs:
             -   name: SET PUSH_IMAGE
                 run: echo "PUSH_IMAGE=${{ secrets.push_container_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ env.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
 
-            -   uses: azure/docker-login@v2
+            -   uses: docker/login-action@v3
                 if: ${{ env.PULL_CONTAINER_REGISTRY }}
                 env:
                     PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
                 with:
-                    login-server: ${{ secrets.pull_container_registry }}
-                    username: ${{ secrets.pull_container_registry_username }}
-                    password: ${{ secrets.pull_container_registry_password }}
+                    registry: ${{ secrets.acr_registry }}
+                    username: ${{ secrets.acr_username }}
+                    password: ${{ secrets.acr_password }}
 
             -   name: Login to Docker repository using username and password
-                uses: azure/docker-login@v2
+                uses: docker/login-action@v3
                 if: ${{ inputs.push_container_registry_type == 'username-password' }}
                 with:
-                    login-server: ${{ secrets.push_container_registry }}
+                    registry: ${{ secrets.push_container_registry }}
                     username: ${{ secrets.push_container_registry_username }}
                     password: ${{ secrets.push_container_registry_password }}
 

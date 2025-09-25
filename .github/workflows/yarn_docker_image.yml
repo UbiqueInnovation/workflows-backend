@@ -161,9 +161,9 @@ jobs:
             -   name: Set IMAGE_NAME
                 run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}-${{ inputs.release_env }}" >> $GITHUB_ENV
 
-            -   uses: azure/docker-login@v2
+            -   uses: docker/login-action@v3
                 with:
-                    login-server: ${{ secrets.acr_registry }}
+                    registry: ${{ secrets.acr_registry }}
                     username: ${{ secrets.acr_username }}
                     password: ${{ secrets.acr_password }}
 

@@ -43,7 +43,7 @@ on:
                 required: false
                 default: 'azure-cr'
                 type: string
-                description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
+                description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr', 'generic'"
             ecr_region:
                 required: false
                 type: string
@@ -96,10 +96,10 @@ jobs:
                     submodules: ${{ inputs.checkout_submodules }}
 
             -   name: Login to Azure CR
-                if: ${{ inputs.container_registry_type == 'azure-cr' }}
-                uses: azure/docker-login@v2
+                if: ${{ inputs.container_registry_type == 'azure-cr' || inputs.container_registry_type == 'generic' }}
+                uses: docker/login-action@v3
                 with:
-                    login-server: ${{ secrets.acr_registry }}
+                    registry: ${{ secrets.acr_registry }}
                     username: ${{ secrets.acr_username }}
                     password: ${{ secrets.acr_password }}
 
