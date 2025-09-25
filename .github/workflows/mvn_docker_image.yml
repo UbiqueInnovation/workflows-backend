@@ -300,7 +300,7 @@ jobs:
             -   name: Set default docker image
                 if: ${{ ! inputs.jib_custom_docker_image }}
                 run: |
-                    echo "DOCKER_IMAGE=eclipse-temurin:${{ inputs.java_version }}" >> $GITHUB_ENV
+                    echo "DOCKER_IMAGE=ubinnovation/ubique-temurin:${{ inputs.java_version }}" >> $GITHUB_ENV
 
             -   name: jib_custom_docker_image_repo to env variable for use in if check
                 run: |
