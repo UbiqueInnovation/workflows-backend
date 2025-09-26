@@ -10,7 +10,7 @@ on:
                 type: string
                 description: tag or branch name, used for mvn versions:set
             java_version:
-                default: '21'
+                default: '25'
                 type: string
                 required: false
             checkout_lfs:

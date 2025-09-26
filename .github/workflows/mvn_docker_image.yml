@@ -30,7 +30,7 @@ on:
                 type: string
                 description: Set this if your maven project has no submodules. Defaults to ${app_directory}/..
             java_version:
-                default: '21'
+                default: '25'
                 type: string
                 required: false
             jib_container_volumes:
