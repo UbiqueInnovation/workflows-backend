@@ -86,9 +86,9 @@ jobs:
                 env:
                     PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
                 with:
-                    registry: ${{ secrets.acr_registry }}
-                    username: ${{ secrets.acr_username }}
-                    password: ${{ secrets.acr_password }}
+                    registry: ${{ secrets.pull_container_registry }}
+                    username: ${{ secrets.pull_container_registry_username }}
+                    password: ${{ secrets.pull_container_registry_password }}
 
             -   name: Login to Docker repository using username and password
                 uses: docker/login-action@v3
