@@ -190,7 +190,7 @@ jobs:
 
             -   name: Cache Maven packages on self-hosted MinIO
                 if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-                uses: tespkg/actions-cache@b7bf5fcc2f98a52ac6080eb0fd282c2f752074b1
+                uses: tespkg/actions-cache@1834080d1fca0d5ce7b73f42e9f8a3e31e4abe85
                 with:
                     endpoint: ${{ inputs.self_hosted_cache_endpoint }}
                     port: ${{ inputs.self_hosted_cache_port }}
@@ -226,7 +226,7 @@ jobs:
             -   uses: actions/setup-python@v5
                 if: ${{ inputs.run_poeditor }}
                 with:
-                    python-version: '3.x'
+                    python-version: '3.13.7'
                     cache: 'pip'
 
             -   name: Check requirements.txt existence

@@ -126,7 +126,7 @@ jobs:
             -   uses: actions/setup-python@v5
                 if: ${{ inputs.run_poeditor }}
                 with:
-                    python-version: "3.x"
+                    python-version: "3.13.7"
                     cache: "pip"
 
             -   name: Check requirements.txt existence
