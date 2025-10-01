@@ -101,7 +101,7 @@ jobs:
                 run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
 
             -   name: Create new release
-                uses: softprops/action-gh-release@39ba0b9d81217c984acfad95ddcc7db226387497
+                uses: softprops/action-gh-release@97d42c1b50f585f357413698aa1b779307aa0d52
                 with:
                     name: ${{ env.VERSION }}
                     token: ${{ secrets.repo_token }}
