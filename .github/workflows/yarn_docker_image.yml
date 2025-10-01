@@ -102,7 +102,7 @@ jobs:
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@v5
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
@@ -116,14 +116,14 @@ jobs:
                     chmod +x $HOME/bin/yarn
                     echo "$HOME/bin" >> $GITHUB_PATH
 
-            -   uses: actions/setup-node@v4
+            -   uses: actions/setup-node@v5
                 with:
                     node-version: "${{ inputs.node_version }}"
                     check-latest: true
                     cache: "yarn"
                     cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
 
-            -   uses: actions/setup-python@v5
+            -   uses: actions/setup-python@v6
                 if: ${{ inputs.run_poeditor }}
                 with:
                     python-version: "3.13.7"

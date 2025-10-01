@@ -100,7 +100,7 @@ jobs:
 
             -   name: Configure AWS credentials
                 if: ${{ inputs.push_container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v4
+                uses: aws-actions/configure-aws-credentials@v5
                 with:
                     role-to-assume: ${{ secrets.ecr_role_to_assume }}
                     aws-region: ${{ inputs.ecr_region }}
