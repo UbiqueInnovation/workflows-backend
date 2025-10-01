@@ -127,7 +127,7 @@ jobs:
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@v5
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
@@ -137,7 +137,7 @@ jobs:
                 with:
                     version: ${{ inputs.pnpm_version }}
 
-            -   uses: actions/setup-node@v4
+            -   uses: actions/setup-node@v5
                 with:
                     node-version: "${{ inputs.node_version }}"
                     check-latest: true
@@ -156,7 +156,7 @@ jobs:
                 run: |
                     cp ${{ inputs.root_directory || inputs.app_directory }}/.npmrc docker/${{ inputs.app_name }}/ 
 
-            -   uses: actions/setup-python@v5
+            -   uses: actions/setup-python@v6
                 if: ${{ inputs.run_poeditor }}
                 with:
                     python-version: "3.x"

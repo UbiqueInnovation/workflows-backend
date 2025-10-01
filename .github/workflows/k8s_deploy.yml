@@ -156,12 +156,12 @@ jobs:
         steps:
             -   name: Check input.ref_name is set
                 if: ${{ ! inputs.ref_name }}
-                uses: actions/github-script@v7
+                uses: actions/github-script@v8
                 with:
                     script: |
                         core.setFailed('Input ref_name must be set')
 
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@v5
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
@@ -189,7 +189,7 @@ jobs:
                 # do this, before we set up the eks login, otherwise it gets confused
             -   name: Configure AWS credentials for ECR Pull Secret
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v4
+                uses: aws-actions/configure-aws-credentials@v5
                 with:
                     role-to-assume: ${{ secrets.ecr_role_to_assume }}
                     aws-region: ${{ inputs.ecr_region }}
@@ -218,7 +218,7 @@ jobs:
 
             -   name: Configure AWS credentials
                 if: ${{ inputs.k8s_type == 'eks' }}
-                uses: aws-actions/configure-aws-credentials@v4
+                uses: aws-actions/configure-aws-credentials@v5
                 with:
                     aws-access-key-id: ${{ secrets.aws_access_key }}
                     aws-secret-access-key: ${{ secrets.aws_secret_key }}

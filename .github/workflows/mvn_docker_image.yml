@@ -165,7 +165,7 @@ jobs:
         name: Create Docker Image
         runs-on: ${{ fromJson(inputs.runs_on) }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@v5
                 with:
                     ref: ${{ inputs.ref_name }}
                     lfs: ${{ inputs.checkout_lfs }}
@@ -176,7 +176,7 @@ jobs:
 
             -   name: Set up JDK
                 if: ${{ ! inputs.native_image }}
-                uses: actions/setup-java@v4
+                uses: actions/setup-java@v5
                 with:
                     java-version: ${{ inputs.java_version }}
                     distribution: 'temurin'
@@ -223,7 +223,7 @@ jobs:
                 with:
                     maven-version: 3.9.3
 
-            -   uses: actions/setup-python@v5
+            -   uses: actions/setup-python@v6
                 if: ${{ inputs.run_poeditor }}
                 with:
                     python-version: '3.x'
@@ -330,7 +330,7 @@ jobs:
 
             -   name: Configure AWS credentials
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v4
+                uses: aws-actions/configure-aws-credentials@v5
                 with:
                     role-to-assume: ${{ secrets.ecr_role_to_assume }}
                     aws-region: ${{ inputs.ecr_region }}

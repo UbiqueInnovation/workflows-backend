@@ -80,7 +80,7 @@ jobs:
         env:
             repository_access_token: ${{ secrets.repository_access_token }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@v5
                 if: ${{ env.repository_access_token != '' }}
                 with:
                     ref: ${{ inputs.ref_name }}
@@ -88,7 +88,7 @@ jobs:
                     submodules: ${{ inputs.checkout_submodules }}
                     token: ${{ env.repository_access_token }}
 
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@v5
                 if: ${{ env.repository_access_token == '' }}
                 with:
                     ref: ${{ inputs.ref_name }}
@@ -105,7 +105,7 @@ jobs:
 
             -   name: Configure AWS credentials
                 if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v4
+                uses: aws-actions/configure-aws-credentials@v5
                 with:
                     role-to-assume: ${{ secrets.ecr_role_to_assume }}
                     aws-region: ${{ inputs.ecr_region }}
