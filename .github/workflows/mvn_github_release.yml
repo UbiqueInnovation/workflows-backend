@@ -1,109 +1,109 @@
 name: Runs Maven Install and releases to GitHub
 on:
-    workflow_call:
-        inputs:
-            ref_name:
-                required: true
-                type: string
-                description: tag or branch name, used for mvn versions:set
-            checkout_lfs:
-                required: false
-                default: false
-                type: boolean
-                description: Checkout with lfs, default false
-            checkout_submodules:
-                required: false
-                default: false
-                type: string
-                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
-            parent_pom:
-                required: true
-                type: string
-            java_version:
-                default: '25'
-                type: string
-                required: false
-            use_mvn_central:
-                default: false
-                type: boolean
-                required: false
-                description: If false, use artifactory_* input secrets
-            release_option_prerelease:
-                type: boolean
-                default: false
-            release_option_files:
-                type: string
-                description: files for the artifact, e.g. 'eth-ws/target/eth-ws.war'
+  workflow_call:
+    inputs:
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name, used for mvn versions:set
+      checkout_lfs:
+        required: false
+        default: false
+        type: boolean
+        description: Checkout with lfs, default false
+      checkout_submodules:
+        required: false
+        default: false
+        type: string
+        description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
+      parent_pom:
+        required: true
+        type: string
+      java_version:
+        default: '25'
+        type: string
+        required: false
+      use_mvn_central:
+        default: false
+        type: boolean
+        required: false
+        description: If false, use artifactory_* input secrets
+      release_option_prerelease:
+        type: boolean
+        default: false
+      release_option_files:
+        type: string
+        description: files for the artifact, e.g. 'eth-ws/target/eth-ws.war'
 
-        secrets:
-            artifactory_user:
-                required: false
-            artifactory_password:
-                required: false
-            artifactory_url:
-                required: false
-            artifactory_repo:
-                required: false
-            repo_token:
-                required: true
+    secrets:
+      artifactory_user:
+        required: false
+      artifactory_password:
+        required: false
+      artifactory_url:
+        required: false
+      artifactory_repo:
+        required: false
+      repo_token:
+        required: true
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            -   uses: actions/checkout@v5
-                with:
-                    ref: ${{ inputs.ref_name }}
-                    lfs: ${{ inputs.checkout_lfs }}
-                    submodules: ${{ inputs.checkout_submodules }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref_name }}
+          lfs: ${{ inputs.checkout_lfs }}
+          submodules: ${{ inputs.checkout_submodules }}
 
-            -   name: Set up JDK
-                uses: actions/setup-java@v5
-                with:
-                    java-version: ${{ inputs.java_version }}
-                    distribution: 'temurin'
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: 'temurin'
 
-            -   name: Cache Maven packages
-                uses: actions/cache@v4
-                with:
-                    path: ~/.m2/repository
-                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: |
-                      ${{ runner.os }}-m2-
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
 
-            -   name: Create maven central settings.xml
-                if: ${{ inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
+      - name: Create maven central settings.xml
+        if: ${{ inputs.use_mvn_central }}
+        uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
 
-            -   name: Create custom artifactory settings.xml
-                if: ${{ ! inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
-                with:
-                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
-                    repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
+      - name: Create custom artifactory settings.xml
+        if: ${{ ! inputs.use_mvn_central }}
+        uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
+        with:
+          servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
+          repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
 
-            -   name: Set VERSION from ref_name
-                run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
+      - name: Set VERSION from ref_name
+        run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
-            -   name: Replace all characters in `\/:"<>|?*` by `-` in VERSION
-                run: echo "VERSION=$(echo "$VERSION" | sed 's/[\/:"<>|?*]/-/g')" >> $GITHUB_ENV
+      - name: Replace all characters in `\/:"<>|?*` by `-` in VERSION
+        run: echo "VERSION=$(echo "$VERSION" | sed 's/[\/:"<>|?*]/-/g')" >> $GITHUB_ENV
 
-            -   name: Strip leading `v` from VERSION
-                run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
+      - name: Strip leading `v` from VERSION
+        run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
 
-            -   name: Set versions
-                run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=$VERSION
+      - name: Set versions
+        run: mvn -f ${{ inputs.parent_pom }} versions:set -DnewVersion=$VERSION
 
-            -   name: Commit versions
-                run: mvn -f ${{ inputs.parent_pom }} versions:commit
+      - name: Commit versions
+        run: mvn -f ${{ inputs.parent_pom }} versions:commit
 
-            -   name: Build with Maven
-                run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots install -f ${{ inputs.parent_pom }} -DskipTests
 
-            -   name: Create new release
-                uses: softprops/action-gh-release@97d42c1b50f585f357413698aa1b779307aa0d52
-                with:
-                    name: ${{ env.VERSION }}
-                    token: ${{ secrets.repo_token }}
-                    prerelease: ${{ inputs.release_option_prerelease }}
-                    files: ${{ inputs.release_option_files }}
+      - name: Create new release
+        uses: softprops/action-gh-release@97d42c1b50f585f357413698aa1b779307aa0d52
+        with:
+          name: ${{ env.VERSION }}
+          token: ${{ secrets.repo_token }}
+          prerelease: ${{ inputs.release_option_prerelease }}
+          files: ${{ inputs.release_option_files }}

@@ -1,392 +1,392 @@
 name: Build with maven and Push to Docker Registry
 on:
-    workflow_call:
-        inputs:
-            ref_name:
-                required: true
-                type: string
-                description: tag or branch name
-            checkout_lfs:
-                required: false
-                default: false
-                type: boolean
-            checkout_submodules:
-                required: false
-                default: false
-                type: string
-                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
-            app_name:
-                required: true
-                type: string
-            package:
-                required: false
-                type: string
-                description: needed for sentry to register versions as semver. E.g. ch.ubique.myapp
-            app_directory:
-                required: true
-                type: string
-            mvn_root_directory:
-                required: false
-                type: string
-                description: Set this if your maven project has no submodules. Defaults to ${app_directory}/..
-            java_version:
-                default: '25'
-                type: string
-                required: false
-            jib_container_volumes:
-                default: '/config/'
-                type: string
-                required: false
-                description: comma-separated container volumes for jib-maven-plugin (default /config/)
-            jib_custom_docker_image:
-                type: string
-                required: false
-                description: custom docker image for docker build.
-            jib_non_root:
-                type: boolean
-                required: false
-                default: false # disabled by default to avoid breaking old things. The default for new builds should be true.
-                description: "If true, set the container user to a non-root user and set working directory to /home/ubuntu."
-            tag_add_commithash:
-                required: false
-                default: false
-                type: boolean
-                description: Add the current commit hash to the branch (necessary when deploying from a branch)
-            use_mvn_central:
-                default: false
-                type: boolean
-                required: false
-                description: If false, use artifactory_* input secrets
-            run_poeditor:
-                required: false
-                default: false
-                type: boolean
-            poeditor_get_translations_filename:
-                required: false
-                default: getTranslations.py
-                type: string
-                description: name of the getTranslations script. Defaults to getTranslations.py.
-            install_apt_packages:
-                required: false
-                type: string
-                default: ''
-                description: space-separated list of apt packages to install before build
-            native_image:
-                required: false
-                default: false
-                type: boolean
-            target_env:
-                required: false
-                default: local
-                type: string
-                description: Currently only used for native builds
-            container_registry_type:
-                required: false
-                default: 'azure-cr'
-                type: string
-                description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
-            runs_on:
-                required: false
-                default: '["ubuntu-latest"]'
-                type: string
-                description: Set to '["self-hosted", "linux"]' if needed.
-            ecr_region:
-                required: false
-                type: string
-                description: required if input container_registry_type is 'amazon-ecr'
-            self_hosted_cache_endpoint:
-                required: false
-                default: 'truenas.local.lan'
-                type: string
-                description: only applicable if runs_on self_hosted
-            self_hosted_cache_port:
-                required: false
-                default: 9001
-                type: number
-                description: only applicable if runs_on self_hosted
-            self_hosted_cache_bucket:
-                required: false
-                default: github-actions-cache
-                type: string
-                description: only applicable if runs_on self_hosted
-            self_hosted_cache_region:
-                default: local
-                required: false
-                type: string
-                description: only applicable if runs_on self_hosted
+  workflow_call:
+    inputs:
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name
+      checkout_lfs:
+        required: false
+        default: false
+        type: boolean
+      checkout_submodules:
+        required: false
+        default: false
+        type: string
+        description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
+      app_name:
+        required: true
+        type: string
+      package:
+        required: false
+        type: string
+        description: needed for sentry to register versions as semver. E.g. ch.ubique.myapp
+      app_directory:
+        required: true
+        type: string
+      mvn_root_directory:
+        required: false
+        type: string
+        description: Set this if your maven project has no submodules. Defaults to ${app_directory}/..
+      java_version:
+        default: '25'
+        type: string
+        required: false
+      jib_container_volumes:
+        default: '/config/'
+        type: string
+        required: false
+        description: comma-separated container volumes for jib-maven-plugin (default /config/)
+      jib_custom_docker_image:
+        type: string
+        required: false
+        description: custom docker image for docker build.
+      jib_non_root:
+        type: boolean
+        required: false
+        default: false # disabled by default to avoid breaking old things. The default for new builds should be true.
+        description: "If true, set the container user to a non-root user and set working directory to /home/ubuntu."
+      tag_add_commithash:
+        required: false
+        default: false
+        type: boolean
+        description: Add the current commit hash to the branch (necessary when deploying from a branch)
+      use_mvn_central:
+        default: false
+        type: boolean
+        required: false
+        description: If false, use artifactory_* input secrets
+      run_poeditor:
+        required: false
+        default: false
+        type: boolean
+      poeditor_get_translations_filename:
+        required: false
+        default: getTranslations.py
+        type: string
+        description: name of the getTranslations script. Defaults to getTranslations.py.
+      install_apt_packages:
+        required: false
+        type: string
+        default: ''
+        description: space-separated list of apt packages to install before build
+      native_image:
+        required: false
+        default: false
+        type: boolean
+      target_env:
+        required: false
+        default: local
+        type: string
+        description: Currently only used for native builds
+      container_registry_type:
+        required: false
+        default: 'azure-cr'
+        type: string
+        description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
+      runs_on:
+        required: false
+        default: '["ubuntu-latest"]'
+        type: string
+        description: Set to '["self-hosted", "linux"]' if needed.
+      ecr_region:
+        required: false
+        type: string
+        description: required if input container_registry_type is 'amazon-ecr'
+      self_hosted_cache_endpoint:
+        required: false
+        default: 'truenas.local.lan'
+        type: string
+        description: only applicable if runs_on self_hosted
+      self_hosted_cache_port:
+        required: false
+        default: 9001
+        type: number
+        description: only applicable if runs_on self_hosted
+      self_hosted_cache_bucket:
+        required: false
+        default: github-actions-cache
+        type: string
+        description: only applicable if runs_on self_hosted
+      self_hosted_cache_region:
+        default: local
+        required: false
+        type: string
+        description: only applicable if runs_on self_hosted
 
-        secrets:
-            artifactory_user:
-                required: false
-            artifactory_password:
-                required: false
-            artifactory_url:
-                required: false
-            artifactory_repo:
-                required: false
-            acr_registry:
-                required: true
-            acr_username:
-                required: false
-                description: required if input container_registry_type is 'azure-cr'
-            acr_password:
-                required: false
-                description: required if input container_registry_type is 'azure-cr'
-            poeditor_api_key:
-                required: false
-                description: necessary if input.run_poeditor is true
-            poeditor_project_id:
-                required: false
-                description: necessary if input.run_poeditor is true
-            jib_custom_docker_image_repo:
-                required: false
-                description: custom docker image repo for docker build.
-            jib_custom_docker_image_repo_user:
-                required: false
-                description: custom docker image repo user for for docker build.
-            jib_custom_docker_image_repo_password:
-                required: false
-                description: custom docker image repo password for for docker build.
-            ecr_role_to_assume:
-                required: false
-                description: required if input container_registry_type is 'amazon-ecr'
-            self_hosted_cache_access_key:
-                required: false
-                description: required if runs_on self_hosted
-            self_hosted_cache_secret_key:
-                required: false
-                description: required if runs_on self_hosted
+    secrets:
+      artifactory_user:
+        required: false
+      artifactory_password:
+        required: false
+      artifactory_url:
+        required: false
+      artifactory_repo:
+        required: false
+      acr_registry:
+        required: true
+      acr_username:
+        required: false
+        description: required if input container_registry_type is 'azure-cr'
+      acr_password:
+        required: false
+        description: required if input container_registry_type is 'azure-cr'
+      poeditor_api_key:
+        required: false
+        description: necessary if input.run_poeditor is true
+      poeditor_project_id:
+        required: false
+        description: necessary if input.run_poeditor is true
+      jib_custom_docker_image_repo:
+        required: false
+        description: custom docker image repo for docker build.
+      jib_custom_docker_image_repo_user:
+        required: false
+        description: custom docker image repo user for for docker build.
+      jib_custom_docker_image_repo_password:
+        required: false
+        description: custom docker image repo password for for docker build.
+      ecr_role_to_assume:
+        required: false
+        description: required if input container_registry_type is 'amazon-ecr'
+      self_hosted_cache_access_key:
+        required: false
+        description: required if runs_on self_hosted
+      self_hosted_cache_secret_key:
+        required: false
+        description: required if runs_on self_hosted
 
 jobs:
-    create-docker-image:
-        permissions:
-            id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4
-            contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
-        name: Create Docker Image
-        runs-on: ${{ fromJson(inputs.runs_on) }}
-        steps:
-            -   uses: actions/checkout@v5
-                with:
-                    ref: ${{ inputs.ref_name }}
-                    lfs: ${{ inputs.checkout_lfs }}
-                    submodules: ${{ inputs.checkout_submodules }}
+  create-docker-image:
+    permissions:
+      id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4
+      contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
+    name: Create Docker Image
+    runs-on: ${{ fromJson(inputs.runs_on) }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref_name }}
+          lfs: ${{ inputs.checkout_lfs }}
+          submodules: ${{ inputs.checkout_submodules }}
 
-            -   name: Git Status
-                run: git status
+      - name: Git Status
+        run: git status
 
-            -   name: Set up JDK
-                if: ${{ ! inputs.native_image }}
-                uses: actions/setup-java@v5
-                with:
-                    java-version: ${{ inputs.java_version }}
-                    distribution: 'temurin'
+      - name: Set up JDK
+        if: ${{ ! inputs.native_image }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: 'temurin'
 
-            -   name: Set up GraalVM JDK
-                if: ${{ inputs.native_image }}
-                uses: graalvm/setup-graalvm@v1
-                with:
-                    java-version: ${{ inputs.java_version }}
-                    distribution: 'graalvm'
+      - name: Set up GraalVM JDK
+        if: ${{ inputs.native_image }}
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: 'graalvm'
 
-            -   name: Cache Maven packages on self-hosted MinIO
-                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-                uses: tespkg/actions-cache@1834080d1fca0d5ce7b73f42e9f8a3e31e4abe85
-                with:
-                    endpoint: ${{ inputs.self_hosted_cache_endpoint }}
-                    port: ${{ inputs.self_hosted_cache_port }}
-                    insecure: true
-                    accessKey: ${{ secrets.self_hosted_cache_access_key }}
-                    secretKey: ${{ secrets.self_hosted_cache_secret_key }}
-                    bucket: ${{ inputs.self_hosted_cache_bucket }}
-                    region: ${{ inputs.self_hosted_cache_region }}
-                    use-fallback: false
-                    path: ~/.m2/repository
-                    key: ${{ runner.os }}-${{ inputs.app_name }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-${{ inputs.app_name }}-m2-
+      - name: Cache Maven packages on self-hosted MinIO
+        if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
+        uses: tespkg/actions-cache@1834080d1fca0d5ce7b73f42e9f8a3e31e4abe85
+        with:
+          endpoint: ${{ inputs.self_hosted_cache_endpoint }}
+          port: ${{ inputs.self_hosted_cache_port }}
+          insecure: true
+          accessKey: ${{ secrets.self_hosted_cache_access_key }}
+          secretKey: ${{ secrets.self_hosted_cache_secret_key }}
+          bucket: ${{ inputs.self_hosted_cache_bucket }}
+          region: ${{ inputs.self_hosted_cache_region }}
+          use-fallback: false
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-${{ inputs.app_name }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-${{ inputs.app_name }}-m2-
 
-            -   name: Cache Maven packages
-                if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted' }}
-                uses: actions/cache@v4
-                with:
-                    path: ~/.m2/repository
-                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-m2-
+      - name: Cache Maven packages
+        if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
 
-            -   name: install apt packages '${{ inputs.install_apt_packages }}'
-                if: ${{ inputs.install_apt_packages }}
-                run: |
-                    sudo apt install ${{ inputs.install_apt_packages }}
+      - name: install apt packages '${{ inputs.install_apt_packages }}'
+        if: ${{ inputs.install_apt_packages }}
+        run: |
+          sudo apt install ${{ inputs.install_apt_packages }}
 
-            -   name: Set up Maven
-                if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-                uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1
-                with:
-                    maven-version: 3.9.3
+      - name: Set up Maven
+        if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1
+        with:
+          maven-version: 3.9.3
 
-            -   uses: actions/setup-python@v6
-                if: ${{ inputs.run_poeditor }}
-                with:
-                    python-version: '3.13.7'
-                    cache: 'pip'
+      - uses: actions/setup-python@v6
+        if: ${{ inputs.run_poeditor }}
+        with:
+          python-version: '3.13.7'
+          cache: 'pip'
 
-            -   name: Check requirements.txt existence
-                if: ${{ inputs.run_poeditor }}
-                id: check_requirements_txt
-                uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
-                with:
-                    files: "requirements.txt"
+      - name: Check requirements.txt existence
+        if: ${{ inputs.run_poeditor }}
+        id: check_requirements_txt
+        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        with:
+          files: "requirements.txt"
 
-            -   name: Install required python module using pip
-                if: ${{ steps.check_requirements_txt.outputs.files_exists == 'true' }}
-                run: |
-                    python -m pip install -r requirements.txt
+      - name: Install required python module using pip
+        if: ${{ steps.check_requirements_txt.outputs.files_exists == 'true' }}
+        run: |
+          python -m pip install -r requirements.txt
 
-            -   name: Run ${{ inputs.poeditor_get_translations_filename }}
-                if: ${{ inputs.run_poeditor }}
-                run: |
-                    python ${{ inputs.app_directory }}/${{ inputs.poeditor_get_translations_filename }} ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
+      - name: Run ${{ inputs.poeditor_get_translations_filename }}
+        if: ${{ inputs.run_poeditor }}
+        run: |
+          python ${{ inputs.app_directory }}/${{ inputs.poeditor_get_translations_filename }} ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
 
-            -   name: Create maven central settings.xml
-                if: ${{ inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
+      - name: Create maven central settings.xml
+        if: ${{ inputs.use_mvn_central }}
+        uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
 
-            -   name: Create custom artifactory settings.xml
-                if: ${{ ! inputs.use_mvn_central }}
-                uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
-                with:
-                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
-                    repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
+      - name: Create custom artifactory settings.xml
+        if: ${{ ! inputs.use_mvn_central }}
+        uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
+        with:
+          servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
+          repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
 
-            -   name: Set TAG_NAME from ref_name
-                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+      - name: Set TAG_NAME from ref_name
+        run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
-            -   name: Replace all characters in `\/:"<>|?*` by `-` in TAG_NAME
-                run: echo "TAG_NAME=$(echo "$TAG_NAME" | sed 's/[\/:"<>|?*]/-/g')" >> $GITHUB_ENV
+      - name: Replace all characters in `\/:"<>|?*` by `-` in TAG_NAME
+        run: echo "TAG_NAME=$(echo "$TAG_NAME" | sed 's/[\/:"<>|?*]/-/g')" >> $GITHUB_ENV
 
-            -   name: Append commit hash (first 8 characters) to TAG_NAME
-                if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=TAG_NAME-${GITHUB_SHA::8}" >> $GITHUB_ENV
+      - name: Append commit hash (first 8 characters) to TAG_NAME
+        if: ${{ inputs.tag_add_commithash }}
+        run: echo "TAG_NAME=TAG_NAME-${GITHUB_SHA::8}" >> $GITHUB_ENV
 
-            -   name: Set default maven root directory if empty
-                if: ${{ ! inputs.mvn_root_directory  }}
-                run: echo "MVN_ROOT_DIR=${{ inputs.app_directory }}/.." >> $GITHUB_ENV
+      - name: Set default maven root directory if empty
+        if: ${{ ! inputs.mvn_root_directory  }}
+        run: echo "MVN_ROOT_DIR=${{ inputs.app_directory }}/.." >> $GITHUB_ENV
 
-            -   name: Set maven root directory from input
-                if: ${{ inputs.mvn_root_directory  }}
-                run: echo "MVN_ROOT_DIR=${{ inputs.mvn_root_directory }}" >> $GITHUB_ENV
+      - name: Set maven root directory from input
+        if: ${{ inputs.mvn_root_directory  }}
+        run: echo "MVN_ROOT_DIR=${{ inputs.mvn_root_directory }}" >> $GITHUB_ENV
 
-            -   name: Set VERSION from TAG_NAME
-                run: echo "VERSION=${TAG_NAME}" >> $GITHUB_ENV
+      - name: Set VERSION from TAG_NAME
+        run: echo "VERSION=${TAG_NAME}" >> $GITHUB_ENV
 
-            -   name: Strip leading `v` from VERSION
-                run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
+      - name: Strip leading `v` from VERSION
+        run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
 
-            -   name: Set SENTRY_RELEASE from VERSION
-                run: echo "SENTRY_RELEASE=$VERSION" >> $GITHUB_ENV
+      - name: Set SENTRY_RELEASE from VERSION
+        run: echo "SENTRY_RELEASE=$VERSION" >> $GITHUB_ENV
 
-            -   name: Add package to SENTRY_RELEASE
-                if: ${{ inputs.package }}
-                run: echo "SENTRY_RELEASE=${{ inputs.package }}@$SENTRY_RELEASE" >> $GITHUB_ENV
+      - name: Add package to SENTRY_RELEASE
+        if: ${{ inputs.package }}
+        run: echo "SENTRY_RELEASE=${{ inputs.package }}@$SENTRY_RELEASE" >> $GITHUB_ENV
 
-            -   name: Set versions
-                run: mvn -f ${{ env.MVN_ROOT_DIR }}/pom.xml versions:set -DnewVersion=$VERSION
+      - name: Set versions
+        run: mvn -f ${{ env.MVN_ROOT_DIR }}/pom.xml versions:set -DnewVersion=$VERSION
 
-            -   name: Commit versions
-                run: mvn -f ${{ env.MVN_ROOT_DIR }}/pom.xml versions:commit
+      - name: Commit versions
+        run: mvn -f ${{ env.MVN_ROOT_DIR }}/pom.xml versions:commit
 
-            -   name: Build with Maven
-                run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ env.MVN_ROOT_DIR }}/pom.xml
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots install -DskipTests -f ${{ env.MVN_ROOT_DIR }}/pom.xml
 
-            -   name: Set default docker image
-                if: ${{ ! inputs.jib_custom_docker_image }}
-                run: |
-                    echo "DOCKER_IMAGE=ubinnovation/ubique-temurin:${{ inputs.java_version }}" >> $GITHUB_ENV
+      - name: Set default docker image
+        if: ${{ ! inputs.jib_custom_docker_image }}
+        run: |
+          echo "DOCKER_IMAGE=ubinnovation/ubique-temurin:${{ inputs.java_version }}" >> $GITHUB_ENV
 
-            -   name: jib_custom_docker_image_repo to env variable for use in if check
-                run: |
-                    echo "SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO=${{ secrets.jib_custom_docker_image_repo }}" >> $GITHUB_ENV
+      - name: jib_custom_docker_image_repo to env variable for use in if check
+        run: |
+          echo "SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO=${{ secrets.jib_custom_docker_image_repo }}" >> $GITHUB_ENV
 
-            -   name: Set custom docker image from official docker repo
-                if: ${{ inputs.jib_custom_docker_image && ! env.SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO }}
-                run: |
-                    echo "DOCKER_IMAGE=${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
+      - name: Set custom docker image from official docker repo
+        if: ${{ inputs.jib_custom_docker_image && ! env.SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO }}
+        run: |
+          echo "DOCKER_IMAGE=${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
 
-            -   name: Set custom docker image from custom repo
-                if: ${{ inputs.jib_custom_docker_image && env.SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO }}
-                run: |
-                    echo "DOCKER_IMAGE=${{ secrets.jib_custom_docker_image_repo }}/${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
+      - name: Set custom docker image from custom repo
+        if: ${{ inputs.jib_custom_docker_image && env.SECRET_JIB_CUSTOM_DOCKER_IMAGE_REPO }}
+        run: |
+          echo "DOCKER_IMAGE=${{ secrets.jib_custom_docker_image_repo }}/${{ inputs.jib_custom_docker_image }}" >> $GITHUB_ENV
 
-            -   name: Docker image for build
-                run: |
-                    echo "Docker image jor build: $DOCKER_IMAGE"
+      - name: Docker image for build
+        run: |
+          echo "Docker image jor build: $DOCKER_IMAGE"
 
-            -   name: Login to Azure CR
-                if: ${{ inputs.container_registry_type == 'azure-cr' }}
-                uses: docker/login-action@v3
-                with:
-                    registry: ${{ secrets.acr_registry }}
-                    username: ${{ secrets.acr_username }}
-                    password: ${{ secrets.acr_password }}
+      - name: Login to Azure CR
+        if: ${{ inputs.container_registry_type == 'azure-cr' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.acr_registry }}
+          username: ${{ secrets.acr_username }}
+          password: ${{ secrets.acr_password }}
 
-            -   name: Configure AWS credentials
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v5
-                with:
-                    role-to-assume: ${{ secrets.ecr_role_to_assume }}
-                    aws-region: ${{ inputs.ecr_region }}
+      - name: Configure AWS credentials
+        if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.ecr_role_to_assume }}
+          aws-region: ${{ inputs.ecr_region }}
 
-            -   name: Login to Amazon ECR
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+        uses: aws-actions/amazon-ecr-login@v2
 
-            -   name: Build and push docker image
-                if: ${{ ! inputs.native_image }}
-                run: |
-                    set -x;
-                    djib_user_flags=();
-                    if [[ "${{ inputs.jib_non_root }}" == "true" ]]; then
-                      djib_user_flags=(
-                        -Djib.container.user=1000
-                        -Djib.container.workingDirectory=/home/ubuntu
-                      )
-                    fi
+      - name: Build and push docker image
+        if: ${{ ! inputs.native_image }}
+        run: |
+          set -x;
+          djib_user_flags=();
+          if [[ "${{ inputs.jib_non_root }}" == "true" ]]; then
+            djib_user_flags=(
+              -Djib.container.user=1000
+              -Djib.container.workingDirectory=/home/ubuntu
+            )
+          fi
+          
+          mvn --batch-mode compile jib:build \
+          -f ${{ inputs.app_directory }}/pom.xml \
+          -Dconfig.directory=/config \
+          -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
+          -Djib.from.image=${{ env.DOCKER_IMAGE }} \
+          -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
+          -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
+          -Djib.to.auth.username=${{ secrets.acr_username }} \
+          -Djib.to.auth.password=${{ secrets.acr_password }} \
+          "${djib_user_flags[@]}" \
+          -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
+          -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
+          -Djib.container.entrypoint='sh,-c,exec java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
 
-                    mvn --batch-mode compile jib:build \
-                    -f ${{ inputs.app_directory }}/pom.xml \
-                    -Dconfig.directory=/config \
-                    -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }} \
-                    -Djib.from.image=${{ env.DOCKER_IMAGE }} \
-                    -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
-                    -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
-                    -Djib.to.auth.username=${{ secrets.acr_username }} \
-                    -Djib.to.auth.password=${{ secrets.acr_password }} \
-                    "${djib_user_flags[@]}" \
-                    -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
-                    -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
-                    -Djib.container.entrypoint='sh,-c,exec java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
-
-            -   name: Build and push native docker image
-                if: ${{ inputs.native_image }}
-                run: |
-                    set -x;
-                    djib_user_flags=();
-                    if [[ "${{ inputs.jib_non_root }}" == "true" ]]; then
-                      djib_user_flags=(
-                        -Djib.container.user=1000
-                        -Djib.container.workingDirectory=/home/ubuntu
-                      )
-                    fi
-
-                    mvn --batch-mode package jib:build -Pnative \
-                    -f ${{ inputs.app_directory }}/pom.xml \
-                    -Dconfig.deploy.env=${{ inputs.target_env }} -Dconfig.directory=/config \
-                    -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }} \
-                    -Djib.from.image=${{ env.DOCKER_IMAGE }} \
-                    -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
-                    -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
-                    -Djib.to.auth.username=${{ secrets.acr_username }} \
-                    -Djib.to.auth.password=${{ secrets.acr_password }} \
-                    "${djib_user_flags[@]}" \
-                    -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
-                    -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
-                    -Djib.container.entrypoint='sh,-c,exec java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'
+      - name: Build and push native docker image
+        if: ${{ inputs.native_image }}
+        run: |
+          set -x;
+          djib_user_flags=();
+          if [[ "${{ inputs.jib_non_root }}" == "true" ]]; then
+            djib_user_flags=(
+              -Djib.container.user=1000
+              -Djib.container.workingDirectory=/home/ubuntu
+            )
+          fi
+          
+          mvn --batch-mode package jib:build -Pnative \
+          -f ${{ inputs.app_directory }}/pom.xml \
+          -Dconfig.deploy.env=${{ inputs.target_env }} -Dconfig.directory=/config \
+          -Dimage=${{ secrets.acr_registry }}/${{ inputs.app_name }}:${{ env.TAG_NAME }}-${{ inputs.target_env }} \
+          -Djib.from.image=${{ env.DOCKER_IMAGE }} \
+          -Djib.from.auth.username=${{ secrets.jib_custom_docker_image_repo_user }} \
+          -Djib.from.auth.password=${{ secrets.jib_custom_docker_image_repo_password }} \
+          -Djib.to.auth.username=${{ secrets.acr_username }} \
+          -Djib.to.auth.password=${{ secrets.acr_password }} \
+          "${djib_user_flags[@]}" \
+          -Djib.container.volumes=${{ inputs.jib_container_volumes }} \
+          -Djib.container.environment=VERSION_TAG_NAME="${{ env.TAG_NAME }}",SENTRY_RELEASE="${{ env.SENTRY_RELEASE }}",SPRING_CONFIG_LOCATION="/config/",SPRING_DOCKER_COMPOSE_ENABLED=false \
+          -Djib.container.entrypoint='sh,-c,exec java -XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=80.0 $ADDITIONAL_JAVA_OPTS -cp @/app/jib-classpath-file @/app/jib-main-class-file $@'

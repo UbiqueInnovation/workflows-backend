@@ -1,75 +1,75 @@
 name: Runs Maven Install and releases to GitHub
 on:
-    workflow_call:
-        inputs:
-            ref_name:
-                required: true
-                type: string
-                description: tag or branch name, used for mvn versions:set
-            checkout_lfs:
-                required: false
-                default: false
-                type: boolean
-                description: Checkout with lfs, default false
-            checkout_submodules:
-                required: false
-                default: false
-                type: string
-                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
-            release_option_prerelease:
-                type: boolean
-                default: false
-            release_option_files:
-                type: string
-                description: files for the artifact, e.g. 'eth-ws/target/eth-ws.war'
-            changelog_file:
-                type: string
-                required: false
-                description: Path to changelog file in format parsable by https://github.com/taiki-e/parse-changelog
+  workflow_call:
+    inputs:
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name, used for mvn versions:set
+      checkout_lfs:
+        required: false
+        default: false
+        type: boolean
+        description: Checkout with lfs, default false
+      checkout_submodules:
+        required: false
+        default: false
+        type: string
+        description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
+      release_option_prerelease:
+        type: boolean
+        default: false
+      release_option_files:
+        type: string
+        description: files for the artifact, e.g. 'eth-ws/target/eth-ws.war'
+      changelog_file:
+        type: string
+        required: false
+        description: Path to changelog file in format parsable by https://github.com/taiki-e/parse-changelog
 
-        secrets:
-            repo_token:
-                required: true
+    secrets:
+      repo_token:
+        required: true
 
 jobs:
-    release:
-        runs-on: ubuntu-latest
-        steps:
-            -   uses: actions/checkout@v5
-                with:
-                    ref: ${{ inputs.ref_name }}
-                    lfs: ${{ inputs.checkout_lfs }}
-                    submodules: ${{ inputs.checkout_submodules }}
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref_name }}
+          lfs: ${{ inputs.checkout_lfs }}
+          submodules: ${{ inputs.checkout_submodules }}
 
-            -   name: Install parse-changelog
-                uses: taiki-e/install-action@bb7d4a8b76239ee65ca445bf8d28a68c111b1ee4
-                with:
-                    tool: parse-changelog@0.6.8
+      - name: Install parse-changelog
+        uses: taiki-e/install-action@bb7d4a8b76239ee65ca445bf8d28a68c111b1ee4
+        with:
+          tool: parse-changelog@0.6.8
 
-            -   name: Strip leading `v` from VERSION
-                run: echo "TAG_NAME=${TAG_NAME##v}" >> $GITHUB_ENV
-                env:
-                    TAG_NAME: ${{ inputs.ref_name }}
+      - name: Strip leading `v` from VERSION
+        run: echo "TAG_NAME=${TAG_NAME##v}" >> $GITHUB_ENV
+        env:
+          TAG_NAME: ${{ inputs.ref_name }}
 
-            -   name: Extract the release notes from the CHANGELOG.md file (skip for prerelease)
-                if: ${{ ! contains(inputs.ref_name, '-') && inputs.changelog_file }}
-                # illegal syntax to pass a multiline string into $GITHUB_ENV see https://blog.okaryo.io/en/20240520-multiple-line-string-to-github-env
-                run: |
-                    {
-                      echo 'RELEASE_BODY<<EOF'
-                      echo "$(parse-changelog ${{ inputs.changelog_file }} ${{ env.TAG_NAME }})"
-                      echo 'EOF'
-                    } >> $GITHUB_ENV
+      - name: Extract the release notes from the CHANGELOG.md file (skip for prerelease)
+        if: ${{ ! contains(inputs.ref_name, '-') && inputs.changelog_file }}
+        # illegal syntax to pass a multiline string into $GITHUB_ENV see https://blog.okaryo.io/en/20240520-multiple-line-string-to-github-env
+        run: |
+          {
+            echo 'RELEASE_BODY<<EOF'
+            echo "$(parse-changelog ${{ inputs.changelog_file }} ${{ env.TAG_NAME }})"
+            echo 'EOF'
+          } >> $GITHUB_ENV
 
-            -   name: Leave the release body empty for prerelease or if no no changelog file exists
-                if: ${{ contains(inputs.ref_name, '-') || ! inputs.changelog_file }}
-                run: echo "RELEASE_BODY=" >> $GITHUB_ENV
+      - name: Leave the release body empty for prerelease or if no no changelog file exists
+        if: ${{ contains(inputs.ref_name, '-') || ! inputs.changelog_file }}
+        run: echo "RELEASE_BODY=" >> $GITHUB_ENV
 
-            -   name: Create new release
-                uses: softprops/action-gh-release@97d42c1b50f585f357413698aa1b779307aa0d52
-                with:
-                    name: ${{ env.TAG_NAME }}
-                    body: ${{ env.RELEASE_BODY }}
-                    token: ${{ secrets.repo_token }}
-                    prerelease: ${{ inputs.release_option_prerelease }}
-                    files: ${{ inputs.release_option_files }}
+      - name: Create new release
+        uses: softprops/action-gh-release@97d42c1b50f585f357413698aa1b779307aa0d52
+        with:
+          name: ${{ env.TAG_NAME }}
+          body: ${{ env.RELEASE_BODY }}
+          token: ${{ secrets.repo_token }}
+          prerelease: ${{ inputs.release_option_prerelease }}
+          files: ${{ inputs.release_option_files }}

@@ -1,355 +1,355 @@
 name: Deploy on Kubernetes Cluster
 on:
-    workflow_call:
-        inputs:
-            ref_name:
-                required: true
-                type: string
-                description: tag or branch name
-            namespace:
-                required: true
-                type: string
-                description: e.g. ubique, swisstopo, schweizmobil
-            app_name:
-                required: true
-                type: string
-                description: e.g. ub-pushserver, swisstopo-ws, schweizmobil-ws
-            app_directory:
-                required: true
-                type: string
-                description: e.g. ub-pushservice/ub-pushserver, swisstopo-backend/swisstopo-ws, schweizmobil-backend/schweizmobil-ws
-            manifests_directory:
-                required: false
-                type: string
-                default: manifests
-            target:
-                required: true
-                type: string
-                description: dev|int|prod|etc.
-            checkout_lfs:
-                required: false
-                default: false
-                type: boolean
-            checkout_submodules:
-                required: false
-                default: false
-                type: string
-                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
-            image_name_postfix:
-                required: false
-                default: ''
-                type: string
-                description: optional suffix to the docker image name to be used
-            with_configmap:
-                required: false
-                default: true
-                type: boolean
-                description: set to false to disable creating a configmap
-            tag_add_commithash:
-                required: false
-                default: false
-                type: boolean
-                description: Add the current commit hash to the branch (necessary when deploying from a branch)
-            cluster:
-                default: 'ub-kub-dev'
-                type: string
-                required: false
-                description: 'name of the cluster (default: ub-kub-dev)'
-            cluster_resource_group:
-                default: 'ub-schweiz-cluster'
-                type: string
-                required: false
-                description: 'resource group of the cluster (default: ub-schweiz-cluster)'
-            pull_secret_name:
-                default: 'ub-acr-secret'
-                type: string
-                required: false
-                description: 'image pull secret to use (default: ub-acr-secret)'
-            image_tag_to_deploy:
-                type: string
-                required: false
-                description: Tag of the image, take ref_name if not set. Useful to deploy pushserver from backend repo.
-            config_map_prefix:
-                type: string
-                required: false
-                description: Prefix for the configmap (without '-dev/prod-config'). Will default to app_name if not set.
-            additional_image_name:
-                type: string
-                default: ''
-                required: false
-                description: Set to add an additional image in the the apply step for the deployment.yaml
-            additional_image_tag:
-                type: string
-                required: false
-                description: Set to add a separate tag for the additional_image_name, defaults to the tag of the "normal"image if not set
-            az_login_flow:
-                type: string
-                default: 'oidc'
-                required: false
-                description: set to 'service_principal' to login with service principal flow. secrets 'az_client/tenant/subscription_id' required for oidc flow and 'az_service_principal' for service principal flow
-            k8s_type:
-                required: false
-                default: 'aks'
-                type: string
-                description: "the type of k8s. Supports 'aks', 'eks', 'kubeconfig'. Use 'kubeconfig' to log in to any cluster by passing your full kubeconfig as a string to secrets.kubeconfig"
-            eks_region:
-                required: false
-                type: string
-                description: required if input k8s_type is eks
-            container_registry_type:
-                required: false
-                default: 'azure-cr'
-                type: string
-                description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
-            ecr_region:
-                required: false
-                type: string
-                description: required if input 'registry_type' is 'amazon-ecr'
-            job_timeout:
-                required: false
-                type: number
-                default: 360
-                description: timeout-seconds for the job, after which it will be killed
-            ingress_namespace:
-                required: false
-                type: string
-                default: ingress-basic
-                description: the ingress.yaml is applied in this namespace. default to 'ingress-basic'
+  workflow_call:
+    inputs:
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name
+      namespace:
+        required: true
+        type: string
+        description: e.g. ubique, swisstopo, schweizmobil
+      app_name:
+        required: true
+        type: string
+        description: e.g. ub-pushserver, swisstopo-ws, schweizmobil-ws
+      app_directory:
+        required: true
+        type: string
+        description: e.g. ub-pushservice/ub-pushserver, swisstopo-backend/swisstopo-ws, schweizmobil-backend/schweizmobil-ws
+      manifests_directory:
+        required: false
+        type: string
+        default: manifests
+      target:
+        required: true
+        type: string
+        description: dev|int|prod|etc.
+      checkout_lfs:
+        required: false
+        default: false
+        type: boolean
+      checkout_submodules:
+        required: false
+        default: false
+        type: string
+        description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
+      image_name_postfix:
+        required: false
+        default: ''
+        type: string
+        description: optional suffix to the docker image name to be used
+      with_configmap:
+        required: false
+        default: true
+        type: boolean
+        description: set to false to disable creating a configmap
+      tag_add_commithash:
+        required: false
+        default: false
+        type: boolean
+        description: Add the current commit hash to the branch (necessary when deploying from a branch)
+      cluster:
+        default: 'ub-kub-dev'
+        type: string
+        required: false
+        description: 'name of the cluster (default: ub-kub-dev)'
+      cluster_resource_group:
+        default: 'ub-schweiz-cluster'
+        type: string
+        required: false
+        description: 'resource group of the cluster (default: ub-schweiz-cluster)'
+      pull_secret_name:
+        default: 'ub-acr-secret'
+        type: string
+        required: false
+        description: 'image pull secret to use (default: ub-acr-secret)'
+      image_tag_to_deploy:
+        type: string
+        required: false
+        description: Tag of the image, take ref_name if not set. Useful to deploy pushserver from backend repo.
+      config_map_prefix:
+        type: string
+        required: false
+        description: Prefix for the configmap (without '-dev/prod-config'). Will default to app_name if not set.
+      additional_image_name:
+        type: string
+        default: ''
+        required: false
+        description: Set to add an additional image in the the apply step for the deployment.yaml
+      additional_image_tag:
+        type: string
+        required: false
+        description: Set to add a separate tag for the additional_image_name, defaults to the tag of the "normal"image if not set
+      az_login_flow:
+        type: string
+        default: 'oidc'
+        required: false
+        description: set to 'service_principal' to login with service principal flow. secrets 'az_client/tenant/subscription_id' required for oidc flow and 'az_service_principal' for service principal flow
+      k8s_type:
+        required: false
+        default: 'aks'
+        type: string
+        description: "the type of k8s. Supports 'aks', 'eks', 'kubeconfig'. Use 'kubeconfig' to log in to any cluster by passing your full kubeconfig as a string to secrets.kubeconfig"
+      eks_region:
+        required: false
+        type: string
+        description: required if input k8s_type is eks
+      container_registry_type:
+        required: false
+        default: 'azure-cr'
+        type: string
+        description: "the type of container registry. Supports 'azure-cr', 'amazon-ecr'"
+      ecr_region:
+        required: false
+        type: string
+        description: required if input 'registry_type' is 'amazon-ecr'
+      job_timeout:
+        required: false
+        type: number
+        default: 360
+        description: timeout-seconds for the job, after which it will be killed
+      ingress_namespace:
+        required: false
+        type: string
+        default: ingress-basic
+        description: the ingress.yaml is applied in this namespace. default to 'ingress-basic'
 
 
-        secrets:
-            acr_registry:
-                required: true
-            acr_username:
-                required: false
-                description: required if input container_registry_type is 'azure-cr'
-            acr_password:
-                required: false
-                description: required if input container_registry_type is 'azure-cr'
-            az_service_principal:
-                required: false
-            az_client_id:
-                required: false
-            az_tenant_id:
-                required: false
-            az_subscription_id:
-                required: false
-            aws_access_key:
-                required: false
-            aws_secret_key:
-                required: false
-            ecr_role_to_assume:
-                required: false
-                description: required if input container_registry_type is 'amazon-ecr'
-            kubeconfig:
-                required: false
+    secrets:
+      acr_registry:
+        required: true
+      acr_username:
+        required: false
+        description: required if input container_registry_type is 'azure-cr'
+      acr_password:
+        required: false
+        description: required if input container_registry_type is 'azure-cr'
+      az_service_principal:
+        required: false
+      az_client_id:
+        required: false
+      az_tenant_id:
+        required: false
+      az_subscription_id:
+        required: false
+      aws_access_key:
+        required: false
+      aws_secret_key:
+        required: false
+      ecr_role_to_assume:
+        required: false
+        description: required if input container_registry_type is 'amazon-ecr'
+      kubeconfig:
+        required: false
 
 
 permissions:
-    id-token: write
-    contents: read
+  id-token: write
+  contents: read
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        timeout-minutes: ${{ inputs.job_timeout }}
-        steps:
-            -   name: Check input.ref_name is set
-                if: ${{ ! inputs.ref_name }}
-                uses: actions/github-script@v8
-                with:
-                    script: |
-                        core.setFailed('Input ref_name must be set')
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.job_timeout }}
+    steps:
+      - name: Check input.ref_name is set
+        if: ${{ ! inputs.ref_name }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            core.setFailed('Input ref_name must be set')
 
-            -   uses: actions/checkout@v5
-                with:
-                    ref: ${{ inputs.ref_name }}
-                    lfs: ${{ inputs.checkout_lfs }}
-                    submodules: ${{ inputs.checkout_submodules }}
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref_name }}
+          lfs: ${{ inputs.checkout_lfs }}
+          submodules: ${{ inputs.checkout_submodules }}
 
-            -   name: Set TAG_NAME from inputs.ref_name
-                if: ${{ ! inputs.image_tag_to_deploy }}
-                run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
+      - name: Set TAG_NAME from inputs.ref_name
+        if: ${{ ! inputs.image_tag_to_deploy }}
+        run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
-            -   name: Set TAG_NAME from inputs.image_tag_to_deploy
-                if: ${{ inputs.image_tag_to_deploy }}
-                run: echo "TAG_NAME=${{ inputs.image_tag_to_deploy }}" >> $GITHUB_ENV
+      - name: Set TAG_NAME from inputs.image_tag_to_deploy
+        if: ${{ inputs.image_tag_to_deploy }}
+        run: echo "TAG_NAME=${{ inputs.image_tag_to_deploy }}" >> $GITHUB_ENV
 
-            -   name: Set TAG_NAME with commit hash
-                if: ${{ inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=${{ env.TAG_NAME }}-${GITHUB_SHA::7}" >> $GITHUB_ENV
+      - name: Set TAG_NAME with commit hash
+        if: ${{ inputs.tag_add_commithash }}
+        run: echo "TAG_NAME=${{ env.TAG_NAME }}-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-            -   name: Set TAG_NAME
-                if: ${{ ! inputs.tag_add_commithash }}
-                run: echo "TAG_NAME=${{ env.TAG_NAME }}" >> $GITHUB_ENV
+      - name: Set TAG_NAME
+        if: ${{ ! inputs.tag_add_commithash }}
+        run: echo "TAG_NAME=${{ env.TAG_NAME }}" >> $GITHUB_ENV
 
-            -   name: Image to deploy
-                run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
+      - name: Image to deploy
+        run: echo "deploy image ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }} with manifest files from ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}"
 
-                # do this, before we set up the eks login, otherwise it gets confused
-            -   name: Configure AWS credentials for ECR Pull Secret
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v5
-                with:
-                    role-to-assume: ${{ secrets.ecr_role_to_assume }}
-                    aws-region: ${{ inputs.ecr_region }}
+        # do this, before we set up the eks login, otherwise it gets confused
+      - name: Configure AWS credentials for ECR Pull Secret
+        if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.ecr_role_to_assume }}
+          aws-region: ${{ inputs.ecr_region }}
 
-            -   name: Login to Amazon ECR
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+        uses: aws-actions/amazon-ecr-login@v2
 
-            -   name: GET ECR Login
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                run: echo "ECR_PASSWORD=$(aws ecr get-login-password)" >> $GITHUB_ENV
+      - name: GET ECR Login
+        if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+        run: echo "ECR_PASSWORD=$(aws ecr get-login-password)" >> $GITHUB_ENV
 
-            -   name: Azure Login with OIDC flow
-                if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'oidc' }}
-                uses: azure/login@v2
-                with:
-                    client-id: ${{ secrets.az_client_id }}
-                    tenant-id: ${{ secrets.az_tenant_id }}
-                    subscription-id: ${{ secrets.az_subscription_id }}
+      - name: Azure Login with OIDC flow
+        if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'oidc' }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.az_client_id }}
+          tenant-id: ${{ secrets.az_tenant_id }}
+          subscription-id: ${{ secrets.az_subscription_id }}
 
-            -   name: Azure Login with service principal
-                if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'service_principal' }}
-                uses: azure/login@v2
-                with:
-                    creds: '${{ secrets.az_service_principal }}'
+      - name: Azure Login with service principal
+        if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'service_principal' }}
+        uses: azure/login@v2
+        with:
+          creds: '${{ secrets.az_service_principal }}'
 
-            -   name: Configure AWS credentials
-                if: ${{ inputs.k8s_type == 'eks' }}
-                uses: aws-actions/configure-aws-credentials@v5
-                with:
-                    aws-access-key-id: ${{ secrets.aws_access_key }}
-                    aws-secret-access-key: ${{ secrets.aws_secret_key }}
-                    aws-region: ${{ inputs.eks_region }}
+      - name: Configure AWS credentials
+        if: ${{ inputs.k8s_type == 'eks' }}
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key }}
+          aws-secret-access-key: ${{ secrets.aws_secret_key }}
+          aws-region: ${{ inputs.eks_region }}
 
-            -   name: Set up kubelogin for non-interactive login
-                uses: azure/use-kubelogin@v1
-                with:
-                    kubelogin-version: 'v0.0.28'
+      - name: Set up kubelogin for non-interactive login
+        uses: azure/use-kubelogin@v1
+        with:
+          kubelogin-version: 'v0.0.28'
 
-            -   name: Set AKS context
-                if: ${{ inputs.k8s_type == 'aks' }}
-                uses: azure/aks-set-context@v4
-                with:
-                    cluster-name: ${{ inputs.cluster }}
-                    resource-group: ${{ inputs.cluster_resource_group }}
-                    admin: 'false'
-                    use-kubelogin: 'true'
+      - name: Set AKS context
+        if: ${{ inputs.k8s_type == 'aks' }}
+        uses: azure/aks-set-context@v4
+        with:
+          cluster-name: ${{ inputs.cluster }}
+          resource-group: ${{ inputs.cluster_resource_group }}
+          admin: 'false'
+          use-kubelogin: 'true'
 
-            -   name: Set K8s context from kubeconfig
-                if: ${{ inputs.k8s_type == 'eks' || inputs.k8s_type == 'kubeconfig' }}
-                uses: azure/k8s-set-context@v4
-                with:
-                    method: kubeconfig
-                    kubeconfig: ${{ secrets.kubeconfig }}
+      - name: Set K8s context from kubeconfig
+        if: ${{ inputs.k8s_type == 'eks' || inputs.k8s_type == 'kubeconfig' }}
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.kubeconfig }}
 
-            -   name: Create namespace (if it doesn't exist)
-                run: |
-                    kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o json | kubectl apply -f -
+      - name: Create namespace (if it doesn't exist)
+        run: |
+          kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o json | kubectl apply -f -
 
-            -   name: Create configmap
-                if: ${{ inputs.with_configmap }}
-                run: |
-                    kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_prefix && inputs.config_map_prefix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
+      - name: Create configmap
+        if: ${{ inputs.with_configmap }}
+        run: |
+          kubectl create configmap --namespace ${{ inputs.namespace }} ${{ inputs.config_map_prefix && inputs.config_map_prefix || inputs.app_name }}-${{ inputs.target }}-config --from-file ${{ inputs.app_directory }}/conf/${{ inputs.target }} --dry-run=client -o json | kubectl apply -f -
 
-            -   name: Create image pull secret for ACR
-                if: ${{ inputs.container_registry_type == 'azure-cr' }}
-                uses: azure/k8s-create-secret@v5
-                with:
-                    container-registry-url: ${{ secrets.acr_registry }}
-                    container-registry-username: ${{ secrets.acr_username }}
-                    container-registry-password: ${{ secrets.acr_password }}
-                    secret-name: ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.namespace }}
+      - name: Create image pull secret for ACR
+        if: ${{ inputs.container_registry_type == 'azure-cr' }}
+        uses: azure/k8s-create-secret@v5
+        with:
+          container-registry-url: ${{ secrets.acr_registry }}
+          container-registry-username: ${{ secrets.acr_username }}
+          container-registry-password: ${{ secrets.acr_password }}
+          secret-name: ${{ inputs.pull_secret_name }}
+          namespace: ${{ inputs.namespace }}
 
-            -   name: Create image pull secret for ECR
-                if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-                uses: azure/k8s-create-secret@v5
-                with:
-                    container-registry-url: ${{ secrets.acr_registry }}
-                    container-registry-username: AWS
-                    container-registry-password: ${{ env.ECR_PASSWORD }}
-                    secret-name: ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.namespace }}
+      - name: Create image pull secret for ECR
+        if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
+        uses: azure/k8s-create-secret@v5
+        with:
+          container-registry-url: ${{ secrets.acr_registry }}
+          container-registry-username: AWS
+          container-registry-password: ${{ env.ECR_PASSWORD }}
+          secret-name: ${{ inputs.pull_secret_name }}
+          namespace: ${{ inputs.namespace }}
 
-            -   name: Check serviceaccount.yaml existence
-                id: check_serviceaccount_file
-                uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
-                with:
-                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
+      - name: Check serviceaccount.yaml existence
+        id: check_serviceaccount_file
+        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        with:
+          files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
 
-            -   name: Apply Service Account config
-                uses: azure/k8s-deploy@v5
-                if: ${{  steps.check_serviceaccount_file.outputs.files_exists == 'true' }}
-                with:
-                    manifests: |
-                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml
-                    imagepullsecrets: |
-                        ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.namespace }}
+      - name: Apply Service Account config
+        uses: azure/k8s-deploy@v5
+        if: ${{  steps.check_serviceaccount_file.outputs.files_exists == 'true' }}
+        with:
+          manifests: |
+            ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml
+          imagepullsecrets: |
+            ${{ inputs.pull_secret_name }}
+          namespace: ${{ inputs.namespace }}
 
 
-            -   name: Check service.yaml existence
-                id: check_service_file
-                uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
-                with:
-                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
+      - name: Check service.yaml existence
+        id: check_service_file
+        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        with:
+          files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
 
-            -   name: Apply Service config
-                uses: azure/k8s-deploy@v5
-                if: ${{  steps.check_service_file.outputs.files_exists == 'true' }}
-                with:
-                    manifests: |
-                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml
-                    imagepullsecrets: |
-                        ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.namespace }}
+      - name: Apply Service config
+        uses: azure/k8s-deploy@v5
+        if: ${{  steps.check_service_file.outputs.files_exists == 'true' }}
+        with:
+          manifests: |
+            ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml
+          imagepullsecrets: |
+            ${{ inputs.pull_secret_name }}
+          namespace: ${{ inputs.namespace }}
 
-            -   name: Check ingress.yaml existence
-                id: check_ingress_file
-                uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
-                with:
-                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
+      - name: Check ingress.yaml existence
+        id: check_ingress_file
+        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        with:
+          files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
-            -   name: Apply Ingress config
-                uses: azure/k8s-deploy@v5
-                if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
-                with:
-                    manifests: |
-                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml
-                    imagepullsecrets: |
-                        ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.ingress_namespace }}
+      - name: Apply Ingress config
+        uses: azure/k8s-deploy@v5
+        if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
+        with:
+          manifests: |
+            ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml
+          imagepullsecrets: |
+            ${{ inputs.pull_secret_name }}
+          namespace: ${{ inputs.ingress_namespace }}
 
-            -   name: Check deployment.yaml existence
-                id: check_deployment_file
-                uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
-                with:
-                    files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
+      - name: Check deployment.yaml existence
+        id: check_deployment_file
+        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        with:
+          files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
 
-            -   name: Apply Deployment config
-                uses: azure/k8s-deploy@v5
-                if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
-                with:
-                    manifests: |
-                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
-                    images: |
-                        ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }}
-                    imagepullsecrets: |
-                        ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.namespace }}
+      - name: Apply Deployment config
+        uses: azure/k8s-deploy@v5
+        if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
+        with:
+          manifests: |
+            ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
+          images: |
+            ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }}
+          imagepullsecrets: |
+            ${{ inputs.pull_secret_name }}
+          namespace: ${{ inputs.namespace }}
 
-            -   name: Apply Deployment config with additional image
-                uses: azure/k8s-deploy@v5
-                if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && inputs.additional_image_name }}
-                with:
-                    manifests: |
-                        ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
-                    images: |
-                        ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }}
-                        ${{ secrets.acr_registry }}/${{ inputs.additional_image_name }}:${{ inputs.additional_image_tag && inputs.additional_image_tag || env.TAG_NAME }}
-                    imagepullsecrets: |
-                        ${{ inputs.pull_secret_name }}
-                    namespace: ${{ inputs.namespace }}
+      - name: Apply Deployment config with additional image
+        uses: azure/k8s-deploy@v5
+        if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && inputs.additional_image_name }}
+        with:
+          manifests: |
+            ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml
+          images: |
+            ${{ secrets.acr_registry }}/${{ inputs.app_name }}${{ inputs.image_name_postfix }}:${{ env.TAG_NAME }}
+            ${{ secrets.acr_registry }}/${{ inputs.additional_image_name }}:${{ inputs.additional_image_tag && inputs.additional_image_tag || env.TAG_NAME }}
+          imagepullsecrets: |
+            ${{ inputs.pull_secret_name }}
+          namespace: ${{ inputs.namespace }}

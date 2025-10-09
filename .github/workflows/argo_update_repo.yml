@@ -66,15 +66,15 @@ jobs:
       - name: Insert ConfigMap hash in in Deployement as annotation "checksum/{{ inputs.app_name }}-${{ inputs.target }}-config"
         if: steps.check_config.outputs.exists == 'true'
         run: |
-            set -xeou pipefail
-            configmap_file=${{ inputs.app_directory }}/manifests/${{ inputs.target }}/configmap.yaml
-            deployment_file=${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
-            configmap_name=${{ inputs.app_name }}-${{ inputs.target }}-config
-
-            configmap_hash=$(shasum "$configmap_file" | cut -d' ' -f1)
-            # Add hash (only) to Deployments referencing this ConfigMap
-            yq --inplace "select(.kind == \"Deployment\" and .spec.template.spec.volumes[].configMap.name == \"$configmap_name\") \
-                          |= .spec.template.metadata.annotations.\"checksum/$configmap_name\" = \"$configmap_hash\"" "$deployment_file"
+          set -xeou pipefail
+          configmap_file=${{ inputs.app_directory }}/manifests/${{ inputs.target }}/configmap.yaml
+          deployment_file=${{ inputs.app_directory }}/manifests/${{ inputs.target }}/deployment.yaml
+          configmap_name=${{ inputs.app_name }}-${{ inputs.target }}-config
+          
+          configmap_hash=$(shasum "$configmap_file" | cut -d' ' -f1)
+          # Add hash (only) to Deployments referencing this ConfigMap
+          yq --inplace "select(.kind == \"Deployment\" and .spec.template.spec.volumes[].configMap.name == \"$configmap_name\") \
+                        |= .spec.template.metadata.annotations.\"checksum/$configmap_name\" = \"$configmap_hash\"" "$deployment_file"
 
       - name: Checkout Argo Repo
         uses: actions/checkout@v5

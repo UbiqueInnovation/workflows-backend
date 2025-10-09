@@ -1,74 +1,74 @@
 name: Sentry Release
 on:
-    workflow_call:
-        inputs:
-            ref_name:
-                required: true
-                type: string
-                description: tag or branch name
-            package:
-                  required: false
-                  type: string
-                  description: needed for sentry to register versions as semver. E.g. ch.ubique.myapp
-            target:
-                required: false
-                type: string
-                description: dev|int|prod|etc.
-            checkout_lfs:
-                required: false
-                default: false
-                type: boolean
-            checkout_submodules:
-                required: false
-                default: false
-                type: string
-                description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
-            finalize:
-                required: false
-                default: true
-                type: boolean
-                description: is it a final release (default true)
+  workflow_call:
+    inputs:
+      ref_name:
+        required: true
+        type: string
+        description: tag or branch name
+      package:
+        required: false
+        type: string
+        description: needed for sentry to register versions as semver. E.g. ch.ubique.myapp
+      target:
+        required: false
+        type: string
+        description: dev|int|prod|etc.
+      checkout_lfs:
+        required: false
+        default: false
+        type: boolean
+      checkout_submodules:
+        required: false
+        default: false
+        type: string
+        description: "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules."
+      finalize:
+        required: false
+        default: true
+        type: boolean
+        description: is it a final release (default true)
 
-        secrets:
-            sentry_auth_token:
-                required: true
-            sentry_org:
-                required: true
-            sentry_project:
-                required: true
+    secrets:
+      sentry_auth_token:
+        required: true
+      sentry_org:
+        required: true
+      sentry_project:
+        required: true
 
 jobs:
-    sentry-release:
-        runs-on: ubuntu-latest
-        steps:
-            -   uses: actions/checkout@v5
-                with:
-                    ref: ${{ inputs.ref_name }}
-                    lfs: ${{ inputs.checkout_lfs }}
-                    submodules: ${{ inputs.checkout_submodules }}
+  sentry-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref_name }}
+          lfs: ${{ inputs.checkout_lfs }}
+          submodules: ${{ inputs.checkout_submodules }}
 
-            -   name: Set VERSION from ref_name
-                run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
+      - name: Set VERSION from ref_name
+        run: echo "VERSION=${{ inputs.ref_name }}" >> $GITHUB_ENV
 
-            -   name: Replace all characters in `\/:"<>|?*` by `-` in VERSION
-                run: echo "VERSION=$(echo "$VERSION" | sed 's/[\/:"<>|?*]/-/g')" >> $GITHUB_ENV
+      - name: Replace all characters in `\/:"<>|?*` by `-` in VERSION
+        run: echo "VERSION=$(echo "$VERSION" | sed 's/[\/:"<>|?*]/-/g')" >> $GITHUB_ENV
 
-            -   name: Strip leading `v` from VERSION
-                run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
+      - name: Strip leading `v` from VERSION
+        run: echo "VERSION=${VERSION##v}" >> $GITHUB_ENV
 
-            -   name: Add package to version
-                if: ${{ inputs.package }}
-                run: echo "VERSION=${{ inputs.package }}@$VERSION" >> $GITHUB_ENV
+      - name: Add package to version
+        if: ${{ inputs.package }}
+        run: echo "VERSION=${{ inputs.package }}@$VERSION" >> $GITHUB_ENV
 
-            -   name: Create Sentry release
-                uses: getsentry/action-release@d54ba904d352838a22aa8f14f19351f42e2744f2
-                env:
-                    SENTRY_AUTH_TOKEN: ${{ secrets.sentry_auth_token }}
-                    SENTRY_ORG: ${{ secrets.sentry_org }}
-                    SENTRY_PROJECT: ${{ secrets.sentry_project }}
-                with:
-                    environment: ${{ inputs.target }}
-                    version: ${{ env.VERSION }}
-                    finalize: ${{ inputs.finalize }}
-                    ignore_missing: true
-                    ignore_empty: true
+      - name: Create Sentry release
+        uses: getsentry/action-release@d54ba904d352838a22aa8f14f19351f42e2744f2
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.sentry_auth_token }}
+          SENTRY_ORG: ${{ secrets.sentry_org }}
+          SENTRY_PROJECT: ${{ secrets.sentry_project }}
+        with:
+          environment: ${{ inputs.target }}
+          version: ${{ env.VERSION }}
+          finalize: ${{ inputs.finalize }}
+          ignore_missing: true
+          ignore_empty: true

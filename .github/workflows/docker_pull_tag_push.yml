@@ -1,123 +1,123 @@
 name: Pull Docker Image, augment it and push to different repository
 on:
-    workflow_call:
-        inputs:
-            pull_image_name:
-                required: false
-                type: string
-                description: Image name to pull from secrets.pull_container_registry. Optional, default may be specified in Dockerfile.
-            pull_image_tag:
-                required: true
-                type: string
-                description: Image tag to pull from secrets.pull_container_registry. Optional, default may be specified in Dockerfile.
-            push_image_name:
-                required: false
-                type: string
-                description: name to tag the image with. Defaults to inputs.pull_image_name
-            push_image_tag:
-                required: false
-                type: string
-                description: name to tag the image with. Defaults to inputs.pull_image_tag
-            runs_on:
-                required: false
-                default: '["ubuntu-latest"]'
-                type: string
-                description: Set to '["self-hosted", "linux", "stable"]' if needed.
-            push_container_registry_type:
-                required: false
-                default: 'username-password'
-                type: string
-                description: "the type of container registry for push. Supports 'username-password', 'amazon-ecr'"
-            ecr_region:
-                required: false
-                type: string
-                description: required if input container_registry_type is 'amazon-ecr'
+  workflow_call:
+    inputs:
+      pull_image_name:
+        required: false
+        type: string
+        description: Image name to pull from secrets.pull_container_registry. Optional, default may be specified in Dockerfile.
+      pull_image_tag:
+        required: true
+        type: string
+        description: Image tag to pull from secrets.pull_container_registry. Optional, default may be specified in Dockerfile.
+      push_image_name:
+        required: false
+        type: string
+        description: name to tag the image with. Defaults to inputs.pull_image_name
+      push_image_tag:
+        required: false
+        type: string
+        description: name to tag the image with. Defaults to inputs.pull_image_tag
+      runs_on:
+        required: false
+        default: '["ubuntu-latest"]'
+        type: string
+        description: Set to '["self-hosted", "linux", "stable"]' if needed.
+      push_container_registry_type:
+        required: false
+        default: 'username-password'
+        type: string
+        description: "the type of container registry for push. Supports 'username-password', 'amazon-ecr'"
+      ecr_region:
+        required: false
+        type: string
+        description: required if input container_registry_type is 'amazon-ecr'
 
-        secrets:
-            pull_container_registry:
-                required: false
-                description: defaults to default docker.io
-            pull_container_registry_username:
-                required: false
-                description: defaults to push_container_registry_username
-            pull_container_registry_password:
-                required: false
-                description: defaults to push_container_registry_password
-            push_container_registry:
-                required: true
-            push_container_registry_username:
-                required: false
-                description: required if input push_container_registry_type is 'username-password'
-            push_container_registry_password:
-                required: false
-                description: required if input push_container_registry_type is 'username-password'
-            ecr_role_to_assume:
-                required: false
-                description: required if input container_registry_type is 'amazon-ecr'
+    secrets:
+      pull_container_registry:
+        required: false
+        description: defaults to default docker.io
+      pull_container_registry_username:
+        required: false
+        description: defaults to push_container_registry_username
+      pull_container_registry_password:
+        required: false
+        description: defaults to push_container_registry_password
+      push_container_registry:
+        required: true
+      push_container_registry_username:
+        required: false
+        description: required if input push_container_registry_type is 'username-password'
+      push_container_registry_password:
+        required: false
+        description: required if input push_container_registry_type is 'username-password'
+      ecr_role_to_assume:
+        required: false
+        description: required if input container_registry_type is 'amazon-ecr'
 
 jobs:
-    pull_tag_push_image:
-        permissions:
-            id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4
-            contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
-        name: Build Project
-        runs-on: ${{ fromJson(inputs.runs_on) }}
-        steps:
-            -   name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry is not set)
-                if: ${{ env.PULL_CONTAINER_REGISTRY }}
-                run: echo "PULL_IMAGE_REGISTRY=${{ secrets.pull_container_registry }}/" >> $GITHUB_ENV
-                env:
-                    PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
+  pull_tag_push_image:
+    permissions:
+      id-token: write # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4
+      contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
+    name: Build Project
+    runs-on: ${{ fromJson(inputs.runs_on) }}
+    steps:
+      - name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry is not set)
+        if: ${{ env.PULL_CONTAINER_REGISTRY }}
+        run: echo "PULL_IMAGE_REGISTRY=${{ secrets.pull_container_registry }}/" >> $GITHUB_ENV
+        env:
+          PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
 
-            -   name: SET PUSH_IMAGE_NAME to push_image_name or default pull_image_name
-                run: echo "PUSH_IMAGE_NAME=${{ inputs.push_image_name || inputs.pull_image_name }}" >> $GITHUB_ENV
+      - name: SET PUSH_IMAGE_NAME to push_image_name or default pull_image_name
+        run: echo "PUSH_IMAGE_NAME=${{ inputs.push_image_name || inputs.pull_image_name }}" >> $GITHUB_ENV
 
-            -   name: SET PUSH_IMAGE_TAG to push_image_tag or default pull_image_tag
-                run: echo "PUSH_IMAGE_TAG=${{ inputs.push_image_tag || inputs.pull_image_tag }}" >> $GITHUB_ENV
+      - name: SET PUSH_IMAGE_TAG to push_image_tag or default pull_image_tag
+        run: echo "PUSH_IMAGE_TAG=${{ inputs.push_image_tag || inputs.pull_image_tag }}" >> $GITHUB_ENV
 
-            -   name: SET PULL_IMAGE
-                run: echo "PULL_IMAGE=${{ env.PULL_IMAGE_REGISTRY }}${{ inputs.pull_image_name }}:${{ inputs.pull_image_tag }}" >> $GITHUB_ENV
+      - name: SET PULL_IMAGE
+        run: echo "PULL_IMAGE=${{ env.PULL_IMAGE_REGISTRY }}${{ inputs.pull_image_name }}:${{ inputs.pull_image_tag }}" >> $GITHUB_ENV
 
-            -   name: SET PUSH_IMAGE
-                run: echo "PUSH_IMAGE=${{ secrets.push_container_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ env.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
+      - name: SET PUSH_IMAGE
+        run: echo "PUSH_IMAGE=${{ secrets.push_container_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ env.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
 
-            -   uses: docker/login-action@v3
-                if: ${{ env.PULL_CONTAINER_REGISTRY }}
-                env:
-                    PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
-                with:
-                    registry: ${{ secrets.pull_container_registry }}
-                    username: ${{ secrets.pull_container_registry_username }}
-                    password: ${{ secrets.pull_container_registry_password }}
+      - uses: docker/login-action@v3
+        if: ${{ env.PULL_CONTAINER_REGISTRY }}
+        env:
+          PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
+        with:
+          registry: ${{ secrets.pull_container_registry }}
+          username: ${{ secrets.pull_container_registry_username }}
+          password: ${{ secrets.pull_container_registry_password }}
 
-            -   name: Login to Docker repository using username and password
-                uses: docker/login-action@v3
-                if: ${{ inputs.push_container_registry_type == 'username-password' }}
-                with:
-                    registry: ${{ secrets.push_container_registry }}
-                    username: ${{ secrets.push_container_registry_username }}
-                    password: ${{ secrets.push_container_registry_password }}
+      - name: Login to Docker repository using username and password
+        uses: docker/login-action@v3
+        if: ${{ inputs.push_container_registry_type == 'username-password' }}
+        with:
+          registry: ${{ secrets.push_container_registry }}
+          username: ${{ secrets.push_container_registry_username }}
+          password: ${{ secrets.push_container_registry_password }}
 
-            -   name: Configure AWS credentials
-                if: ${{ inputs.push_container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/configure-aws-credentials@v5
-                with:
-                    role-to-assume: ${{ secrets.ecr_role_to_assume }}
-                    aws-region: ${{ inputs.ecr_region }}
+      - name: Configure AWS credentials
+        if: ${{ inputs.push_container_registry_type == 'amazon-ecr' }}
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.ecr_role_to_assume }}
+          aws-region: ${{ inputs.ecr_region }}
 
-            -   name: Login to Amazon ECR
-                if: ${{ inputs.push_container_registry_type == 'amazon-ecr' }}
-                uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        if: ${{ inputs.push_container_registry_type == 'amazon-ecr' }}
+        uses: aws-actions/amazon-ecr-login@v2
 
-            -   name: Set up Docker Buildx
-                uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-            -   name: Pull docker image
-                run: docker pull ${{ env.PULL_IMAGE }}
+      - name: Pull docker image
+        run: docker pull ${{ env.PULL_IMAGE }}
 
-            -   name: Tag docker image
-                run: docker tag ${{ env.PULL_IMAGE }} ${{ env.PUSH_IMAGE }}
+      - name: Tag docker image
+        run: docker tag ${{ env.PULL_IMAGE }} ${{ env.PUSH_IMAGE }}
 
-            -   name: Push docker image
-                run: docker push ${{ env.PUSH_IMAGE }}
+      - name: Push docker image
+        run: docker push ${{ env.PUSH_IMAGE }}
                     
