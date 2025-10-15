@@ -29,6 +29,10 @@ on:
         default: "."
         type: string
         description: You can specify the path of the folder containing the Dockerfile and necessary build files
+      file:
+        required: false
+        type: string
+        description: Path to the Dockerfile. (default {context}/Dockerfile)
       build_args:
         required: false
         default: ""
@@ -140,6 +144,7 @@ jobs:
           labels: ${{ steps.docker_meta.outputs.labels }}
           push: true
           context: ${{ inputs.context }}
+          file: ${{ inputs.file }}
           cache-from: ${{ inputs.use_cache && 'type=gha' || '' }}
           cache-to: ${{ inputs.use_cache && 'type=gha,mode=max' || '' }}
           build-args: ${{ inputs.build_args }}
