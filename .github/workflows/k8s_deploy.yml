@@ -161,7 +161,7 @@ jobs:
           script: |
             core.setFailed('Input ref_name must be set')
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref_name }}
           lfs: ${{ inputs.checkout_lfs }}
