@@ -84,7 +84,7 @@ jobs:
     env:
       repository_access_token: ${{ secrets.repository_access_token }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         if: ${{ env.repository_access_token != '' }}
         with:
           ref: ${{ inputs.ref_name }}
@@ -92,7 +92,7 @@ jobs:
           submodules: ${{ inputs.checkout_submodules }}
           token: ${{ env.repository_access_token }}
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         if: ${{ env.repository_access_token == '' }}
         with:
           ref: ${{ inputs.ref_name }}

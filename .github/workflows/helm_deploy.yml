@@ -82,11 +82,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref_name }}
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         if: ${{ inputs.chart_type == 'repo' }}
         with:
           repository: ${{ inputs.chart }}

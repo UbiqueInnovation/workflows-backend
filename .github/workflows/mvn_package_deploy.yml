@@ -52,7 +52,7 @@ jobs:
   deploy:
     runs-on: ${{ fromJson(inputs.runs_on) }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref_name }}
           lfs: ${{ inputs.checkout_lfs }}
