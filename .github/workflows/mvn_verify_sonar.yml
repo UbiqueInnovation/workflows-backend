@@ -103,5 +103,55 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
+      - name: Determine tag on current commit (HEAD)
+        id: get_latest_tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Ensure tags are available
+          git fetch --tags --force
+
+          # List tags that point at the current commit (HEAD)
+          TAGS_ON_HEAD=$(git tag --points-at HEAD || true)
+
+          CHOSEN_TAG=""
+          CHOSEN_VERSION=""
+
+          if [[ -n "${TAGS_ON_HEAD}" ]]; then
+            # Build a list of "<version> <original_tag>" for tags that are plain SemVer (allow leading 'v')
+            MAP="$(
+              while IFS= read -r t; do
+                [[ -z "$t" ]] && continue
+                v="${t#v}"
+                if [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                  echo "$v $t"
+                fi
+              done <<< "${TAGS_ON_HEAD}"
+            )"
+
+            if [[ -n "${MAP}" ]]; then
+              # Pick the highest SemVer among the plain versions present on HEAD
+              CHOSEN_LINE=$(echo "${MAP}" | sort -V | tail -n1)
+              CHOSEN_VERSION="${CHOSEN_LINE%% *}"
+              CHOSEN_TAG="${CHOSEN_LINE##* }"
+            fi
+          fi
+
+          if [[ -n "${CHOSEN_VERSION}" ]]; then
+            echo "Found plain SemVer tag on HEAD: ${CHOSEN_TAG} -> Maven version: ${CHOSEN_VERSION}"
+            echo "tag=${CHOSEN_TAG}" >> "$GITHUB_OUTPUT"
+            echo "version=${CHOSEN_VERSION}" >> "$GITHUB_OUTPUT"
+            echo "is_plain=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No plain SemVer tag found on HEAD. Skipping version override."
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            echo "version=" >> "$GITHUB_OUTPUT"
+            echo "is_plain=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set Maven project version to latest tag
+        if: ${{ steps.get_latest_tag.outputs.is_plain == 'true' }}
+        run: mvn --batch-mode -f ${{ inputs.parent_pom }} versions:set -DnewVersion=${{ steps.get_latest_tag.outputs.version }} -DgenerateBackupPoms=false
+
       - name: Run analysis using Maven
         run: mvn --batch-mode --update-snapshots -f ${{ inputs.parent_pom }} clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
