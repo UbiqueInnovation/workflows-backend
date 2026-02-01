@@ -94,17 +94,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           ref: ${{ inputs.ref_name }}
           lfs: ${{ inputs.checkout_lfs }}
           submodules: ${{ inputs.checkout_submodules }}
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
         with:
           version: ${{ inputs.pnpm_version }}
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version: "${{ inputs.node_version }}"
           check-latest: true
@@ -118,7 +118,7 @@ jobs:
           pnpm config --location=project set registry https://${{ secrets.npm_registry_url }} &&
           pnpm config --location=project set '//${{ secrets.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}"
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         if: ${{ inputs.run_poeditor }}
         with:
           python-version: "3.14.0"
@@ -154,7 +154,7 @@ jobs:
 
       - name: Upload Build Artifact
         if: ${{ inputs.artifact_dir }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.artifact_dir }}
