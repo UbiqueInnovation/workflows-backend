@@ -66,7 +66,7 @@ jobs:
   build:
     runs-on: ${{ fromJson(inputs.runs_on) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           ref: ${{ inputs.ref_name }}
           lfs: ${{ inputs.checkout_lfs }}
@@ -74,7 +74,7 @@ jobs:
 
       - name: Setup Nodejs and npm
         if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version: "${{ inputs.node_version }}"
 
@@ -83,7 +83,7 @@ jobs:
         run: npm install -g yarn
 
       - name: Setup Nodejs with yarn caching
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version: "${{ inputs.node_version }}"
           cache: yarn
@@ -100,7 +100,7 @@ jobs:
 
       - name: Upload Build Artifact
         if: ${{ inputs.artifact_dir }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.artifact_dir }}

@@ -41,7 +41,7 @@ jobs:
   sentry-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           ref: ${{ inputs.ref_name }}
           lfs: ${{ inputs.checkout_lfs }}
@@ -61,7 +61,7 @@ jobs:
         run: echo "VERSION=${{ inputs.package }}@$VERSION" >> $GITHUB_ENV
 
       - name: Create Sentry release
-        uses: getsentry/action-release@a181c1274a0587b294e2a7563c3b677e979c51b1
+        uses: getsentry/action-release@f86218f1105cbe0847f30d0649d3c1789732ca97
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.sentry_auth_token }}
           SENTRY_ORG: ${{ secrets.sentry_org }}
