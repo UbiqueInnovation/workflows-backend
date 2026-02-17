@@ -95,4 +95,6 @@ jobs:
           repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
 
       - name: Build with Maven
+        env:
+          CI: true
         run: mvn --batch-mode --update-snapshots install -DskipTests=${{ inputs.skip_tests }} -f ${{ inputs.parent_pom }}
