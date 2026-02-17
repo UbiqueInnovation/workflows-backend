@@ -70,6 +70,11 @@ jobs:
           java-version: ${{ inputs.java_version }}
           distribution: 'temurin'
 
+      - name: Docker sanity
+        run: |
+          docker version
+          docker info
+
       - name: Cache Maven packages
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
