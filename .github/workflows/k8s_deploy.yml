@@ -161,7 +161,7 @@ jobs:
           script: |
             core.setFailed('Input ref_name must be set')
 
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.ref_name }}
           lfs: ${{ inputs.checkout_lfs }}
@@ -276,7 +276,7 @@ jobs:
 
       - name: Check serviceaccount.yaml existence
         id: check_serviceaccount_file
-        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        uses: andstor/file-existence-action@4dadd155f3f57f55d6b0d107a63df19fe3d4a5e6
         with:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
 
@@ -293,7 +293,7 @@ jobs:
 
       - name: Check service.yaml existence
         id: check_service_file
-        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        uses: andstor/file-existence-action@4dadd155f3f57f55d6b0d107a63df19fe3d4a5e6
         with:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
 
@@ -309,7 +309,7 @@ jobs:
 
       - name: Check ingress.yaml existence
         id: check_ingress_file
-        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        uses: andstor/file-existence-action@4dadd155f3f57f55d6b0d107a63df19fe3d4a5e6
         with:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
@@ -325,7 +325,7 @@ jobs:
 
       - name: Check deployment.yaml existence
         id: check_deployment_file
-        uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+        uses: andstor/file-existence-action@4dadd155f3f57f55d6b0d107a63df19fe3d4a5e6
         with:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
 

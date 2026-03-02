@@ -35,14 +35,14 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.ref_name }}
           lfs: ${{ inputs.checkout_lfs }}
           submodules: ${{ inputs.checkout_submodules }}
 
       - name: Install parse-changelog
-        uses: taiki-e/install-action@09c7e3d39d1ac9ee6289ad5abd89ade23c1cf4f8
+        uses: taiki-e/install-action@d6e286fa45544157a02d45a43742857ebbc25d12
         with:
           tool: parse-changelog@0.6.8
 
@@ -66,7 +66,7 @@ jobs:
         run: echo "RELEASE_BODY=" >> $GITHUB_ENV
 
       - name: Create new release
-        uses: softprops/action-gh-release@78237c54eb15310cb292a15480c4be010be47aeb
+        uses: softprops/action-gh-release@e798e6a1ede8d07b74ac4cdac6bdfa4cc1653907
         with:
           name: ${{ env.TAG_NAME }}
           body: ${{ env.RELEASE_BODY }}
