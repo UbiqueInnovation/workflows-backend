@@ -33,7 +33,7 @@ on:
                 type: string
                 description: required if input container_registry_type is 'amazon-ecr'
             container_image:
-                default: "cimg/base:2026.03"
+                default: "docker:29.3-dind-rootless"
                 required: false
                 type: string
                 description: container image to run on
