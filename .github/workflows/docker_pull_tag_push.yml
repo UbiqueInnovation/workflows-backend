@@ -32,6 +32,11 @@ on:
                 required: false
                 type: string
                 description: required if input container_registry_type is 'amazon-ecr'
+            container_image:
+                default: "cimg/base:2026.03"
+                required: false
+                type: string
+                description: container image to run on
 
         secrets:
             pull_container_registry:
@@ -62,6 +67,8 @@ jobs:
             contents: read # This is required for requesting the JWT in aws-actions/configure-aws-credentials@v4, but only if actions/checkout is used
         name: Build Project
         runs-on: ${{ fromJson(inputs.runs_on) }}
+        container:
+            image: ${{ inputs.container_image }}
         steps:
             -   name: Set PULL_IMAGE_REGISTRY (will be empty if secrets.pull_container_registry is not set)
                 if: ${{ env.PULL_CONTAINER_REGISTRY }}
