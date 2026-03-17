@@ -196,7 +196,7 @@ jobs:
 
       - name: Login to Amazon ECR
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
+        uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2
 
       - name: GET ECR Login
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
@@ -281,7 +281,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
 
       - name: Apply Service Account config
-        uses: azure/k8s-deploy@6f7c489cecd8da05646259d9fa3daae92e095c7b # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
         if: ${{  steps.check_serviceaccount_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -298,7 +298,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
 
       - name: Apply Service config
-        uses: azure/k8s-deploy@6f7c489cecd8da05646259d9fa3daae92e095c7b # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
         if: ${{  steps.check_service_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -314,7 +314,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
       - name: Apply Ingress config
-        uses: azure/k8s-deploy@6f7c489cecd8da05646259d9fa3daae92e095c7b # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
         if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -330,7 +330,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
 
       - name: Apply Deployment config
-        uses: azure/k8s-deploy@6f7c489cecd8da05646259d9fa3daae92e095c7b # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
         if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
         with:
           manifests: |
@@ -342,7 +342,7 @@ jobs:
           namespace: ${{ inputs.namespace }}
 
       - name: Apply Deployment config with additional image
-        uses: azure/k8s-deploy@6f7c489cecd8da05646259d9fa3daae92e095c7b # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
         if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && inputs.additional_image_name }}
         with:
           manifests: |
