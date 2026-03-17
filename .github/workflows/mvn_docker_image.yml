@@ -183,14 +183,14 @@ jobs:
 
       - name: Set up GraalVM JDK
         if: ${{ inputs.native_image }}
-        uses: graalvm/setup-graalvm@54b4f5a65c1a84b2fdfdc2078fe43df32819e4b1 # v1
+        uses: graalvm/setup-graalvm@03e8abf916fd0e281b2efe7b2da3378bb0a1d085 # v1
         with:
           java-version: ${{ inputs.java_version }}
           distribution: 'graalvm'
 
       - name: Cache Maven packages on self-hosted MinIO
         if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
-        uses: tespkg/actions-cache@1834080d1fca0d5ce7b73f42e9f8a3e31e4abe85
+        uses: tespkg/actions-cache@570a8ae32f67c95bcaca3f8cc88702cd318291e9
         with:
           endpoint: ${{ inputs.self_hosted_cache_endpoint }}
           port: ${{ inputs.self_hosted_cache_port }}
@@ -337,7 +337,7 @@ jobs:
 
       - name: Login to Amazon ECR
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
+        uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2
 
       - name: Build and push docker image
         if: ${{ ! inputs.native_image }}

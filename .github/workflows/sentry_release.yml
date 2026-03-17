@@ -61,7 +61,7 @@ jobs:
         run: echo "VERSION=${{ inputs.package }}@$VERSION" >> $GITHUB_ENV
 
       - name: Create Sentry release
-        uses: getsentry/action-release@f86218f1105cbe0847f30d0649d3c1789732ca97
+        uses: getsentry/action-release@f988b254a06c552925506508b1079b5ee98ed812
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.sentry_auth_token }}
           SENTRY_ORG: ${{ secrets.sentry_org }}
