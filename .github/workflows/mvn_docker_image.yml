@@ -206,7 +206,7 @@ jobs:
 
       - name: Cache Maven packages
         if: ${{ fromJson(inputs.runs_on)[0] != 'self-hosted' }}
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -322,7 +322,7 @@ jobs:
 
       - name: Login to Azure CR
         if: ${{ inputs.container_registry_type == 'azure-cr' }}
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
         with:
           registry: ${{ secrets.acr_registry }}
           username: ${{ secrets.acr_username }}
@@ -330,7 +330,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
         with:
           role-to-assume: ${{ secrets.ecr_role_to_assume }}
           aws-region: ${{ inputs.ecr_region }}
