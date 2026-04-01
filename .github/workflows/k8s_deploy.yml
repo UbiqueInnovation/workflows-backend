@@ -231,7 +231,7 @@ jobs:
 
       - name: Set AKS context
         if: ${{ inputs.k8s_type == 'aks' }}
-        uses: azure/aks-set-context@c7eb093e5a5d47caa333f64974d5fd1cd4bf069d # v4
+        uses: azure/aks-set-context@60623acbdcbbdcf799ad50a1adf8703874339f8b # v5
         with:
           cluster-name: ${{ inputs.cluster }}
           resource-group: ${{ inputs.cluster_resource_group }}

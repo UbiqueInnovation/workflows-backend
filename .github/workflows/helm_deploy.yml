@@ -114,7 +114,7 @@ jobs:
           kubelogin-version: 'v0.0.28'
 
       - name: Set AKS context
-        uses: azure/aks-set-context@c7eb093e5a5d47caa333f64974d5fd1cd4bf069d # v4
+        uses: azure/aks-set-context@60623acbdcbbdcf799ad50a1adf8703874339f8b # v5
         with:
           cluster-name: ${{ inputs.cluster }}
           resource-group: ${{ inputs.cluster_resource_group }}
@@ -122,7 +122,7 @@ jobs:
           use-kubelogin: 'true'
 
       - name: Azure setup helm
-        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
+        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5
         with:
           version: 'v3.10.1'
 
