@@ -204,10 +204,23 @@ jobs:
                 run: |
                     sudo apt install ${{ inputs.install_apt_packages }}
 
-            -   name: Set up Maven
-                uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1
-                with:
-                    maven-version: 3.9.3
+            - name: try installing maven from cache
+              id: cache-maven
+              if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              with:
+                path: ${{ env.RUNNER_TOOL_CACHE }}/maven/3.9.3/x64
+                key: maven-3.9.3
+
+            - name: add maven to PATH if installed from cache
+              if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' && steps.cache-maven.outputs.cache-hit == 'true' }}
+              run: echo "$RUNNER_TOOL_CACHE/maven/3.9.3/x64/bin" >> $GITHUB_PATH
+
+            - name: set up maven if wasnt in cache
+              if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' && steps.cache-maven.outputs.cache-hit != 'true' }}
+              uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1
+              with:
+                maven-version: 3.9.3
 
             -   uses: actions/setup-python@v5
                 if: ${{ inputs.run_poeditor }}
