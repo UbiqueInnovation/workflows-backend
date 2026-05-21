@@ -191,11 +191,17 @@ jobs:
                 run: |
                     cd ${{ inputs.app_directory }}
 
+            - name: Compute Maven cache key
+              id: mvn-cache-key
+              run: |
+                HASH=$(find . -name pom.xml -type f -exec sha256sum {} \; | sort -k 2 | sha256sum | cut -d' ' -f1)
+                echo "key=${{ runner.os }}-m2-${HASH}" >> $GITHUB_OUTPUT
+
             -   name: Cache Maven packages
-                uses: actions/cache@v5
+                uses: actions/cache@v4
                 with:
                     path: ~/.m2/repository
-                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                    key: ${{ steps.mvn-cache-key.outputs.key }}
                     restore-keys: ${{ runner.os }}-m2-
 
             -   name: install apt packages '${{ inputs.install_apt_packages }}'
