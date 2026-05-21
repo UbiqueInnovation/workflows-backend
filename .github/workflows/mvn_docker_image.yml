@@ -240,8 +240,9 @@ jobs:
                 if: ${{ ! inputs.use_mvn_central }}
                 uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d
                 with:
-                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
+                    servers: '[{"id": "ubique-artifactory", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}, {"id": "ubique-central-mirror", "username": "${{ secrets.artifactory_user}}", "password": "${{ secrets.artifactory_password }}"}]'
                     repositories: '[{"id" : "ubique-artifactory", "url" : "${{ secrets.artifactory_url }}${{ secrets.artifactory_repo }}"}]'
+                    mirrors: '[{"id" : "ubique-central-mirror", "mirrorOf" : "central", "url": "https://artifactory.ubique.ch/artifactory/remote-maven-central/"}]'
 
             -   name: Set TAG_NAME from ref_name
                 run: echo "TAG_NAME=${{ inputs.ref_name }}" >> $GITHUB_ENV
