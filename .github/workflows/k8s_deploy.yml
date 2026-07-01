@@ -156,12 +156,12 @@ jobs:
     steps:
       - name: Check input.ref_name is set
         if: ${{ ! inputs.ref_name }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             core.setFailed('Input ref_name must be set')
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.ref_name }}
           lfs: ${{ inputs.checkout_lfs }}
@@ -189,14 +189,14 @@ jobs:
         # do this, before we set up the eks login, otherwise it gets confused
       - name: Configure AWS credentials for ECR Pull Secret
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6.2.1
         with:
           role-to-assume: ${{ secrets.ecr_role_to_assume }}
           aws-region: ${{ inputs.ecr_region }}
 
       - name: Login to Amazon ECR
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/amazon-ecr-login@183a1442edf41672e66566b7fc560e297a290896 # v2
+        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2.1.6
 
       - name: GET ECR Login
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
@@ -204,7 +204,7 @@ jobs:
 
       - name: Azure Login with OIDC flow
         if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'oidc' }}
-        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
         with:
           client-id: ${{ secrets.az_client_id }}
           tenant-id: ${{ secrets.az_tenant_id }}
@@ -212,13 +212,13 @@ jobs:
 
       - name: Azure Login with service principal
         if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'service_principal' }}
-        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
         with:
           creds: '${{ secrets.az_service_principal }}'
 
       - name: Configure AWS credentials
         if: ${{ inputs.k8s_type == 'eks' }}
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6.2.1
         with:
           aws-access-key-id: ${{ secrets.aws_access_key }}
           aws-secret-access-key: ${{ secrets.aws_secret_key }}
@@ -231,7 +231,7 @@ jobs:
 
       - name: Set AKS context
         if: ${{ inputs.k8s_type == 'aks' }}
-        uses: azure/aks-set-context@60623acbdcbbdcf799ad50a1adf8703874339f8b # v5
+        uses: azure/aks-set-context@60623acbdcbbdcf799ad50a1adf8703874339f8b # v5.0.0
         with:
           cluster-name: ${{ inputs.cluster }}
           resource-group: ${{ inputs.cluster_resource_group }}
@@ -240,7 +240,7 @@ jobs:
 
       - name: Set K8s context from kubeconfig
         if: ${{ inputs.k8s_type == 'eks' || inputs.k8s_type == 'kubeconfig' }}
-        uses: azure/k8s-set-context@ae59a723ba9abe7a9655538854a025448dbab4aa # v4
+        uses: azure/k8s-set-context@ae59a723ba9abe7a9655538854a025448dbab4aa # v4.0.2
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.kubeconfig }}
@@ -256,7 +256,7 @@ jobs:
 
       - name: Create image pull secret for ACR
         if: ${{ inputs.container_registry_type == 'azure-cr' }}
-        uses: azure/k8s-create-secret@6e0ba8047235646753f2a3a3b359b4d0006ff218 # v5
+        uses: azure/k8s-create-secret@6e0ba8047235646753f2a3a3b359b4d0006ff218 # v5.0.1
         with:
           container-registry-url: ${{ secrets.acr_registry }}
           container-registry-username: ${{ secrets.acr_username }}
@@ -266,7 +266,7 @@ jobs:
 
       - name: Create image pull secret for ECR
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: azure/k8s-create-secret@6e0ba8047235646753f2a3a3b359b4d0006ff218 # v5
+        uses: azure/k8s-create-secret@6e0ba8047235646753f2a3a3b359b4d0006ff218 # v5.0.1
         with:
           container-registry-url: ${{ secrets.acr_registry }}
           container-registry-username: AWS
@@ -281,7 +281,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
 
       - name: Apply Service Account config
-        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5.1.0
         if: ${{  steps.check_serviceaccount_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -298,7 +298,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
 
       - name: Apply Service config
-        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5.1.0
         if: ${{  steps.check_service_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -314,7 +314,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
       - name: Apply Ingress config
-        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5.1.0
         if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -330,7 +330,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
 
       - name: Apply Deployment config
-        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5.1.0
         if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
         with:
           manifests: |
@@ -342,7 +342,7 @@ jobs:
           namespace: ${{ inputs.namespace }}
 
       - name: Apply Deployment config with additional image
-        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5
+        uses: azure/k8s-deploy@c8cfec839dc09896b3b8cc40cd13d04792680771 # v5.1.0
         if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && inputs.additional_image_name }}
         with:
           manifests: |
