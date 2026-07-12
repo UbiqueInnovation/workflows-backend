@@ -1,0 +1,261 @@
+name: Build and Push Docker Images from repo with config files
+on:
+    workflow_call:
+        inputs:
+            ref_name:
+                required: true
+                type: string
+                description: tag or branch name of this repository, ie the one with the config
+            checkout_lfs:
+                required: false
+                default: false
+                type: boolean
+            node_version:
+                default: "20"
+                type: string
+                required: false
+            pnpm_version:
+                default: "8"
+                type: string
+                required: false
+            cache_node:
+                default: "pnpm"
+                type: string
+                required: false
+            cache_dependency_path:
+                default: "pnpm-lock.yaml"
+                type: string
+                required: false
+            release_env:
+                required: true
+                type: string
+                description: 'ENV to build. dev|prod. runs "pnpm build${build_cmd_postfix}:${release_env}"'
+            build_cmd_postfix:
+                required: false
+                default: ""
+                type: string
+                description: 'Runs "pnpm build${build_cmd_postfix}:${release_env}"'
+            image_name_postfix:
+                required: false
+                default: ""
+                type: string
+                description: "Creates image name in the form ${app_name}${image_name_postfix}-${release_env}"
+            image_tag:
+                required: false
+                type: string
+                description: "Optional custom image tag"
+            tag_add_commithash:
+                required: false
+                default: false
+                type: boolean
+                description: Add the current commit hash to the branch (necessary when deploying from a branch)
+            app_name:
+                required: true
+                type: string
+                description: name to tag the image with
+            app_directory:
+                required: true
+                type: string
+                description: directory that contains the package.json
+            root_directory:
+                required: false
+                type: string
+                default: ""
+                description: root dir for pnpm monorepo
+            run_poeditor:
+                required: false
+                default: false
+                type: boolean
+            poeditor_get_translations_filename:
+                required: false
+                default: getTranslations.py
+                type: string
+                description: name of the getTranslations script. Defaults to getTranslations.py.
+            run_build:
+                required: false
+                default: true
+                type: boolean
+            dirs_for_docker_build:
+                required: true
+                type: string
+                description: Space-separated list of files or glob pattern to include in docker build context. E.g. 'public .next' for .next builds or 'build' for other web builds.
+            runs_on:
+                required: false
+                default: '["ubuntu-latest"]'
+                type: string
+                description: Set to '["self-hosted", "linux"]' if needed.
+            dockerfile_name:
+                required: false
+                default: 'Dockerfile'
+                type: string
+                description: Name of the Dockerfile, defaults to 'Dockerfile'
+            docker_build_args:
+                required: false
+                type: string
+                default: ''
+                description: docker build args in the form 'KEY1=value1,KEY2=value2'
+            use_custom_registry:
+                type: boolean
+                default: false
+                description: Use custom npm registry, uses default 'https://registry.npmjs.org' if not set. Set secrets npm_registry_url and npm_registry_authtoken accordingly.
+            pnpm_repository:
+                required: true
+                type: string
+                description: Remote repository containing pnpm repo
+            pnpm_repository_ref:
+                required: true
+                type: string
+                description: Remote repository ref to checkout
+        secrets:
+            acr_registry:
+                required: true
+            acr_username:
+                required: true
+            acr_password:
+                required: true
+            poeditor_api_key:
+                required: false
+                description: necessary if input.run_poeditor is true
+            poeditor_project_id:
+                required: false
+                description: necessary if input.run_poeditor is true
+            npm_registry_url:
+                required: false
+                description: necessary if input.use_custom_registry is true
+            npm_registry_authtoken:
+                required: false
+                description: necessary if input.use_custom_registry is true
+            pnpm_repository_token:
+                required: true
+                description: Access token to access foreign repos
+
+jobs:
+    create-docker-image:
+        name: Create Docker Image
+        runs-on: ${{ fromJson(inputs.runs_on) }}
+        steps:
+            -   name: Checkout Repo with pnpm app
+                uses: actions/checkout@v4
+                with:
+                    ref: ${{ inputs.pnpm_repository_ref }}
+                    lfs: ${{ inputs.checkout_lfs }}
+                    submodules: 'recursive'
+                    repository: ${{ inputs.pnpm_repository }}
+                    token: ${{ secrets.pnpm_repository_token }}
+
+            -   name: Checkout this repo (with the config)
+                uses: actions/checkout@v4
+                with:
+                    lfs: ${{ inputs.checkout_lfs }}
+                    submodules: 'recursive'
+                    path: config_repo
+                    ref: ${{ inputs.ref_name }}
+
+            -   name: Copy config
+                run: |
+                    cp config_repo/.env.${{ inputs.release_env }} ${{ inputs.app_directory }}/.env.${{ inputs.release_env }}
+
+            -   uses: pnpm/action-setup@v4
+                if: ${{ inputs.run_build }}
+                with:
+                    version: ${{ inputs.pnpm_version }}
+
+            -   uses: actions/setup-node@v4
+                if: ${{ inputs.run_build }}
+                with:
+                    node-version: "${{ inputs.node_version }}"
+                    check-latest: true
+                    cache: "${{ inputs.cache_node }}"
+                    cache-dependency-path: "${{ inputs.app_directory }}/${{ inputs.cache_dependency_path }}"
+
+            -   name: Set custom NPM registry
+                if: ${{ inputs.use_custom_registry }}
+                run: |
+                    cd ${{ inputs.root_directory || inputs.app_directory }} &&
+                    pnpm config --location=project set registry https://${{ secrets.npm_registry_url }} &&
+                    pnpm config --location=project set '//${{ secrets.npm_registry_url }}:_authToken' "${{ secrets.npm_registry_authtoken }}"
+
+            -   name: Copy .npmrc to docker directory
+                if: ${{ inputs.use_custom_registry }}
+                run: |
+                    cp ${{ inputs.root_directory || inputs.app_directory }}/.npmrc docker/${{ inputs.app_name }}/ 
+
+            -   uses: actions/setup-python@v5
+                if: ${{ inputs.run_poeditor }}
+                with:
+                    python-version: "3.x"
+                    cache: "pip"
+
+            -   name: Check requirements.txt existence
+                if: ${{ inputs.run_poeditor }}
+                id: check_requirements_txt
+                uses: andstor/file-existence-action@31a502724c77ada11ba0b3442e34757182ccdbd3
+                with:
+                    files: "requirements.txt"
+
+            -   name: Install required python module using pip
+                if: ${{ steps.check_requirements_txt.outputs.files_exists == 'true' }}
+                run: |
+                    python -m pip install -r requirements.txt
+
+            -   name: Run ${{ inputs.poeditor_get_translations_filename }}
+                if: ${{ inputs.run_poeditor }}
+                run: |
+                    python ${{ inputs.app_directory }}/${{ inputs.poeditor_get_translations_filename }} ${{ secrets.poeditor_api_key }} ${{ secrets.poeditor_project_id }}
+
+            -   name: Install using pnpm
+                if: ${{ inputs.run_build }}
+                run: |
+                    cd ${{ inputs.root_directory || inputs.app_directory }} && pnpm install
+
+            -   name: Build using pnpm
+                if: ${{ inputs.run_build }}
+                run: |
+                    cd ${{ inputs.app_directory }} && pnpm run build${{ inputs.build_cmd_postfix }}:${{ inputs.release_env }}
+
+            -   name: Tar Build dir to docker
+                run: |
+                    tar -czvf docker/${{ inputs.app_name }}/bin/${{ inputs.app_name }}.tar.gz -C ${{ inputs.app_directory }} ${{ inputs.dirs_for_docker_build }}
+
+            -   name: Set IMAGE_NAME
+                run: echo "IMAGE_NAME=${{ inputs.app_name }}${{ inputs.image_name_postfix }}-${{ inputs.release_env }}" >> $GITHUB_ENV
+
+            -   uses: azure/docker-login@v2
+                with:
+                    login-server: ${{ secrets.acr_registry }}
+                    username: ${{ secrets.acr_username }}
+                    password: ${{ secrets.acr_password }}
+
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v3
+
+            -   name: Docker Metadata
+                id: docker_meta
+                uses: docker/metadata-action@v5
+                with:
+                    # list of Docker images to use as base name for tags
+                    images: |
+                        ${{ secrets.acr_registry }}/${{ env.IMAGE_NAME }}
+                    # generate Docker tags based on the following events/attributes
+                    tags: |
+                        # set the tag from the raw git tag if tag_add_commithash is disabled
+                        type=semver,pattern={{raw}},enable=${{ ! inputs.tag_add_commithash }}
+                        # dynamically set the branch name and sha as a custom tag if tag_add_commithash is enabled
+                        type=raw,value={{branch}}-{{sha}},enable=${{ inputs.tag_add_commithash }}
+                        type=raw,pattern={{version}},value=${{ inputs.ref_name }}
+                        # set latest tag for default branch
+                        type=raw,value=latest,enable={{is_default_branch}}
+                        type=raw,enable=${{ inputs.image_tag && 'true' || 'false' }},value=${{ inputs.image_tag }}
+
+            -   name: Docker build and push
+                uses: docker/build-push-action@v6
+                with:
+                    tags: ${{ steps.docker_meta.outputs.tags }}
+                    labels: ${{ steps.docker_meta.outputs.labels }}
+                    file: docker/${{ inputs.app_name }}/${{ inputs.dockerfile_name }}
+                    build-args: ${{ inputs.docker_build_args }}
+                    push: true
+                    context: docker/${{ inputs.app_name }}
+                    # Disabled caching, because gh actions run infinitely. Leaving this here for clarity
+                    # cache-from: type=gha
+                    # cache-to: type=gha,mode=max
