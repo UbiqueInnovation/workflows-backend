@@ -189,7 +189,7 @@ jobs:
         # do this, before we set up the eks login, otherwise it gets confused
       - name: Configure AWS credentials for ECR Pull Secret
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6.2.1
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
         with:
           role-to-assume: ${{ secrets.ecr_role_to_assume }}
           aws-region: ${{ inputs.ecr_region }}
@@ -218,7 +218,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ inputs.k8s_type == 'eks' }}
-        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6.2.1
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
         with:
           aws-access-key-id: ${{ secrets.aws_access_key }}
           aws-secret-access-key: ${{ secrets.aws_secret_key }}
