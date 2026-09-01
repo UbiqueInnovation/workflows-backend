@@ -221,7 +221,7 @@ jobs:
         if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
         uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0
         with:
-          maven-version: 3.9.3
+          maven-version: 3.9.16
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         if: ${{ inputs.run_poeditor }}
