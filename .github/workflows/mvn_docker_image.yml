@@ -183,7 +183,7 @@ jobs:
 
       - name: Set up GraalVM JDK
         if: ${{ inputs.native_image }}
-        uses: graalvm/setup-graalvm@8c5543b71f44568342e106336639979e94a8f6de # v1.6.1
+        uses: graalvm/setup-graalvm@f60d4ea89f14098520aea588431217bbd9551570 # v1.6.5
         with:
           java-version: ${{ inputs.java_version }}
           distribution: 'graalvm'
@@ -226,7 +226,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         if: ${{ inputs.run_poeditor }}
         with:
-          python-version: '3.14.6'
+          python-version: '3.14.7'
           cache: 'pip'
 
       - name: Check requirements.txt existence
@@ -322,7 +322,7 @@ jobs:
 
       - name: Login to Azure CR
         if: ${{ inputs.container_registry_type == 'azure-cr' }}
-        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4.5.1
+        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
         with:
           registry: ${{ secrets.acr_registry }}
           username: ${{ secrets.acr_username }}
@@ -330,14 +330,14 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
         with:
           role-to-assume: ${{ secrets.ecr_role_to_assume }}
           aws-region: ${{ inputs.ecr_region }}
 
       - name: Login to Amazon ECR
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2.1.6
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
 
       - name: Build and push docker image
         if: ${{ ! inputs.native_image }}

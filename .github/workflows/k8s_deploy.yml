@@ -189,14 +189,14 @@ jobs:
         # do this, before we set up the eks login, otherwise it gets confused
       - name: Configure AWS credentials for ECR Pull Secret
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
         with:
           role-to-assume: ${{ secrets.ecr_role_to_assume }}
           aws-region: ${{ inputs.ecr_region }}
 
       - name: Login to Amazon ECR
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2.1.6
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
 
       - name: GET ECR Login
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
@@ -204,7 +204,7 @@ jobs:
 
       - name: Azure Login with OIDC flow
         if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'oidc' }}
-        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
         with:
           client-id: ${{ secrets.az_client_id }}
           tenant-id: ${{ secrets.az_tenant_id }}
@@ -212,13 +212,13 @@ jobs:
 
       - name: Azure Login with service principal
         if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'service_principal' }}
-        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
         with:
           creds: '${{ secrets.az_service_principal }}'
 
       - name: Configure AWS credentials
         if: ${{ inputs.k8s_type == 'eks' }}
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
         with:
           aws-access-key-id: ${{ secrets.aws_access_key }}
           aws-secret-access-key: ${{ secrets.aws_secret_key }}
@@ -281,7 +281,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/serviceaccount.yaml"
 
       - name: Apply Service Account config
-        uses: azure/k8s-deploy@51ca02a8b7225fbd0924aac359c5b336a5f1e5b4 # v7.0.0
+        uses: azure/k8s-deploy@bf1ec05e1d736ac4ac70bae889d3ec48c79e2213 # v7.0.1
         if: ${{  steps.check_serviceaccount_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -298,7 +298,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/service.yaml"
 
       - name: Apply Service config
-        uses: azure/k8s-deploy@51ca02a8b7225fbd0924aac359c5b336a5f1e5b4 # v7.0.0
+        uses: azure/k8s-deploy@bf1ec05e1d736ac4ac70bae889d3ec48c79e2213 # v7.0.1
         if: ${{  steps.check_service_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -314,7 +314,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/ingress.yaml"
 
       - name: Apply Ingress config
-        uses: azure/k8s-deploy@51ca02a8b7225fbd0924aac359c5b336a5f1e5b4 # v7.0.0
+        uses: azure/k8s-deploy@bf1ec05e1d736ac4ac70bae889d3ec48c79e2213 # v7.0.1
         if: ${{  steps.check_ingress_file.outputs.files_exists == 'true' }}
         with:
           manifests: |
@@ -330,7 +330,7 @@ jobs:
           files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/deployment.yaml"
 
       - name: Apply Deployment config
-        uses: azure/k8s-deploy@51ca02a8b7225fbd0924aac359c5b336a5f1e5b4 # v7.0.0
+        uses: azure/k8s-deploy@bf1ec05e1d736ac4ac70bae889d3ec48c79e2213 # v7.0.1
         if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && ! inputs.additional_image_name }}
         with:
           manifests: |
@@ -342,7 +342,7 @@ jobs:
           namespace: ${{ inputs.namespace }}
 
       - name: Apply Deployment config with additional image
-        uses: azure/k8s-deploy@51ca02a8b7225fbd0924aac359c5b336a5f1e5b4 # v7.0.0
+        uses: azure/k8s-deploy@bf1ec05e1d736ac4ac70bae889d3ec48c79e2213 # v7.0.1
         if: ${{ steps.check_deployment_file.outputs.files_exists == 'true' && inputs.additional_image_name }}
         with:
           manifests: |
