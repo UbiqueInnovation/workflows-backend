@@ -3,6 +3,16 @@
     "extends": [
         "github>UbiqueInnovation/renovate-config-backend:base.json5"
     ],
+    "customManagers": [
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^action\\.yaml$/"],
+            "matchStrings": ["python -m pip install --only-binary=:all: requests==(?<currentValue>\\S+)"],
+            "depNameTemplate": "requests",
+            "datasourceTemplate": "pypi",
+            "versioningTemplate": "pep440"
+        }
+    ],
     "reviewers": [
         "dsparber",
         "kistlers"

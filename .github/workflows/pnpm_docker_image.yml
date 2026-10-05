@@ -159,20 +159,12 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         if: ${{ inputs.run_poeditor }}
         with:
-          python-version: "3.14.7"
-          cache: "pip"
+          python-version: "3.14.8"
 
-      - name: Check requirements.txt existence
-        if: ${{ inputs.run_poeditor }}
-        id: check_requirements_txt
-        uses: andstor/file-existence-action@558493d6c74bf472d87c84eab196434afc2fa029 # v3.1.0
-        with:
-          files: "requirements.txt"
-
-      - name: Install required python module using pip
-        if: ${{ steps.check_requirements_txt.outputs.files_exists == 'true' }}
+      - name: Install requests
+        shell: bash
         run: |
-          python -m pip install -r requirements.txt
+          python -m pip install --only-binary=:all: requests==2.34.2
 
       - name: Run ${{ inputs.poeditor_get_translations_filename }}
         if: ${{ inputs.run_poeditor }}
