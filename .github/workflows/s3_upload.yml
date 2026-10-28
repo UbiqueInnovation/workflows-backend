@@ -10,6 +10,11 @@ on:
         required: true
         type: string
         description: source directory to upload
+      artifact_to_upload:
+        required: false
+        default: ""
+        type: string
+        description: Optional artifact name from the current workflow run to download into src_dir before uploading
       dest_dir:
         required: true
         type: string
@@ -47,6 +52,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           lfs: ${{ inputs.lfs }}
+
+      - name: Download build artifact
+        if: ${{ inputs.artifact_to_upload != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ inputs.artifact_to_upload }}
+          path: ${{ inputs.src_dir }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
