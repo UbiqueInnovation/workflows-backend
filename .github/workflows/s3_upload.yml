@@ -6,6 +6,26 @@ on:
         required: true
         type: string
         description: AWS region (e.g. eu-central-1)
+      endpoint_url:
+        required: false
+        default: ""
+        type: string
+        description: Optional S3-compatible endpoint, e.g. https://ACCOUNT_ID.r2.cloudflarestorage.com (use aws_region auto for R2)
+      cloudflare_zone_id:
+        required: false
+        default: ""
+        type: string
+        description: Cloudflare zone containing the R2 custom domain
+      cloudflare_hostname:
+        required: false
+        default: ""
+        type: string
+        description: Asset hostname, without scheme or path, for response header rules
+      cloudflare_header_rules:
+        required: false
+        default: "[]"
+        type: string
+        description: JSON array of objects with name, paths (absolute URL path wildcard patterns), and headers (name/value map)
       src_dir:
         required: true
         type: string
@@ -30,6 +50,9 @@ on:
         description: ACL for public read. (Set to true, for files that should be public accessible)
 
     secrets:
+      cloudflare_api_token:
+        required: false
+        description: Cloudflare API token with Transform Rules Edit and Account Rulesets Read access (required for cloudflare_header_rules)
       aws_access_key_id:
         required: true
         description: AWS access key ID
@@ -44,27 +67,152 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure Cloudflare response headers
+        if: ${{ inputs.cloudflare_header_rules != '[]' }}
+        env:
+          CF_ZONE_ID: ${{ inputs.cloudflare_zone_id }}
+          CF_HOSTNAME: ${{ inputs.cloudflare_hostname }}
+          CF_HEADER_RULES: ${{ inputs.cloudflare_header_rules }}
+          CF_API_TOKEN: ${{ secrets.cloudflare_api_token }}
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.request
+
+          PHASE = "http_response_headers_transform"
+
+          def build_rules(hostname, config, owner):
+              if not re.fullmatch(r"[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?", hostname):
+                  raise ValueError("cloudflare_hostname must be a hostname without scheme, port or path")
+              if not isinstance(config, list) or not config:
+                  raise ValueError("cloudflare_header_rules must be a non-empty JSON array")
+              rules, names = [], set()
+              for entry in config:
+                  name = entry["name"]
+                  paths = entry["paths"]
+                  headers = entry["headers"]
+                  if not isinstance(name, str) or not name or name in names:
+                      raise ValueError("Each header rule needs a unique non-empty name")
+                  names.add(name)
+                  if not isinstance(paths, list) or not paths or any(
+                      not isinstance(path, str) or not path.startswith("/") for path in paths
+                  ):
+                      raise ValueError("paths must contain absolute URL path patterns starting with /")
+                  if not isinstance(headers, dict) or not headers:
+                      raise ValueError("headers must be a non-empty name/value map")
+                  normalized = {}
+                  for key, value in headers.items():
+                      if not re.fullmatch(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+", key):
+                          raise ValueError("Invalid header name")
+                      if not isinstance(value, str) or any(ord(c) < 32 or ord(c) == 127 for c in value):
+                          raise ValueError("Header values must be strings without control characters")
+                      if key.lower() in normalized:
+                          raise ValueError("Duplicate header name (case insensitive)")
+                      normalized[key.lower()] = {"operation": "set", "value": value}
+                  path_expression = " or ".join(
+                      "http.request.uri.path strict wildcard " + json.dumps(path) for path in paths
+                  )
+                  reference = hashlib.sha256(f"{owner}\n{hostname}\n{name}".encode()).hexdigest()[:32]
+                  rules.append({
+                      "ref": "s3_upload_" + reference,
+                      "description": f"S3 upload: {hostname} / {name}",
+                      "action": "rewrite",
+                      "expression": f"(http.host eq {json.dumps(hostname)}) and ({path_expression})",
+                      "action_parameters": {"headers": normalized},
+                      "enabled": True,
+                  })
+              return rules
+
+          def sync_rules(api, rules):
+              ruleset = api("GET", f"/rulesets/phases/{PHASE}/entrypoint", missing_ok=True)
+              if ruleset is None:
+                  api("POST", "/rulesets", {
+                      "name": "Response header transforms",
+                      "kind": "zone",
+                      "phase": PHASE,
+                      "rules": rules,
+                  })
+                  return
+              existing = {rule.get("ref"): rule for rule in ruleset.get("rules", [])}
+              for rule in rules:
+                  current = existing.get(rule["ref"])
+                  path = f"/rulesets/{ruleset['id']}/rules"
+                  # Append in input order, including updates, so later rules win.
+                  payload = {**rule, "position": {"after": ""}}
+                  if current:
+                      api("PATCH", f"{path}/{current['id']}", payload)
+                  else:
+                      api("POST", path, payload)
+
+          def main():
+              zone = os.environ["CF_ZONE_ID"]
+              token = os.environ["CF_API_TOKEN"]
+              if not re.fullmatch(r"[0-9a-fA-F]{32}", zone) or not token:
+                  raise ValueError("cloudflare_zone_id and cloudflare_api_token are required for header rules")
+              rules = build_rules(
+                  os.environ["CF_HOSTNAME"].lower(),
+                  json.loads(os.environ["CF_HEADER_RULES"]),
+                  os.environ["GITHUB_REPOSITORY"],
+              )
+
+              def api(method, path, body=None, missing_ok=False):
+                  request = urllib.request.Request(
+                      f"https://api.cloudflare.com/client/v4/zones/{zone}{path}",
+                      data=json.dumps(body).encode() if body is not None else None,
+                      headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                      method=method,
+                  )
+                  try:
+                      with urllib.request.urlopen(request, timeout=30) as response:
+                          result = json.load(response)
+                  except urllib.error.HTTPError as error:
+                      if missing_ok and error.code == 404:
+                          return None
+                      raise RuntimeError(f"Cloudflare API {method} {path} failed (HTTP {error.code})") from None
+                  if not result.get("success"):
+                      raise RuntimeError("Cloudflare rejected the response header configuration")
+                  return result["result"]
+
+              sync_rules(api, rules)
+              print(f"Configured {len(rules)} Cloudflare response header rules")
+
+          if __name__ == "__main__":
+              main()
+          PY
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           lfs: ${{ inputs.lfs }}
 
       - name: Configure AWS credentials
+        if: ${{ inputs.endpoint_url == '' }}
         uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key}}
           aws-region: ${{ inputs.aws_region }}
 
-      - name: set Public Read argument
-        if: ${{ inputs.public }}
-        run: |
-          echo "ADDITIONAL_ARGS=${{ env.ADDITIONAL_ARGS }} --acl public-read" >> $GITHUB_ENV
-
-      - name: set Cache-Control argument
-        if: ${{ inputs.cache_control }}
-        run: |
-          echo "ADDITIONAL_ARGS=${{ env.ADDITIONAL_ARGS }} --cache-control '${{ inputs.cache_control }}'" >> $GITHUB_ENV
-
       - name: Upload to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+          AWS_DEFAULT_REGION: ${{ inputs.aws_region }}
+          AWS_REGION: ${{ inputs.aws_region }}
+          ENDPOINT_URL: ${{ inputs.endpoint_url }}
+          SRC_DIR: ${{ inputs.src_dir }}
+          DEST_DIR: ${{ inputs.dest_dir }}
+          BUCKET: ${{ secrets.aws_bucket }}
+          PUBLIC: ${{ inputs.public }}
+          CACHE_CONTROL: ${{ inputs.cache_control }}
+        shell: bash
         run: |
-          aws s3 cp ${{ inputs.src_dir }} s3://${{ secrets.aws_bucket }}/${{ inputs.dest_dir }} --recursive ${{ env.ADDITIONAL_ARGS }}
+          args=(--recursive)
+          if [[ -n "$ENDPOINT_URL" ]]; then args+=(--endpoint-url "$ENDPOINT_URL"); fi
+          if [[ "$PUBLIC" == "true" ]]; then args+=(--acl public-read); fi
+          if [[ -n "$CACHE_CONTROL" ]]; then args+=(--cache-control "$CACHE_CONTROL"); fi
+          aws s3 cp "$SRC_DIR" "s3://$BUCKET/$DEST_DIR" "${args[@]}"
