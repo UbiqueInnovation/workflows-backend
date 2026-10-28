@@ -1,4 +1,4 @@
-name: Upload To S3 Storage
+name: [DEPRECATED] Upload To S3 Storage – prefer using https://github.com/UbiqueInnovation/action-systems-s3-upload instead
 on:
   workflow_call:
     inputs:
