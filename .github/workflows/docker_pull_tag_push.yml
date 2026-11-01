@@ -81,7 +81,7 @@ jobs:
       - name: SET PUSH_IMAGE
         run: echo "PUSH_IMAGE=${{ secrets.push_container_registry }}/${{ env.PUSH_IMAGE_NAME }}:${{ env.PUSH_IMAGE_TAG }}" >> $GITHUB_ENV
 
-      - uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         if: ${{ env.PULL_CONTAINER_REGISTRY }}
         env:
           PULL_CONTAINER_REGISTRY: ${{ secrets.pull_container_registry }}
@@ -91,7 +91,7 @@ jobs:
           password: ${{ secrets.pull_container_registry_password }}
 
       - name: Login to Docker repository using username and password
-        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         if: ${{ inputs.push_container_registry_type == 'username-password' }}
         with:
           registry: ${{ secrets.push_container_registry }}
@@ -100,7 +100,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ inputs.push_container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ secrets.ecr_role_to_assume }}
           aws-region: ${{ inputs.ecr_region }}
@@ -110,7 +110,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Pull docker image
         run: docker pull ${{ env.PULL_IMAGE }}
