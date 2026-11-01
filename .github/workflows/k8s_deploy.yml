@@ -189,7 +189,7 @@ jobs:
         # do this, before we set up the eks login, otherwise it gets confused
       - name: Configure AWS credentials for ECR Pull Secret
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ secrets.ecr_role_to_assume }}
           aws-region: ${{ inputs.ecr_region }}
@@ -204,7 +204,7 @@ jobs:
 
       - name: Azure Login with OIDC flow
         if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'oidc' }}
-        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ secrets.az_client_id }}
           tenant-id: ${{ secrets.az_tenant_id }}
@@ -212,13 +212,13 @@ jobs:
 
       - name: Azure Login with service principal
         if: ${{ inputs.k8s_type == 'aks' && inputs.az_login_flow == 'service_principal' }}
-        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           creds: '${{ secrets.az_service_principal }}'
 
       - name: Configure AWS credentials
         if: ${{ inputs.k8s_type == 'eks' }}
-        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           aws-access-key-id: ${{ secrets.aws_access_key }}
           aws-secret-access-key: ${{ secrets.aws_secret_key }}

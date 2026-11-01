@@ -176,7 +176,7 @@ jobs:
 
       - name: Set up JDK
         if: ${{ ! inputs.native_image }}
-        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           java-version: ${{ inputs.java_version }}
           distribution: 'temurin'
@@ -221,12 +221,12 @@ jobs:
         if: ${{ fromJson(inputs.runs_on)[0] == 'self-hosted' }}
         uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0
         with:
-          maven-version: 3.9.16
+          maven-version: 3.10.0
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         if: ${{ inputs.run_poeditor }}
         with:
-          python-version: '3.14.7'
+          python-version: '3.15.2'
           cache: 'pip'
 
       - name: Check requirements.txt existence
@@ -322,7 +322,7 @@ jobs:
 
       - name: Login to Azure CR
         if: ${{ inputs.container_registry_type == 'azure-cr' }}
-        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ${{ secrets.acr_registry }}
           username: ${{ secrets.acr_username }}
@@ -330,7 +330,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ inputs.container_registry_type == 'amazon-ecr' }}
-        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ secrets.ecr_role_to_assume }}
           aws-region: ${{ inputs.ecr_region }}
