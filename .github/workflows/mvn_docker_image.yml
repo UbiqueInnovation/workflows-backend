@@ -183,7 +183,7 @@ jobs:
 
       - name: Set up GraalVM JDK
         if: ${{ inputs.native_image }}
-        uses: graalvm/setup-graalvm@f60d4ea89f14098520aea588431217bbd9551570 # v1.6.5
+        uses: graalvm/setup-graalvm@f70bc8032f90a104502824a54bcb94b6f01715bc # v1.6.8
         with:
           java-version: ${{ inputs.java_version }}
           distribution: 'graalvm'
