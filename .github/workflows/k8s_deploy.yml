@@ -307,6 +307,22 @@ jobs:
             ${{ inputs.pull_secret_name }}
           namespace: ${{ inputs.namespace }}
 
+      - name: Check envoy.yaml existence
+        id: check_envoy_file
+        uses: andstor/file-existence-action@558493d6c74bf472d87c84eab196434afc2fa029 # v3.1.0
+        with:
+          files: "${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/envoy.yaml"
+
+      - name: Apply Envoy Gateway config
+        uses: azure/k8s-deploy@bf1ec05e1d736ac4ac70bae889d3ec48c79e2213 # v7.0.1
+        if: ${{ steps.check_envoy_file.outputs.files_exists == 'true' }}
+        with:
+          manifests: |
+            ${{ inputs.app_directory }}/${{ inputs.manifests_directory }}/${{ inputs.target }}/envoy.yaml
+          imagepullsecrets: |
+            ${{ inputs.pull_secret_name }}
+          namespace: ${{ inputs.namespace }}
+
       - name: Check ingress.yaml existence
         id: check_ingress_file
         uses: andstor/file-existence-action@558493d6c74bf472d87c84eab196434afc2fa029 # v3.1.0
